@@ -179,6 +179,26 @@ describe('receipted job acceptance', () => {
 })
 
 describe('command authorization', () => {
+  it('does not pass stale superadministrator claims to the fresh scope resolver', async () => {
+    const test = harness()
+    await authorizeLogisticsCommand({ ...test.ctx, auth: { ...test.ctx.auth!, isSuperAdmin: true } }, [])
+    expect(test.resolveFresh).toHaveBeenCalledWith(expect.objectContaining({ auth: expect.objectContaining({ sub: actorUserId, isSuperAdmin: false }) }))
+  })
+  it('rejects API-key actors for the internal-user operational release', async () => {
+    const test = harness()
+    const keyId = randomUUID()
+    await expect(authorizeLogisticsCommand({ ...test.ctx, auth: { sub: `api_key:${keyId}`, keyId, userId: actorUserId, isApiKey: true, tenantId: scope.tenantId, orgId: scope.organizationId } }, ['logistics.jobs.manage'])).rejects.toMatchObject({ status: 403 })
+    expect(test.resolveFresh).not.toHaveBeenCalled()
+  })
+  it('requires explicit organization selection even when the actor organization is available', async () => {
+    const test = harness()
+    for (const actorTenantId of [scope.tenantId, randomUUID()]) {
+      await expect(authorizeLogisticsCommand({ ...test.ctx, selectedOrganizationId: null,
+        auth: { sub: actorUserId, tenantId: scope.tenantId, orgId: null, actorOrgId: scope.organizationId, actorTenantId, isSuperAdmin: true } }, []))
+        .rejects.toMatchObject({ status: 400, body: { code: 'organization_scope_required' } })
+    }
+    expect(test.resolveFresh).not.toHaveBeenCalled()
+  })
   it('rejects missing authentication, unresolved organization and rejected organization selection', async () => {
     const test = harness()
     await expect(authorizeLogisticsCommand({ ...test.ctx, auth: null }, [])).rejects.toMatchObject({ status: 401 })

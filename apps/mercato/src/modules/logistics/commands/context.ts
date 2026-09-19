@@ -1,6 +1,5 @@
 import type { CommandRuntimeContext } from '@open-mercato/shared/lib/commands'
 import type { OrganizationScopeService } from '@open-mercato/shared/lib/auth/principal-service'
-import { resolveActiveOrganizationId } from '@open-mercato/shared/lib/auth/organizationScope'
 import { authorizeFeatures } from '@open-mercato/shared/security/featurePolicy'
 import { CrudHttpError } from '@open-mercato/shared/lib/crud/errors'
 import { resolveTranslations } from '@open-mercato/shared/lib/i18n/server'
@@ -12,12 +11,13 @@ export async function authorizeLogisticsCommand(ctx: CommandRuntimeContext, requ
   if (!ctx.auth) return fail(401, 'unauthorized')
   if (ctx.organizationScope?.selectionRejected) return fail(403, 'forbidden')
   const tenantId = ctx.auth.tenantId
-  const organizationId = ctx.selectedOrganizationId ?? resolveActiveOrganizationId(ctx.auth)
+  const organizationId = ctx.selectedOrganizationId
   if (!tenantId || !organizationId) return fail(400, 'organization_scope_required')
+  if (ctx.auth.isApiKey) return fail(403, 'forbidden')
   const actorUserId = ctx.auth.sub
   if (![tenantId, organizationId, actorUserId].every((id) => uuidSchema.safeParse(id).success)) return fail(403, 'forbidden')
   const service = ctx.container.resolve<OrganizationScopeService>('organizationScopeService')
-  const fresh = await service.resolveFresh({ auth: ctx.auth, selectedId: organizationId, tenantId })
+  const fresh = await service.resolveFresh({ auth: { ...ctx.auth, isSuperAdmin: false }, selectedId: organizationId, tenantId })
   if (fresh.scope.selectionRejected || fresh.scope.tenantId !== tenantId || fresh.scope.selectedId !== organizationId) return fail(403, 'forbidden')
   const permissions = { grantedFeatures: fresh.acl.features, unrestricted: fresh.acl.isSuperAdmin,
     scopeAllowed: fresh.acl.isSuperAdmin || fresh.scope.allowedIds === null || fresh.scope.allowedIds.includes(organizationId) }
