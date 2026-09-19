@@ -8,6 +8,8 @@ Dev sink for marketplace / verification simulators:
 
 Shows them live at `/backend/trans_inbox`.
 
+**Agent wiring playbook:** [`.ai/docs/exchange-simulators-agent-playbook.md`](../../../../.ai/docs/exchange-simulators-agent-playbook.md)
+
 ## Endpoints
 
 | Method | Path | Auth |
