@@ -14,7 +14,7 @@ export async function authorizeLogisticsCommand(ctx: CommandRuntimeContext, requ
   if (ctx.organizationScope?.selectionRejected) return fail(403, 'forbidden')
   const tenantId = ctx.auth.tenantId
   const organizationId = ctx.selectedOrganizationId
-  const requestedOrganization = parseSelectedOrganizationCookie(ctx.request?.headers.get('cookie'))
+  const requestedOrganization = parseSelectedOrganizationCookie(ctx.request?.headers.get('cookie'))?.trim()
   if (!tenantId || !organizationId || isAllOrganizationsSelection(requestedOrganization)) return fail(400, 'organization_scope_required')
   if (ctx.auth.isApiKey) return fail(403, 'forbidden')
   const actorUserId = ctx.auth.sub

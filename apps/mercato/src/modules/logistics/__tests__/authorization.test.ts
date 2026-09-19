@@ -5,7 +5,7 @@ import type { CommandRuntimeContext } from '@open-mercato/shared/lib/commands'
 import { registerModules } from '@open-mercato/shared/lib/modules/registry'
 import { DefaultOrganizationScopeService } from '@open-mercato/core/modules/directory/services/organizationScopeService'
 import { authorizeLogisticsCommand } from '../commands/context'
-import { readCommandReceipt } from '../commands/transaction'
+import { readCommandReceipt, runReceiptedCommand } from '../commands/transaction'
 import { features } from '../acl'
 
 jest.mock('@open-mercato/shared/lib/i18n/server', () => ({ resolveTranslations: async () => ({ translate: (key: string) => key }) }))
@@ -37,7 +37,7 @@ function fixture() {
 }
 
 describe('logistics authorization through the actual directory scope service', () => {
-  it.each(['__all__', '%5F%5Fall%5F%5F'])('rejects explicit all-organizations cookie %s even if the request resolver fell back to the actor organization', async choice => {
+  it.each(['__all__', '%5F%5Fall%5F%5F', '%20__all__%20', '%09__all__%09'])('rejects explicit all-organizations cookie %s even if the request resolver fell back to the actor organization', async choice => {
     const test = fixture()
     test.acl.isSuperAdmin = false
     test.acl.organizations = [test.organizationA]
@@ -46,6 +46,9 @@ describe('logistics authorization through the actual directory scope service', (
     test.ctx.request = new Request('http://localhost/api/logistics/jobs', { headers: { cookie: `om_selected_org=${choice}` } })
     await expect(authorizeLogisticsCommand(test.ctx, ['logistics.jobs.manage'])).rejects.toMatchObject({ status: 400, body: { code: 'organization_scope_required' } })
     await expect(readCommandReceipt({ ctx: test.ctx, action: 'logistics.jobs.accept', requestId: randomUUID(), requiredFeatures: ['logistics.jobs.manage'] })).rejects.toMatchObject({ status: 400 })
+    const mutate = jest.fn(async () => ({ records: () => [] }))
+    await expect(runReceiptedCommand({ ctx: test.ctx, action: 'logistics.jobs.accept', requestId: randomUUID(), requiredFeatures: ['logistics.jobs.manage'], input: {}, mutate })).rejects.toMatchObject({ status: 400 })
+    expect(mutate).not.toHaveBeenCalled()
     expect(test.invalidateUserCache).not.toHaveBeenCalled()
   })
   it('revokes stale administrator organization access for mutations and receipt replay', async () => {
