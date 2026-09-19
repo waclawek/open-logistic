@@ -19,5 +19,10 @@
   "logistics.transportJobs.description": "Transport job management is planned and is not yet available.",
   "logistics.transportJobs.title": "Transport jobs",
   "logistics.trips.description": "Creating trips and routes is not yet available.",
-  "logistics.trips.title": "Trips and routes"
+  "logistics.trips.title": "Trips and routes",
+  "logistics.errors.invalidTimezone": "Choose a valid time zone.",
+  "logistics.errors.positiveWeight": "Weight must be greater than zero.",
+  "logistics.errors.locationObservationIncomplete": "Enter the location, observation time and source together.",
+  "logistics.errors.palletCountRequired": "Enter a positive pallet count for palletized cargo; otherwise leave it empty.",
+  "logistics.errors.invalidWindow": "Enter a valid pickup and delivery time window."
 }

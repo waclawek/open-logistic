@@ -19,5 +19,10 @@
   "logistics.transportJobs.description": "Die Verwaltung von Transportaufträgen ist geplant und noch nicht verfügbar.",
   "logistics.transportJobs.title": "Transportaufträge",
   "logistics.trips.description": "Das Erstellen von Fahrten und Routen ist noch nicht verfügbar.",
-  "logistics.trips.title": "Fahrten und Routen"
+  "logistics.trips.title": "Fahrten und Routen",
+  "logistics.errors.invalidTimezone": "Wählen Sie eine gültige Zeitzone.",
+  "logistics.errors.positiveWeight": "Das Gewicht muss größer als null sein.",
+  "logistics.errors.locationObservationIncomplete": "Geben Sie Ort, Beobachtungszeit und Quelle zusammen an.",
+  "logistics.errors.palletCountRequired": "Geben Sie bei palettierter Fracht eine positive Palettenzahl an; andernfalls lassen Sie das Feld leer.",
+  "logistics.errors.invalidWindow": "Geben Sie gültige Zeitfenster für Abholung und Lieferung an."
 }

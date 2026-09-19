@@ -19,5 +19,10 @@
   "logistics.transportJobs.description": "Obsługa zleceń transportowych jest planowana i nie jest jeszcze dostępna.",
   "logistics.transportJobs.title": "Zlecenia transportowe",
   "logistics.trips.description": "Tworzenie przejazdów i tras nie jest jeszcze dostępne.",
-  "logistics.trips.title": "Przejazdy i trasy"
+  "logistics.trips.title": "Przejazdy i trasy",
+  "logistics.errors.invalidTimezone": "Wybierz prawidłową strefę czasową.",
+  "logistics.errors.positiveWeight": "Masa musi być większa od zera.",
+  "logistics.errors.locationObservationIncomplete": "Podaj razem lokalizację, czas obserwacji i źródło.",
+  "logistics.errors.palletCountRequired": "Dla ładunku na paletach podaj dodatnią liczbę palet; w przeciwnym razie pozostaw pole puste.",
+  "logistics.errors.invalidWindow": "Podaj prawidłowe okna czasowe odbioru i dostawy."
 }

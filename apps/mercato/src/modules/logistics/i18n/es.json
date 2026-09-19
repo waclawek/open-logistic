@@ -19,5 +19,10 @@
   "logistics.transportJobs.description": "La gestión de órdenes de transporte está prevista y aún no está disponible.",
   "logistics.transportJobs.title": "Órdenes de transporte",
   "logistics.trips.description": "La creación de viajes y rutas aún no está disponible.",
-  "logistics.trips.title": "Viajes y rutas"
+  "logistics.trips.title": "Viajes y rutas",
+  "logistics.errors.invalidTimezone": "Seleccione una zona horaria válida.",
+  "logistics.errors.positiveWeight": "El peso debe ser mayor que cero.",
+  "logistics.errors.locationObservationIncomplete": "Indique juntos la ubicación, la hora de observación y la fuente.",
+  "logistics.errors.palletCountRequired": "Indique un número positivo de palés para la carga paletizada; en otro caso deje el campo vacío.",
+  "logistics.errors.invalidWindow": "Indique intervalos válidos de recogida y entrega."
 }

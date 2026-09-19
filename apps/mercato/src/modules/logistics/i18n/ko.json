@@ -19,5 +19,10 @@
   "logistics.transportJobs.description": "운송 의뢰 관리 기능은 예정되어 있으며 아직 사용할 수 없습니다.",
   "logistics.transportJobs.title": "운송 의뢰",
   "logistics.trips.description": "운행 및 경로 생성 기능은 아직 사용할 수 없습니다.",
-  "logistics.trips.title": "운행 및 경로"
+  "logistics.trips.title": "운행 및 경로",
+  "logistics.errors.invalidTimezone": "올바른 시간대를 선택하세요.",
+  "logistics.errors.positiveWeight": "중량은 0보다 커야 합니다.",
+  "logistics.errors.locationObservationIncomplete": "위치, 확인 시각, 출처를 함께 입력하세요.",
+  "logistics.errors.palletCountRequired": "팔레트 화물은 양수인 팔레트 수를 입력하고, 그 외에는 비워 두세요.",
+  "logistics.errors.invalidWindow": "올바른 픽업 및 배송 시간 범위를 입력하세요."
 }
