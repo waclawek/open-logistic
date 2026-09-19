@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OM GraphHopper demo — WAW → POZ</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root { color-scheme: light; font-family: ui-sans-serif, system-ui, sans-serif; }
+    body { margin: 0; }
+    #map { height: 100vh; width: 100%; }
+    .panel {
+      position: absolute; z-index: 1000; top: 12px; left: 12px; right: 12px;
+      max-width: 420px; background: #fff; border: 1px solid #d4d4d8;
+      border-radius: 10px; padding: 12px 14px; box-shadow: 0 8px 24px rgba(0,0,0,.08);
+    }
+    .panel h1 { margin: 0 0 6px; font-size: 16px; }
+    .panel p { margin: 0 0 8px; font-size: 13px; color: #52525b; line-height: 1.4; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    button {
+      border: 1px solid #d4d4d8; background: #fafafa; border-radius: 8px;
+      padding: 6px 10px; font-size: 13px; cursor: pointer;
+    }
+    button.primary { background: #18181b; color: #fff; border-color: #18181b; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    code { font-size: 12px; }
+    .stat { font-variant-numeric: tabular-nums; font-weight: 600; color: #18181b; }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h1>WAW → POZ routing demo</h1>
+    <p id="status">Loading committed fixture…</p>
+    <p id="stats"></p>
+    <div class="row">
+      <button type="button" class="primary" id="btn-fixture">Fixture (offline)</button>
+      <button type="button" id="btn-live">Live GraphHopper :8989</button>
+    </div>
+    <p style="margin-top:10px"><code>yarn graphhopper:setup && yarn graphhopper:test</code></p>
+  </div>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map', { zoomControl: true }).setView([52.1, 19.0], 7)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map)
+
+    let layer = null
+    const statusEl = document.getElementById('status')
+    const statsEl = document.getElementById('stats')
+
+    function render(route, label) {
+      if (layer) map.removeLayer(layer)
+      const latlngs = route.points.coordinates.map(([lng, lat]) => [lat, lng])
+      layer = L.layerGroup([
+        L.polyline(latlngs, { color: '#2563eb', weight: 5, opacity: 0.85 }),
+        L.circleMarker([route.meta.from.lat, route.meta.from.lng], { radius: 7, color: '#16a34a', fillOpacity: 1 }),
+        L.circleMarker([route.meta.to.lat, route.meta.to.lng], { radius: 7, color: '#dc2626', fillOpacity: 1 }),
+      ]).addTo(map)
+      map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40] })
+      const km = (route.distance_m / 1000).toFixed(1)
+      const min = Math.round(route.time_ms / 60000)
+      statusEl.textContent = `${label}: ${route.meta.from.name} → ${route.meta.to.name}`
+      statsEl.innerHTML = `<span class="stat">${km} km</span> · <span class="stat">${min} min</span> · ${latlngs.length} pts · ${route.instructions.length} turns`
+    }
+
+    async function loadFixture() {
+      statusEl.textContent = 'Loading fixture…'
+      const res = await fetch('./fixtures/waw-poz.route.json')
+      if (!res.ok) throw new Error('fixture missing — open this file via a local static server')
+      render(await res.json(), 'Fixture')
+    }
+
+    async function loadLive() {
+      statusEl.textContent = 'Calling GraphHopper…'
+      const url = 'http://127.0.0.1:8989/route?point=52.2297,21.0122&point=52.4064,16.9252&profile=car&locale=pl&points_encoded=false&instructions=true'
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`live HTTP ${res.status} — run yarn graphhopper:setup`)
+      const raw = await res.json()
+      const p = raw.paths[0]
+      render({
+        meta: {
+          from: { name: 'Warszawa', lat: 52.2297, lng: 21.0122 },
+          to: { name: 'Poznań', lat: 52.4064, lng: 16.9252 },
+        },
+        distance_m: p.distance,
+        time_ms: p.time,
+        points: p.points,
+        instructions: p.instructions || [],
+      }, 'Live')
+    }
+
+    document.getElementById('btn-fixture').onclick = () => loadFixture().catch((e) => { statusEl.textContent = e.message })
+    document.getElementById('btn-live').onclick = () => loadLive().catch((e) => { statusEl.textContent = e.message })
+    loadFixture().catch((e) => { statusEl.textContent = e.message })
+  </script>
+</body>
+</html>

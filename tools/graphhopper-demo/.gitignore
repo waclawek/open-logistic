@@ -1,0 +1,5 @@
+*.osm.pbf
+*.pbf
+logs/
+*.bak
+.env
