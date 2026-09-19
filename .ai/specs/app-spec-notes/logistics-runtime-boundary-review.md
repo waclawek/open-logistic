@@ -84,3 +84,7 @@ Observed padded-token cases: initialScope.selectedId = home, no selectionRejecte
 ## Boundaries
 
 This verdict covers only this corrective commit. No independent app typecheck/build or real HTTP/database execution is claimed. Parent-reported typecheck and concurrent managed TC-LOG-008 execution are separate evidence. The full own-fleet/manual-dispatch release remains unfinished and its approved scope is unchanged.
+
+## Parent resolution — 2026-09-19
+
+R1 fixed in b85657c6f by trimming the decoded organization-cookie value before the existing platform token comparison, matching the directory resolver. Parent reproduced both padded-token failures before the fix; the complete 391-test logistics suite passed afterwards. Regressions cover command authorization, receipt reads and the actual receipted-mutation entry point without entering persistence. This is parent closure evidence, not an independent approval or HTTP result. Managed run88496 began against the earlier source revision; a fresh run must verify the final revision.
