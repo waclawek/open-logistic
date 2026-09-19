@@ -77,3 +77,5 @@ In progress. Authored strict input/version/decimal validation, job entity/encryp
 - Expanded skeleton from approved decisions into capability-specific design and shared contract.
 
 - F4 resolved: unassigned promise route/command/UI explicitly owned here; assigned revisions delegate to trip replan. Initial validator/decimal foundation implemented, 31 new tests passed; persistence/API/UI not started.
+
+Integration authoring: `TC-LOG-008-job-intake.spec.ts` adds API-created scoped fixtures for draft create/edit/list, stale versions, concurrent identical acceptance, receipt recovery, protected input, null selection and revoked write access. It is restricted to the managed ephemeral runner; receipts/accepted facts are cleaned with its disposable database. Scoped strict compilation passes. Execution and discovery are not yet verified: startup exits before readiness, and the discovery-only Playwright command is still pending.
