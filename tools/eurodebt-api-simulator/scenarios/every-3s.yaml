@@ -1,0 +1,31 @@
+name: every-3s
+description: Every 3s fire Eurodebt verification webhooks into OM inbox (ctrl+c to stop)
+target:
+  baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:3001}
+  headers:
+    x-api-key: ${EURODEBT_SIM_API_KEY:-eurodebt-sim-key}
+    Content-Type: application/json
+    Accept: application/json
+    X-Eurodebt-Sim: "1"
+    X-Om-Tenant-Id: ${TRANS_INBOX_TENANT_ID:-}
+  pathMap:
+    "POST /api/v1.0/verification/submit": /api/integrations/eurodebt/webhooks/verification-submit
+    "POST /webhooks/verificationCompleted": /api/integrations/eurodebt/webhooks/verification
+defaults:
+  concurrency: 4
+  rps: 20
+  timeoutMs: 10000
+schedule:
+  mode: interval
+  every: 3s
+batches:
+  - id: completed
+    count: 2
+    template: verification.completed
+    vars:
+      type: carrier
+  - id: submit
+    count: 1
+    template: verification.submit
+parallelBatches: true
+reportPath: tools/eurodebt-api-simulator/.reports/every-3s.ndjson

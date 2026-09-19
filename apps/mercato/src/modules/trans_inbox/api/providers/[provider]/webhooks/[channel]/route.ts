@@ -12,7 +12,7 @@ import {
 
 const logger = createLogger('trans_inbox').child({ component: 'webhook' })
 
-const PROVIDERS = new Set(['trans', 'timocom'])
+const PROVIDERS = new Set(['trans', 'timocom', 'eurodebt'])
 
 export const metadata = {
   path: '/integrations/[provider]/webhooks/[channel]',
@@ -102,7 +102,7 @@ export const openApi: OpenApiRouteDoc = {
   tag: 'TransInbox',
   methods: {
     POST: {
-      summary: 'Accept Trans.eu or TIMOCOM simulator webhook payload',
+      summary: 'Accept Trans.eu, TIMOCOM, or Eurodebt simulator webhook payload',
       tags: ['TransInbox'],
       responses: [
         {

@@ -1,0 +1,2171 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Eurodebt API",
+    "x-logo": {
+      "url": "https://app.eurodebt.eu/assets/img/logo/logo-eurodebt-inverted.png",
+      "altText": "Eurodebt Logo"
+    },
+    "description": "Eurodebt API provides company and carrier verification services for European businesses.\n\n## Base URL\n```\nhttps://api.eurodebt.eu/api/{version}\n```\n\n| Version | Status | URL |\n|---------|--------|-----|\n| v1.0.1 beta | Current | `https://api.eurodebt.eu/api/v1.0` |\n\n## Getting Started\n1. Obtain an API key from your Eurodebt dashboard. Navigate to Management > Settings > API Keys and click on \"Create API Key\".\n2. Include the API key in all requests via the `x-api-key` header\n3. Submit verification requests and receive results via webhooks or polling\n\n## Authentication\nAll API requests require authentication using an API key. Include your API key in the `x-api-key` header.\n\n```\nx-api-key: your-api-key-here\n```\n\nAPI keys have permissions that control access to different endpoints:\n- **read**: Access to retrieve verification requests, reports, and usage data\n- **write**: Ability to submit new verification requests\n\n## Rate Limiting\nThe API is rate-limited to **100 requests per minute** per API key\nWhen rate limited, you will receive a `429 Too Many Requests` response.\n\nRate limit headers are included in all responses:\n- `RateLimit-Limit`: Maximum requests per window\n- `RateLimit-Remaining`: Remaining requests in current window\n- `RateLimit-Reset`: Time when the rate limit resets (Unix timestamp)\n\n## Webhooks\nWebhooks allow you to receive real-time notifications when events occur in your account.\nInstead of polling the API for updates, you provide a URL and Eurodebt will send HTTP POST requests to that URL when relevant events happen.\n\n### How Webhooks Work\n1. **Configure**: Provide a `webhookUrl` when submitting a request (e.g., verification request, PDF generation)\n2. **Event occurs**: When the operation completes or fails, Eurodebt sends a POST request to your URL\n3. **Process**: Your server receives the payload, verifies the signature, and processes the data\n4. **Acknowledge**: Return a 2xx status code within 10 seconds to confirm receipt\n\n### Webhook Security (Signature Verification)\nAll webhook requests are signed using **HMAC-SHA256** with your API key's webhook secret.\nThe signature is included in the `X-Eurodebt-Signature` header.\n\n**Header format:** `sha256=<hex-encoded-signature>`\n\n**Node.js / Express:**\n```javascript\nconst crypto = require('crypto');\n\napp.post('/webhook', (req, res) => {\n  const signature = req.headers['x-eurodebt-signature'];\n  \n  const expected = 'sha256=' + crypto\n    .createHmac('sha256', WEBHOOK_SECRET)\n    .update(JSON.stringify(req.body))\n    .digest('hex');\n\n  if (signature !== expected) {\n    return res.status(401).send('Invalid signature');\n  }\n\n  res.status(200).send('OK');\n});\n```\n\n**Python / Flask:**\n```python\nimport hmac, hashlib\n\n@app.route('/webhook', methods=['POST'])\ndef webhook():\n    signature = request.headers.get('X-Eurodebt-Signature', '')\n    expected = 'sha256=' + hmac.new(WEBHOOK_SECRET.encode(), request.data, hashlib.sha256).hexdigest()\n\n    if not hmac.compare_digest(signature, expected):\n        return 'Invalid signature', 401\n\n    return 'OK', 200\n```\n\n**PHP:**\n```php\n$payload = file_get_contents('php://input');\n$signature = $_SERVER['HTTP_X_EURODEBT_SIGNATURE'] ?? '';\n$expected = 'sha256=' . hash_hmac('sha256', $payload, WEBHOOK_SECRET);\n\nif (!hash_equals($expected, $signature)) {\n    http_response_code(401);\n    exit('Invalid signature');\n}\n\nhttp_response_code(200);\n```\n\n### Webhook Headers\nEach webhook request includes the following headers:\n\n| Header | Value |\n|--------|-------|\n| `Content-Type` | `application/json` |\n| `User-Agent` | `Eurodebt-Webhook/1.0` |\n| `X-Eurodebt-Signature` | `sha256=<signature>` |\n\n### Webhook Retry Policy\nIf webhook delivery fails, the system implements an automatic retry mechanism:\n\n1. **Immediate retries**: Up to 3 attempts with delays of 1s, 5s, and 30s\n2. **Scheduled retries**: If immediate retries fail, the webhook is scheduled for background retries at increasing intervals:\n   - 5 minutes, 15 minutes, 30 minutes, 1 hour, 2 hours, 4 hours, 8 hours\n3. **Maximum retries**: After 10 total attempts, the webhook is marked as failed\n\n**Retryable errors:**\n- Network timeouts and connection errors\n- HTTP 5xx server errors\n\n**Non-retryable errors (no further attempts):**\n- HTTP 4xx client errors (except 429)\n\n### Webhook Delivery Status\nYou can check webhook delivery status by retrieving the verification request:\n\n| Status | Description |\n|--------|-------------|\n| `pending` | Webhook is queued or awaiting retry |\n| `delivered` | Webhook was successfully delivered |\n| `failed` | All retry attempts exhausted |\n\n### Important Notes\n- **Respond quickly**: Return a 2xx status within 10 seconds to acknowledge receipt\n- **Verify signatures**: Always validate the `X-Eurodebt-Signature` header\n\n## Verification Flow\n1. **Submit request** \u2192 `POST /verification/submit` returns `requestId`\n2. **Processing** \u2192 Verification is processed\n3. **Completion** \u2192 Webhook is sent (if configured) with `status: \"completed\"` or `status: \"rejected\"`\n4. **Retrieve report** \u2192 Use `verificationId` from webhook or poll `GET /verification/request/{id}`\n\n## Languages\nSeveral endpoints support a `language` parameter for translatable fields.\n\n| | | | |\n|---|---|---|---|\n| \ud83c\udde7\ud83c\uddec `bg` Bulgarian | \ud83c\udde8\ud83c\uddff `cs` Czech | \ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc77\udb40\udc6c\udb40\udc73\udb40\udc7f `cy` Welsh | \ud83c\udde9\ud83c\uddf0 `da` Danish |\n| \ud83c\udde9\ud83c\uddea `de` German | \ud83c\uddec\ud83c\uddf7 `el` Greek | \ud83c\uddec\ud83c\udde7 `en` English | \ud83c\uddea\ud83c\uddf8 `es` Spanish |\n| \ud83c\uddea\ud83c\uddea `et` Estonian | \ud83c\uddeb\ud83c\uddee `fi` Finnish | \ud83c\uddeb\ud83c\uddf7 `fr` French | \ud83c\uddee\ud83c\uddea `ga` Irish |\n| \ud83c\udded\ud83c\uddf7 `hr` Croatian | \ud83c\udded\ud83c\uddfa `hu` Hungarian | \ud83c\uddee\ud83c\uddf8 `is` Icelandic | \ud83c\uddee\ud83c\uddf9 `it` Italian |\n| \ud83c\uddf1\ud83c\uddf9 `lt` Lithuanian | \ud83c\uddf1\ud83c\uddfb `lv` Latvian | \ud83c\uddf2\ud83c\uddf9 `mt` Maltese | \ud83c\uddf3\ud83c\uddf1 `nl` Dutch |\n| \ud83c\uddf5\ud83c\uddf1 `pl` Polish | \ud83c\uddf5\ud83c\uddf9 `pt` Portuguese | \ud83c\uddf7\ud83c\uddf4 `ro` Romanian | \ud83c\uddf7\ud83c\uddfa `ru` Russian |\n| \ud83c\uddf8\ud83c\uddf0 `sk` Slovak | \ud83c\uddf8\ud83c\uddee `sl` Slovenian | \ud83c\uddf8\ud83c\uddea `sv` Swedish | \ud83c\uddf9\ud83c\uddf7 `tr` Turkish |\n| \ud83c\uddfa\ud83c\udde6 `uk` Ukrainian | | | |\n\n## Error Handling\nAll errors return a consistent JSON structure:\n```json\n{\n  \"error\": {\n    \"type\": \"ERROR_TYPE\",\n    \"message\": \"Human-readable error description\"\n  }\n}\n```\n\n| HTTP Status | Error Type | Description |\n|-------------|------------|-------------|\n| 400 | `BAD_REQUEST` | Invalid request parameters |\n| 401 | `UNAUTHORIZED` | Missing, invalid, or expired API key |\n| 402 | `PAYMENT_REQUIRED` | Insufficient funds or credits |\n| 403 | `FORBIDDEN` | API key lacks required permission |\n| 404 | `NOT_FOUND` | Resource not found |\n| 429 | `TOO_MANY_REQUESTS` | Rate limit exceeded |\n| 500 | `INTERNAL_SERVER_ERROR` | Server error |\n",
+    "version": "1.0.1 beta",
+    "contact": {
+      "name": "Eurodebt Support",
+      "email": "support@eurodebt.eu",
+      "url": "https://eurodebt.eu"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://eurodebt.eu/terms"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.eurodebt.eu/api/{version}",
+      "description": "Production server",
+      "variables": {
+        "version": {
+          "default": "v1.0",
+          "enum": [
+            "v1.0"
+          ],
+          "description": "API version"
+        }
+      }
+    }
+  ],
+  "x-tagGroups": [
+    {
+      "name": "API Endpoints",
+      "tags": [
+        "Verification",
+        "Usage"
+      ]
+    },
+    {
+      "name": "Callbacks",
+      "tags": [
+        "Webhooks"
+      ]
+    }
+  ],
+  "tags": [
+    {
+      "name": "Verification",
+      "description": "Endpoints for submitting and retrieving verification requests and reports"
+    },
+    {
+      "name": "Usage",
+      "description": "Endpoints for monitoring account usage and quotas"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Webhook callbacks sent by Eurodebt when operations complete.\nEach webhook type has its own payload structure documented below.\n"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "paths": {
+    "/verification/submit": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Submit a verification request",
+        "description": "Submit a new company or carrier verification request. \n\nThis endpoint requires the `write` permission on your API key.\n\n## Processing Time\n\n**Business Hours Processing:**  \nRequests submitted during our business hours (**Monday-Friday, 7:00-18:00 CET**) are typically processed within minutes.\n\n**After-Hours Processing:**  \nRequests submitted outside of business hours may be queued for processing on the next business day. However, our automated systems continue to process requests 24/7 whenever possible, so you may still receive results outside of standard hours.\n\n## Webhook Notifications\nIf a `webhookUrl` is provided, a notification will be sent when the verification completes or is rejected.\nThe webhook payload includes:\n- `requestId`: Use to correlate with your records\n- `verificationId`: Use to fetch the full report (only if completed successfully)\n- `status`: Request status (`pending`, `completed`, or `rejected`)\n- `rejectReason`: Human-readable rejection reason (translated to requested language)\n\nSee the **Webhooks** section for payload format, signature verification, and retry policy.\n\n## Alternative: Polling\nIf you don't use webhooks, you can poll `GET /verification/request/{id}` to check the status.\n",
+        "operationId": "submitVerificationRequest",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitVerificationRequest"
+              },
+              "examples": {
+                "companyVerification": {
+                  "summary": "Company verification request",
+                  "value": {
+                    "type": "company",
+                    "countryCode": "PL",
+                    "vatNumber": "1234567890",
+                    "companyName": "Przyk\u0142adowa Firma Sp. z o.o.",
+                    "webhookUrl": "https://example.com/webhooks/verification"
+                  }
+                },
+                "carrierVerification": {
+                  "summary": "Carrier verification request",
+                  "value": {
+                    "type": "carrier",
+                    "countryCode": "DE",
+                    "companyName": "Transport GmbH",
+                    "vatNumber": "1234567890",
+                    "webhookUrl": "https://example.com/webhooks/verification"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verification request submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitVerificationResponse"
+                },
+                "example": {
+                  "requestId": "507f1f77bcf86cd799439011"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/verification/request/{id}": {
+      "get": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Get a verification request",
+        "description": "Retrieve details of a specific verification request by its ID.\n\nThis endpoint requires the `read` permission on your API key.\n",
+        "operationId": "getVerificationRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Id of the verification request",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f\\d]{24}$"
+            },
+            "example": "507f1f77bcf86cd799439011"
+          },
+          {
+            "$ref": "#/components/parameters/Language"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification request retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "request": {
+                      "$ref": "#/components/schemas/VerificationRequest"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/verification/requests": {
+      "get": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "List verification requests",
+        "description": "Retrieve a paginated list of all verification requests for your company.\n\nThis endpoint requires the `read` permission on your API key.\n\nResults are sorted by creation date in descending order (newest first).\n",
+        "operationId": "listVerificationRequests",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filter requests by verification type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "company",
+                "carrier",
+                "any"
+              ],
+              "default": "any"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of requests to return (1-25)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25,
+              "default": 10
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of requests to skip for pagination",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Language"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of verification requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "requests",
+                    "total"
+                  ],
+                  "properties": {
+                    "requests": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/VerificationRequest"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "description": "Total number of verification requests matching the filter",
+                      "example": 42
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/verification/report/{id}": {
+      "get": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Get a verification report",
+        "description": "Retrieve a completed verification report by its numeric ID.\n\nThis endpoint requires the `read` permission on your API key.\n\nThe report contains detailed verification results including company information,\nfinancial data, risk indicators, and more depending on the verification type.\n",
+        "operationId": "getVerificationReport",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Numeric ID of the verification report",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 12345
+          },
+          {
+            "$ref": "#/components/parameters/Language"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification report retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "report": {
+                      "$ref": "#/components/schemas/VerificationReport"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/verification/report/{id}/pdf": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Request verification report PDF generation",
+        "description": "Request async generation of a verification report as a PDF document.\n\nThis endpoint requires the `read` permission on your API key.\n\n## Async Webhook Delivery\n\nPDF generation is performed asynchronously. When complete, a webhook is sent to your\nprovided `webhookUrl` with a temporary download link. The URL is valid for 1 hour.\n\nThe endpoint returns immediately with a `requestId` to track the generation.\n\n## Rate Limiting\n\nPDF generation is resource-intensive and has separate rate limiting (default: 1 request per minute per API key).\n\n## Webhook Payload\n\nOn success:\n```json\n{\n  \"requestId\": \"507f1f77bcf86cd799439011\",\n  \"verificationId\": 12345,\n  \"status\": \"completed\",\n  \"downloadUrl\": \"https://...\",\n  \"dateExpires\": \"2024-01-15T15:45:00.000Z\",\n  \"fileName\": \"EURODEBT.eu - PL1234567890 - ABC12XYZ.pdf\"\n}\n```\n\nOn failure:\n```json\n{\n  \"requestId\": \"507f1f77bcf86cd799439011\",\n  \"verificationId\": 12345,\n  \"status\": \"failed\"\n}\n```\n\nThe webhook is signed with the same `X-Eurodebt-Signature` header as other webhooks.\n",
+        "operationId": "requestVerificationReportPdf",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Numeric ID of the verification report",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 12345
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "webhookUrl"
+                ],
+                "properties": {
+                  "language": {
+                    "type": "string",
+                    "enum": [
+                      "bg",
+                      "cs",
+                      "cy",
+                      "da",
+                      "de",
+                      "el",
+                      "en",
+                      "es",
+                      "et",
+                      "fi",
+                      "fr",
+                      "ga",
+                      "hr",
+                      "hu",
+                      "is",
+                      "it",
+                      "lt",
+                      "lv",
+                      "mt",
+                      "nl",
+                      "pl",
+                      "pt",
+                      "ro",
+                      "ru",
+                      "sk",
+                      "sl",
+                      "sv",
+                      "tr",
+                      "uk"
+                    ],
+                    "default": "en",
+                    "description": "Language code for translated fields in the PDF"
+                  },
+                  "webhookUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "URL to receive webhook notification when PDF is ready.\nMust be a valid HTTP or HTTPS URL. HTTPS is strongly recommended.\n",
+                    "example": "https://your-server.com/webhooks/pdf-ready"
+                  }
+                }
+              },
+              "examples": {
+                "englishPdf": {
+                  "summary": "Request PDF in English",
+                  "value": {
+                    "language": "en",
+                    "webhookUrl": "https://your-server.com/webhooks/pdf-ready"
+                  }
+                },
+                "polishPdf": {
+                  "summary": "Request PDF in Polish",
+                  "value": {
+                    "language": "pl",
+                    "webhookUrl": "https://your-server.com/webhooks/pdf-ready"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PDF generation request queued successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "requestId",
+                    "status"
+                  ],
+                  "properties": {
+                    "requestId": {
+                      "type": "string",
+                      "description": "Unique identifier for tracking this PDF request",
+                      "example": "507f1f77bcf86cd799439011"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "queued"
+                      ],
+                      "description": "Current status of the request",
+                      "example": "queued"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "type": "TOO_MANY_REQUESTS",
+                    "message": "PDF generation is rate limited. Please try again later."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/verification/reports": {
+      "get": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "List verification reports",
+        "description": "Retrieve a paginated list of all completed verification reports for your company.\n\nThis endpoint requires the `read` permission on your API key.\n\nResults are sorted by creation date in descending order (newest first).\nReturns a summarized version of reports suitable for listings.\n",
+        "operationId": "listVerificationReports",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filter reports by verification type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "company",
+                "carrier",
+                "any"
+              ],
+              "default": "any"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of reports to return (1-25)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25,
+              "default": 10
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of reports to skip for pagination",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "countryCode",
+            "in": "query",
+            "description": "Filter by ISO 3166-1 alpha-2 country code (e.g., PL, DE)",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            },
+            "example": "PL"
+          },
+          {
+            "name": "vatNumber",
+            "in": "query",
+            "description": "Filter by VAT number",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "example": "123456"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search in company name",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 128
+            },
+            "example": "Transport"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of verification reports",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "reports",
+                    "total"
+                  ],
+                  "properties": {
+                    "reports": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/VerificationReportListItem"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "description": "Total number of verification reports matching the filter",
+                      "example": 156
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/usage": {
+      "get": {
+        "tags": [
+          "Usage"
+        ],
+        "summary": "Get account usage information",
+        "description": "Retrieve current usage information for your account, including points balance,\npackage quotas, and active subscriptions.\n\nThis endpoint requires the `read` permission on your API key.\n",
+        "operationId": "getUsage",
+        "responses": {
+          "200": {
+            "description": "Usage information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "usage": {
+                      "$ref": "#/components/schemas/Usage"
+                    }
+                  }
+                },
+                "example": {
+                  "usage": {
+                    "points": 1500,
+                    "packages": [
+                      {
+                        "service": "verification",
+                        "used": 45,
+                        "limit": 100,
+                        "isOverageEnabled": true,
+                        "dateActiveUntil": "2024-12-31T23:59:59.000Z",
+                        "autoRenewal": true
+                      }
+                    ],
+                    "subscriptions": [
+                      {
+                        "service": "blacklist",
+                        "dateActiveUntil": "2024-12-31T23:59:59.000Z",
+                        "autoRenewal": true
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {
+    "verificationCompleted": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Verification completed callback",
+        "description": "This webhook is sent to your configured `webhookUrl` when a verification request completes or is rejected.\n\n**Important:** Your endpoint should:\n- Return a 2xx status code within 10 seconds\n- Verify the signature using the `X-Eurodebt-Signature` header\n\nThe webhook will be retried automatically on failure (see Webhook Retry Policy in the main description).\n\n## Payload Structure\n\n```json\n{\n  \"apiVersion\": \"1.0\",\n  \"requestId\": \"507f1f77bcf86cd799439011\",\n  \"verificationId\": 12345,\n  \"countryCode\": \"PL\",\n  \"vatNumber\": \"1234567890\",\n  \"companyName\": \"Przyk\u0142adowa Firma Sp. z o.o.\",\n  \"type\": \"company\",\n  \"status\": \"completed\",\n  \"rejectReason\": null,\n  \"dateCreated\": \"2024-01-15T10:30:00.000Z\",\n  \"dateCompleted\": \"2024-01-15T14:45:00.000Z\"\n}\n```\n\n## Payload Fields\n\n| Field | Type | Description |\n|-------|------|-------------|\n| `apiVersion` | string | API version that created the request |\n| `requestId` | string | Id of the verification request |\n| `verificationId` | integer | Numeric ID of the completed verification report (only if completed successfully) |\n| `countryCode` | string | ISO 3166-1 alpha-2 country code |\n| `vatNumber` | string | VAT number that was verified |\n| `companyName` | string | Company name (if provided during submission) |\n| `type` | string | Verification type: `company` or `carrier` |\n| `status` | string | Request status: `pending`, `completed`, or `rejected` |\n| `rejectReason` | string | Reason for rejection (if rejected) |\n| `dateCreated` | string | ISO 8601 timestamp when request was submitted |\n| `dateCompleted` | string | ISO 8601 timestamp when verification completed |\n",
+        "operationId": "verificationCompletedWebhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookPayload"
+              },
+              "examples": {
+                "verificationCompleted": {
+                  "summary": "Verification completed successfully",
+                  "value": {
+                    "apiVersion": "1.0",
+                    "requestId": "507f1f77bcf86cd799439011",
+                    "verificationId": 12345,
+                    "countryCode": "PL",
+                    "vatNumber": "1234567890",
+                    "companyName": "Example Company Sp. z o.o.",
+                    "type": "company",
+                    "status": "completed",
+                    "dateCreated": "2024-01-15T10:30:00.000Z",
+                    "dateCompleted": "2024-01-15T14:45:00.000Z"
+                  }
+                },
+                "verificationRejected": {
+                  "summary": "Verification rejected (invalid VAT)",
+                  "value": {
+                    "apiVersion": "1.0",
+                    "requestId": "507f1f77bcf86cd799439011",
+                    "countryCode": "PL",
+                    "vatNumber": "0000000000",
+                    "type": "company",
+                    "status": "rejected",
+                    "rejectReason": "The provided VAT number is invalid.",
+                    "dateCreated": "2024-01-15T10:30:00.000Z",
+                    "dateCompleted": "2024-01-15T10:35:00.000Z"
+                  }
+                },
+                "carrierVerificationRejected": {
+                  "summary": "Carrier verification rejected (other reason)",
+                  "value": {
+                    "apiVersion": "1.0",
+                    "requestId": "507f1f77bcf86cd799439012",
+                    "verificationId": 12346,
+                    "countryCode": "LT",
+                    "vatNumber": "123456789",
+                    "companyName": "Transport GmbH",
+                    "type": "carrier",
+                    "status": "rejected",
+                    "rejectReason": "Wrong country selected, please select Latvia",
+                    "dateCreated": "2024-01-15T10:30:00.000Z",
+                    "dateCompleted": "2024-01-15T16:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook received successfully"
+          },
+          "2XX": {
+            "description": "Any 2xx response is considered successful delivery"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "API key for authentication. Obtain your key from the Eurodebt dashboard."
+      }
+    },
+    "parameters": {
+      "Language": {
+        "name": "language",
+        "in": "query",
+        "description": "Language code for translatable fields",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "bg",
+            "cs",
+            "cy",
+            "da",
+            "de",
+            "el",
+            "en",
+            "es",
+            "et",
+            "fi",
+            "fr",
+            "ga",
+            "hr",
+            "hu",
+            "is",
+            "it",
+            "lt",
+            "lv",
+            "mt",
+            "nl",
+            "pl",
+            "pt",
+            "ro",
+            "ru",
+            "sk",
+            "sl",
+            "sv",
+            "tr",
+            "uk"
+          ],
+          "default": "en"
+        },
+        "example": "en"
+      }
+    },
+    "schemas": {
+      "WebhookPayload": {
+        "type": "object",
+        "description": "Payload sent to your webhook URL when a verification request completes or is rejected.\nThe payload is signed with HMAC-SHA256 using your API key's webhook secret.\n",
+        "required": [
+          "apiVersion",
+          "requestId",
+          "countryCode",
+          "vatNumber",
+          "type",
+          "status",
+          "dateCreated"
+        ],
+        "properties": {
+          "apiVersion": {
+            "type": "string",
+            "description": "API version that created the verification request",
+            "example": "1.0"
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Id of the verification request",
+            "pattern": "^[a-f\\d]{24}$",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "verificationId": {
+            "type": "integer",
+            "description": "Numeric ID of the completed verification report.\nOnly present when `status` is `completed` (verification completed successfully).\nUse this ID with `GET /verification/report/{id}` to retrieve the full report.\n",
+            "example": 12345
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "PL"
+          },
+          "vatNumber": {
+            "type": "string",
+            "description": "VAT number that was verified",
+            "example": "1234567890"
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Company name",
+            "example": "Example Company Sp. z o.o."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "company",
+              "carrier"
+            ],
+            "description": "Type of verification performed",
+            "example": "company"
+          },
+          "status": {
+            "$ref": "#/components/schemas/VerificationRequestStatus"
+          },
+          "rejectReason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Human-readable rejection reason, translated to the requested language.\nPresent only when status is `rejected`.\n",
+            "example": null
+          },
+          "dateCreated": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp when the request was submitted",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "dateCompleted": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp when the verification completed or was rejected",
+            "example": "2024-01-15T14:45:00.000Z"
+          }
+        }
+      },
+      "SubmitVerificationRequest": {
+        "type": "object",
+        "required": [
+          "type",
+          "countryCode",
+          "vatNumber"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "company",
+              "carrier"
+            ],
+            "description": "Type of verification to perform",
+            "example": "company"
+          },
+          "countryCode": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "PL"
+          },
+          "vatNumber": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 18,
+            "description": "VAT number without country code prefix",
+            "example": "1234567890"
+          },
+          "companyName": {
+            "type": "string",
+            "maxLength": 256,
+            "description": "Optional company name for reference",
+            "example": "Example Company Sp. z o.o."
+          },
+          "webhookUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to receive webhook notification when verification is complete.\nMust be a valid HTTP or HTTPS URL. HTTPS is strongly recommended for production.\nSee the Webhooks section for payload format and security details.\n",
+            "example": "https://your-server.com/webhooks/verification"
+          }
+        }
+      },
+      "SubmitVerificationResponse": {
+        "type": "object",
+        "required": [
+          "requestId"
+        ],
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Id of the created verification request",
+            "pattern": "^[a-f\\d]{24}$",
+            "example": "507f1f77bcf86cd799439011"
+          }
+        }
+      },
+      "VerificationRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id of the verification request",
+            "pattern": "^[a-f\\d]{24}$",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "type": {
+            "$ref": "#/components/schemas/VerificationType"
+          },
+          "dateCreated": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when the request was submitted",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "dateCompleted": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Date when the verification was completed",
+            "example": "2024-01-15T14:45:00.000Z"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "PL"
+          },
+          "vatNumber": {
+            "type": "string",
+            "description": "VAT number that was verified",
+            "example": "1234567890"
+          },
+          "companyName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Company name if provided or if the verification was completed successfully",
+            "example": "Example Company Sp. z o.o."
+          },
+          "status": {
+            "$ref": "#/components/schemas/VerificationRequestStatus"
+          },
+          "verificationId": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Numeric ID of the resulting verification report (when status is `completed`).\nUse this ID with `GET /verification/report/{id}` to retrieve the full report.\n",
+            "example": 12345
+          },
+          "rejectReason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Human-readable rejection reason, translated to the requested language.\nPresent only when status is `rejected`.\n",
+            "example": null
+          },
+          "webhookUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Webhook URL if provided during submission",
+            "example": "https://your-server.com/webhooks/verification"
+          }
+        }
+      },
+      "VerificationReportListItem": {
+        "type": "object",
+        "description": "Summarized verification report for listing purposes",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Numeric ID of the verification report",
+            "example": 12345
+          },
+          "type": {
+            "$ref": "#/components/schemas/VerificationType"
+          },
+          "dateAdded": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when the report was created",
+            "example": "2024-01-15T14:45:00.000Z"
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Company name",
+            "example": "Example Company Sp. z o.o."
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "description": "Company address",
+            "example": "ul. Przyk\u0142adowa 123, 00-001 Warszawa"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "PL"
+          },
+          "vatNumber": {
+            "type": "string",
+            "description": "VAT number (without country code prefix)",
+            "example": "1234567890"
+          },
+          "score": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Credit score (only for company verifications).\nScore ranges:\n- 0-64: Negative (high risk)\n- 65-69: Neutral (moderate risk)\n- 70-79: Limited (acceptable with limits)\n- 80-100: Positive (low risk)\n",
+            "example": 85
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/ThreeState"
+          }
+        }
+      },
+      "VerificationReport": {
+        "type": "object",
+        "description": "Full verification report with all details",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Numeric ID of the verification report",
+            "example": 12345
+          },
+          "type": {
+            "$ref": "#/components/schemas/VerificationType"
+          },
+          "dateCreated": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when the report was created",
+            "example": "2024-01-15T14:45:00.000Z"
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Official company name",
+            "example": "Example Company Sp. z o.o."
+          },
+          "address": {
+            "type": "string",
+            "description": "Full formatted address",
+            "example": "ul. Przyk\u0142adowa 123, 00-001 Warszawa"
+          },
+          "postCode": {
+            "type": "string",
+            "description": "Postal/ZIP code",
+            "example": "00-001"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "PL"
+          },
+          "vatNumber": {
+            "type": "string",
+            "description": "VAT number",
+            "example": "1234567890"
+          },
+          "city": {
+            "type": "string",
+            "description": "City name",
+            "example": "Warszawa"
+          },
+          "street": {
+            "type": "string",
+            "description": "Street name",
+            "example": "Przyk\u0142adowa"
+          },
+          "houseNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "House/building number",
+            "example": "123"
+          },
+          "apartmentNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "Apartment/unit number",
+            "example": "4A"
+          },
+          "region": {
+            "type": "string",
+            "nullable": true,
+            "description": "Region/state/province",
+            "example": "Mazowieckie"
+          },
+          "viesStatus": {
+            "description": "VIES VAT status: `true` if the VAT number is valid in VIES, `false` if invalid, `unknown` if data is unavailable",
+            "$ref": "#/components/schemas/ThreeState"
+          },
+          "dateFounded": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Date when the company was founded",
+            "example": "2010-05-15T00:00:00.000Z"
+          },
+          "dateTerminated": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Date when the company was terminated (if applicable)",
+            "example": null
+          },
+          "employeesTotal": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Total number of employees",
+            "example": 25
+          },
+          "activityCodes": {
+            "type": "array",
+            "nullable": true,
+            "description": "Business activity classification codes (PKD/NACE)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "PKD/NACE code",
+                  "example": "49.41.Z"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Description of the activity (translated to requested language)",
+                  "example": "Road freight transport"
+                }
+              }
+            }
+          },
+          "financialReportsStatus": {
+            "$ref": "#/components/schemas/ThreeState"
+          },
+          "turnover": {
+            "type": "number",
+            "nullable": true,
+            "description": "Annual turnover/revenue",
+            "example": 5000000
+          },
+          "estimatedTurnover": {
+            "type": "number",
+            "nullable": true,
+            "description": "Estimated turnover",
+            "example": null
+          },
+          "profit": {
+            "type": "number",
+            "nullable": true,
+            "description": "Annual profit",
+            "example": 500000
+          },
+          "estimatedProfit": {
+            "type": "number",
+            "nullable": true,
+            "description": "Estimated profit",
+            "example": null
+          },
+          "assetsTotal": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total assets value",
+            "example": 2500000
+          },
+          "estimatedAssetsTotal": {
+            "type": "number",
+            "nullable": true,
+            "description": "Estimated total assets"
+          },
+          "assetsLiquid": {
+            "type": "number",
+            "nullable": true,
+            "description": "Liquid assets value"
+          },
+          "estimatedAssetsLiquid": {
+            "type": "number",
+            "nullable": true,
+            "description": "Estimated liquid assets"
+          },
+          "assetsFixed": {
+            "type": "number",
+            "nullable": true,
+            "description": "Fixed assets value"
+          },
+          "estimatedAssetsFixed": {
+            "type": "number",
+            "nullable": true,
+            "description": "Estimated fixed assets"
+          },
+          "workingCapital": {
+            "type": "number",
+            "nullable": true,
+            "description": "Working capital"
+          },
+          "estimatedWorkingCapital": {
+            "type": "number",
+            "nullable": true,
+            "description": "Estimated working capital"
+          },
+          "cashInHand": {
+            "type": "number",
+            "nullable": true,
+            "description": "Cash in hand"
+          },
+          "estimatedCashInHand": {
+            "type": "number",
+            "nullable": true,
+            "description": "Estimated cash in hand"
+          },
+          "equity": {
+            "type": "number",
+            "nullable": true,
+            "description": "Company equity"
+          },
+          "estimatedEquity": {
+            "type": "number",
+            "nullable": true,
+            "description": "Estimated equity"
+          },
+          "meansOfTransport": {
+            "type": "number",
+            "nullable": true,
+            "description": "Value of transport means"
+          },
+          "estimatedMeansOfTransport": {
+            "type": "number",
+            "nullable": true,
+            "description": "Estimated value of transport means"
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true,
+            "description": "Currency code for financial values",
+            "example": "PLN"
+          },
+          "dateFinancialReport": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Date when financial report was filed"
+          },
+          "isDateFinancialReportYearOnly": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "If true, only the year of dateFinancialReport is known"
+          },
+          "financialReportPeriodStart": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Start of financial report period"
+          },
+          "financialReportPeriodEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "End of financial report period"
+          },
+          "vatWhitelist": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "status": {
+                "type": "string",
+                "nullable": true,
+                "description": "VAT whitelist registration status"
+              },
+              "ibans": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "type": "string"
+                },
+                "description": "Registered bank account numbers (IBAN)"
+              },
+              "dateRegistration": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true,
+                "description": "Date when company was registered on VAT whitelist"
+              },
+              "dateRemoved": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true,
+                "description": "Date when company was removed from VAT whitelist"
+              },
+              "dateRestoration": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true,
+                "description": "Date when company was restored to VAT whitelist"
+              },
+              "hasVirtualAccounts": {
+                "type": "boolean",
+                "nullable": true,
+                "description": "Whether company has virtual bank accounts registered"
+              }
+            }
+          },
+          "socialMedia": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "website": {
+                "type": "string",
+                "description": "Company website URL"
+              },
+              "facebook": {
+                "type": "string",
+                "description": "Facebook page URL"
+              },
+              "twitter": {
+                "type": "string",
+                "description": "Twitter/X profile URL"
+              },
+              "linkedIn": {
+                "type": "string",
+                "description": "LinkedIn page URL"
+              },
+              "googleID": {
+                "type": "string",
+                "description": "Google Business ID"
+              }
+            }
+          },
+          "eurodebtCollectionListed": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Listed in Eurodebt collection database"
+          },
+          "debtCollectionListed": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Listed in debt collection databases"
+          },
+          "eurodebtBlacklisted": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Blacklisted by Eurodebt"
+          },
+          "virtualOffice": {
+            "$ref": "#/components/schemas/ThreeState"
+          },
+          "lastYearNameChanged": {
+            "$ref": "#/components/schemas/ThreeState"
+          },
+          "lastYearBoardChanged": {
+            "$ref": "#/components/schemas/ThreeState"
+          },
+          "taxDebt": {
+            "$ref": "#/components/schemas/ThreeState"
+          },
+          "courtProceedingsListed": {
+            "$ref": "#/components/schemas/ThreeState"
+          },
+          "restructuringProceedingsListed": {
+            "$ref": "#/components/schemas/ThreeState"
+          },
+          "bunkrupcyProceedingsListed": {
+            "$ref": "#/components/schemas/ThreeState"
+          },
+          "isInSolventCapitalGroup": {
+            "$ref": "#/components/schemas/ThreeState"
+          },
+          "paymentDelay": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "none",
+              "below-30",
+              "30-60",
+              "60-90",
+              "over-90",
+              "unknown"
+            ],
+            "description": "Typical payment delay:\n- none: Pays on time\n- below-30: Up to 30 days late\n- 30-60: 30-60 days late\n- 60-90: 60-90 days late\n- over-90: More than 90 days late\n- unknown: Data unavailable\n"
+          },
+          "score": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Credit score (0-100) for company verifications.\nScore ranges:\n- 0-64: Negative (high risk)\n- 65-69: Neutral (moderate risk)\n- 70-79: Limited (acceptable with credit limit)\n- 80-100: Positive (low risk)\n",
+            "example": 85
+          },
+          "subject": {
+            "type": "object",
+            "nullable": true,
+            "description": "Subject/entity assessment text",
+            "properties": {
+              "color": {
+                "type": "string",
+                "description": "Color code for display"
+              },
+              "text": {
+                "type": "string",
+                "description": "Assessment text (translated)"
+              }
+            }
+          },
+          "creditLimitFrom": {
+            "type": "number",
+            "nullable": true,
+            "description": "Recommended minimum credit limit"
+          },
+          "creditLimitTo": {
+            "type": "number",
+            "nullable": true,
+            "description": "Recommended maximum credit limit"
+          },
+          "comments": {
+            "type": "string",
+            "nullable": true,
+            "description": "Additional comments (translated)"
+          },
+          "highlights": {
+            "type": "string",
+            "nullable": true,
+            "description": "Important recommendations (translated)"
+          },
+          "precautions": {
+            "type": "string",
+            "nullable": true,
+            "description": "Precautionary notes (translated)"
+          },
+          "relatedCompanies": {
+            "type": "array",
+            "nullable": true,
+            "description": "Companies related to the verified company (e.g., subsidiaries, parent company)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "countryCode": {
+                  "type": "string",
+                  "description": "ISO 3166-1 alpha-2 country code of the related company"
+                },
+                "vatNumber": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "VAT number of the related company"
+                },
+                "id": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "Other identifier if vat number is not available"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Name of the related company"
+                }
+              }
+            }
+          },
+          "companyRegisterChanges": {
+            "type": "object",
+            "nullable": true,
+            "description": "Company register changes detected during verification.\nContains events from official company registers such as KRS (Poland), Handelsregister (Germany),\nFirmenbuch (Austria), and other business registers.\n",
+            "properties": {
+              "hasChanges": {
+                "type": "boolean",
+                "description": "Whether any changes were detected in company register since the last verification"
+              },
+              "dateCaptured": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Date when the changes were captured (ISO 8601)"
+              },
+              "events": {
+                "type": "array",
+                "description": "List of company register events/changes sorted by date (newest first)",
+                "items": {
+                  "$ref": "#/components/schemas/CompanyRegisterEvent"
+                }
+              }
+            }
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/ThreeState"
+          },
+          "transportManagersDetails": {
+            "type": "array",
+            "nullable": true,
+            "description": "Transport manager details (carrier verification only)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "firstName": {
+                  "type": "string",
+                  "description": "First name of the transport manager"
+                },
+                "lastName": {
+                  "type": "string",
+                  "description": "Last name of the transport manager"
+                },
+                "certificateNumber": {
+                  "type": "string",
+                  "description": "Certificate of professional competence number"
+                },
+                "certificateType": {
+                  "type": "string",
+                  "description": "Type of certificate (e.g., road transport, passenger transport)"
+                },
+                "certificateIssuanceDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Date when certificate was issued"
+                },
+                "certificateIssuingCountry": {
+                  "type": "string",
+                  "description": "Country that issued the certificate"
+                }
+              }
+            }
+          },
+          "permits": {
+            "type": "array",
+            "nullable": true,
+            "description": "Transport permits (carrier verification only)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "scope": {
+                  "type": "string",
+                  "description": "Scope of the permit (e.g., national, international)"
+                },
+                "id": {
+                  "type": "string",
+                  "description": "Permit identification number"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "Current status of the permit (e.g., active, suspended, revoked)"
+                },
+                "issuingAuthority": {
+                  "type": "string",
+                  "description": "Authority that issued the permit"
+                },
+                "issueDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Date when permit was issued"
+                },
+                "statusChangeDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true,
+                  "description": "Date of last status change"
+                },
+                "vehicleCount": {
+                  "type": "integer",
+                  "description": "Number of vehicles covered by the permit"
+                },
+                "expirationDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true,
+                  "description": "Date when permit expires"
+                },
+                "revocationDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true,
+                  "description": "Date when permit was revoked"
+                },
+                "suspensionDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true,
+                  "description": "Date when permit was suspended"
+                },
+                "suspensionLiftDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true,
+                  "description": "Date when suspension was lifted"
+                },
+                "suspensionOrRevocationReason": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "Reason for suspension or revocation"
+                }
+              }
+            }
+          },
+          "licenses": {
+            "type": "array",
+            "nullable": true,
+            "description": "Transport licenses (carrier verification only)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "License identification number"
+                },
+                "scope": {
+                  "type": "string",
+                  "description": "Scope of the license (e.g., national, EU Community)"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "Current status of the license (e.g., active, suspended, withdrawn)"
+                },
+                "validityStartDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Date when license became valid"
+                },
+                "validityEndDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Date when license validity ends"
+                },
+                "vehicleCount": {
+                  "type": "integer",
+                  "description": "Number of vehicles covered by the license"
+                },
+                "expirationDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true,
+                  "description": "Date when license expires"
+                },
+                "revocationDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true,
+                  "description": "Date when license was revoked"
+                },
+                "suspensionDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true,
+                  "description": "Date when license was suspended"
+                },
+                "suspensionLiftDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true,
+                  "description": "Date when suspension was lifted"
+                },
+                "suspensionOrWithdrawalReason": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "Reason for suspension or withdrawal"
+                }
+              }
+            }
+          },
+          "permitExtracts": {
+            "type": "array",
+            "nullable": true,
+            "description": "Permit extract copies issued to the carrier (carrier verification only)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "scope": {
+                  "type": "string",
+                  "description": "Scope of the permit extract"
+                },
+                "id": {
+                  "type": "string",
+                  "description": "Permit extract identification number"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "Status of the permit extract"
+                }
+              }
+            }
+          },
+          "licenseExtracts": {
+            "type": "array",
+            "nullable": true,
+            "description": "License extract copies issued to the carrier (carrier verification only)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "License extract identification number"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Type of the license extract"
+                },
+                "scope": {
+                  "type": "string",
+                  "description": "Scope of the license extract"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "Status of the license extract"
+                },
+                "revocationDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true,
+                  "description": "Date when license extract was revoked"
+                },
+                "revocationExpirationDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true,
+                  "description": "Date when revocation expires"
+                }
+              }
+            }
+          },
+          "legalRepresentatives": {
+            "type": "array",
+            "nullable": true,
+            "description": "Legal representatives of the company (carrier verification only)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "firstName": {
+                  "type": "string",
+                  "description": "First name of the legal representative"
+                },
+                "lastName": {
+                  "type": "string",
+                  "description": "Last name of the legal representative"
+                }
+              }
+            }
+          },
+          "vehiclesNumber": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Number of vehicles in fleet"
+          }
+        }
+      },
+      "CompanyRegisterEvent": {
+        "type": "object",
+        "description": "A single company register event representing a change or update in official business records.\nEvents are normalized from various European business registers (KRS, Handelsregister, Firmenbuch, etc.)\ninto a standardized format.\n",
+        "required": [
+          "type",
+          "event",
+          "sourceRegister"
+        ],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Date when the event occurred (ISO 8601).\nMay be `null` for events where the exact date is not available from the source register.\n"
+          },
+          "type": {
+            "$ref": "#/components/schemas/CompanyRegisterEventType"
+          },
+          "event": {
+            "type": "string",
+            "description": "Translation key for client-side localization. Use this key to display human-readable\nevent descriptions in the user's language. Format: `company.events.<category>.<action>`\n",
+            "example": "company.events.company.name.changed"
+          },
+          "eventParams": {
+            "type": "object",
+            "nullable": true,
+            "description": "Parameters to interpolate into the translated message.\nThe available parameters depend on the event type.\n",
+            "additionalProperties": true,
+            "example": {
+              "oldName": "Old Company Name Sp. z o.o.",
+              "newName": "New Company Name Sp. z o.o."
+            }
+          },
+          "sourceRegister": {
+            "type": "string",
+            "description": "Name of the source register where the event was recorded.\nExamples: `KRS`, `CEIDG`, `Handelsregister`, `Firmenbuch`, `Companies House`\n",
+            "example": "KRS"
+          },
+          "sourceReference": {
+            "type": "string",
+            "nullable": true,
+            "description": "Reference number or identifier in the source register.\nFormat varies by register (e.g., KRS number, company registration number).\n",
+            "example": "0000123456"
+          }
+        }
+      },
+      "CompanyRegisterEventType": {
+        "type": "string",
+        "description": "Type of company register event. Each type represents a specific category of change\nthat can occur in a company's official records.\n\n## Lifecycle Events\nEvents related to company creation, termination, and major status changes:\n\n| Type | Description | `event` value |\n|------|-------------|---------------|\n| `registration` | Company was registered/established | `company.events.registration` |\n| `termination` | Company was terminated (final removal) | `company.events.termination` |\n| `dissolution` | Company was dissolved | `company.events.dissolution` |\n| `deletion` | Company was struck off the register | `company.events.deletion` |\n| `reRegistration` | Company was re-registered after deletion | `company.events.re-registration` |\n| `continuation` | Company continuation (e.g., jurisdiction transfer) | `company.events.continuation` |\n\n## Liquidation Events\nEvents related to liquidation proceedings:\n\n| Type | Description | `event` value |\n|------|-------------|---------------|\n| `liquidationStart` | Liquidation process started | `company.events.liquidation.start` |\n| `liquidationEnd` | Liquidation process ended | `company.events.liquidation.end` |\n\n## Restructuring/Administration Events\nEvents related to restructuring or administration proceedings:\n\n| Type | Description | `event` value |\n|------|-------------|---------------|\n| `restructurizationStart` | Restructuring/administration started | `company.events.restructurization.start` |\n| `restructurizationEnd` | Restructuring/administration ended | `company.events.restructurization.end` |\n\n## Bankruptcy/Insolvency Events\nEvents related to bankruptcy or insolvency proceedings:\n\n| Type | Description | `event` value | `eventParams` |\n|------|-------------|---------------|---------------|\n| `bankruptcyStart` | Bankruptcy proceedings started | `company.events.bankruptcy.start` | `description` |\n| `bankruptcyUpdate` | Update to bankruptcy proceedings | `company.events.bankruptcy.update` | `description` |\n| `bankruptcyEnd` | Bankruptcy proceedings ended | `company.events.bankruptcy.end` | `description` |\n\n## Management/Board Events\nEvents related to changes in company management:\n\n| Type | Description | `event` value | `eventParams` |\n|------|-------------|---------------|---------------|\n| `boardChange` | Management/board member changes | `company.events.management.change` | `added`, `removed`, `description` |\n\nThe `added` and `removed` params are arrays of objects with `role` and `names` properties.\nRoles may include: `Managing Director`, `CEO`, `Deputy CEO`, `Director`, `Director-General`,\n`Deputy Managing Director`, `Member of the Executive Board`, `Member of the Supervisory Board`,\n`Member of the board`, `Chair of the board`, `Authorized signatory`, `Authorized signatory (ppa)`,\n`Shareholder`, `Limited Partner`, `General partner`, `Beneficial Owner`, `Liquidator`,\n`Auditor`, `Founder`, `Secretary`, `President`, `Proprietor`, etc.\n\n## Company Information Changes\nEvents related to changes in basic company information:\n\n| Type | Description | `event` value | `eventParams` |\n|------|-------------|---------------|---------------|\n| `nameChange` | Company name changed | `company.events.company.name.changed` | `oldName`, `newName` |\n| `addressChange` | Company address changed | `company.events.company.address.changed` | `oldAddress`, `newAddress`, `city`, `country` |\n| `capitalChange` | Share capital changed | `company.events.company.capital.changed` | `rawAmount`, `currency`, `value` |\n| `activityChange` | Business activity changed | `company.events.company.activity.changed` | `description` |\n| `legalFormChange` | Legal form changed | `company.events.company.legal.form.changed` | `oldLegalForm`, `newLegalForm` |\n| `contractChange` | Articles of association changed | `company.events.company.contract.changed` | `description`, `contractType` |\n| `registerChange` | Transferred between registers | `company.events.company.register.changed` | `oldRegister`, `newRegister` |\n\n## Business Activity Events\nEvents related to business operation status:\n\n| Type | Description | `event` value | `eventParams` |\n|------|-------------|---------------|---------------|\n| `activitySuspension` | Business activity suspended | `company.events.activity.suspension` | `description` |\n| `activityResumption` | Business activity resumed | `company.events.activity.resumption` | `description` |\n\n## Corporate Structure Events\nEvents related to ownership and control:\n\n| Type | Description | `event` value | `eventParams` |\n|------|-------------|---------------|---------------|\n| `mergerOrAcquisition` | Merger or acquisition | `company.events.merger.or.acquisition` | `companyName`, `location` |\n| `controlChange` | Change of control/ownership | `company.events.control.change` | `description` |\n\n## Financial Events\nEvents related to financial reporting periods:\n\n| Type | Description | `event` value | `eventParams` |\n|------|-------------|---------------|---------------|\n| `financialReport` | Financial reporting period end | `company.events.financial.report` | `reportType`, `periodEndDate`, `onlyDeposited` |\n\nThis event indicates the end of an accounting/reporting period. The `periodEndDate` shows the period end date\n(e.g., \"31/12/2020\"). Report types include: `Annual report`, `Quarterly report`, `Balance sheet`, etc.\nThe `onlyDeposited` flag indicates if the report was only deposited (not fully filed).\n\n## Intellectual Property Events\nEvents related to patents and trademarks:\n\n| Type | Description | `event` value | `eventParams` |\n|------|-------------|---------------|---------------|\n| `trademark` | Trademark registered/updated | `company.events.trademark` | `description`, `ipType`, `title` |\n| `patent` | Patent registered/updated | `company.events.patent` | `description`, `ipType`, `title` |\n\nIP types include: `Utility model`, `Design patent`, \n`Trademark`, `Patent`, etc.\n\n## Funding Events\nEvents related to grants and funding:\n\n| Type | Description | `event` value | `eventParams` |\n|------|-------------|---------------|---------------|\n| `funding` | Funding/grant received | `company.events.funding` | `fundingType`, `rawAmount`, `details`, `description` |\n\nFunding types include: `State Aid`, `EU Grant`, `Subsidy`, etc.\n\n## Other Events\nEvents that don't fit other categories:\n\n| Type | Description | `event` value | `eventParams` |\n|------|-------------|---------------|---------------|\n| `otherChange` | Miscellaneous change | `company.events.company.other.changed` | `description` |\n",
+        "enum": [
+          "registration",
+          "liquidationStart",
+          "liquidationEnd",
+          "dissolution",
+          "termination",
+          "restructurizationStart",
+          "restructurizationEnd",
+          "boardChange",
+          "nameChange",
+          "addressChange",
+          "capitalChange",
+          "activityChange",
+          "legalFormChange",
+          "bankruptcyStart",
+          "bankruptcyUpdate",
+          "bankruptcyEnd",
+          "deletion",
+          "reRegistration",
+          "activitySuspension",
+          "activityResumption",
+          "mergerOrAcquisition",
+          "controlChange",
+          "contractChange",
+          "registerChange",
+          "financialReport",
+          "funding",
+          "trademark",
+          "patent",
+          "continuation",
+          "otherChange"
+        ]
+      },
+      "VerificationRequestStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "completed",
+          "rejected"
+        ],
+        "description": "Status of a verification request:\n- `pending`: Verification is in progress\n- `completed`: Verification completed successfully\n- `rejected`: Verification was rejected (see `rejectReason` for details)\n"
+      },
+      "VerificationType": {
+        "type": "string",
+        "enum": [
+          "company",
+          "carrier"
+        ],
+        "description": "Type of verification:\n- `company`: Standard company verification \n- `carrier`: Transport carrier verification\n"
+      },
+      "ThreeState": {
+        "type": "string",
+        "enum": [
+          "true",
+          "false",
+          "unknown"
+        ],
+        "nullable": true,
+        "description": "Three-state boolean string:\n- `true`: Confirmed positive\n- `false`: Confirmed negative\n- `unknown`: Data not available or inconclusive\n"
+      },
+      "Usage": {
+        "type": "object",
+        "properties": {
+          "points": {
+            "type": "number",
+            "description": "Current points balance",
+            "example": 1500
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "service": {
+                  "type": "string",
+                  "enum": [
+                    "verification"
+                  ],
+                  "description": "Service type"
+                },
+                "used": {
+                  "type": "integer",
+                  "description": "Number of units used in current period"
+                },
+                "limit": {
+                  "type": "integer",
+                  "description": "Maximum units allowed in current period"
+                },
+                "isOverageEnabled": {
+                  "type": "boolean",
+                  "description": "Whether overage (using points after limit) is allowed"
+                },
+                "dateActiveUntil": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Package expiration date"
+                },
+                "autoRenewal": {
+                  "type": "boolean",
+                  "description": "Whether package auto-renews"
+                }
+              }
+            }
+          },
+          "subscriptions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "service": {
+                  "type": "string",
+                  "enum": [
+                    "blacklist"
+                  ],
+                  "description": "Subscription service type"
+                },
+                "dateActiveUntil": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Subscription expiration date"
+                },
+                "autoRenewal": {
+                  "type": "boolean",
+                  "description": "Whether subscription auto-renews"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "type",
+              "message"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Error type code",
+                "example": "BAD_REQUEST"
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable error message",
+                "example": "Validation failed"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad request - validation failed or invalid parameters",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "examples": {
+              "badRequest": {
+                "summary": "Bad request",
+                "value": {
+                  "error": {
+                    "type": "BAD_REQUEST",
+                    "message": "Invalid request parameters"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized - API key is missing, invalid, or expired",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "examples": {
+              "missingKey": {
+                "summary": "Missing API key",
+                "value": {
+                  "error": {
+                    "type": "UNAUTHORIZED",
+                    "message": "API key required. Please provide a valid API key in the x-api-key header."
+                  }
+                }
+              },
+              "invalidKey": {
+                "summary": "Invalid API key",
+                "value": {
+                  "error": {
+                    "type": "UNAUTHORIZED",
+                    "message": "Invalid API key"
+                  }
+                }
+              },
+              "expiredKey": {
+                "summary": "Expired API key",
+                "value": {
+                  "error": {
+                    "type": "UNAUTHORIZED",
+                    "message": "API key has expired"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "PaymentRequired": {
+        "description": "Payment required - insufficient funds or credits",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": {
+                "type": "PAYMENT_REQUIRED",
+                "message": "Insufficient funds to purchase this service"
+              }
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Forbidden - API key lacks required permission",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": {
+                "type": "FORBIDDEN",
+                "message": "API key does not have required permission: write"
+              }
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "examples": {
+              "verificationRequest": {
+                "summary": "Verification request not found",
+                "value": {
+                  "error": {
+                    "type": "NOT_FOUND",
+                    "message": "Verification request not found"
+                  }
+                }
+              },
+              "verificationReport": {
+                "summary": "Verification report not found",
+                "value": {
+                  "error": {
+                    "type": "NOT_FOUND",
+                    "message": "Verification report not found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Rate limit exceeded",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": {
+                "type": "TOO_MANY_REQUESTS",
+                "message": "Too many requests, please try again later."
+              }
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": {
+                "type": "INTERNAL_SERVER_ERROR",
+                "message": "Internal server error"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

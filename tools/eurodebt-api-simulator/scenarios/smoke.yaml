@@ -1,0 +1,30 @@
+name: smoke
+description: Hit OM inbox with Eurodebt verification submit + completed webhooks
+target:
+  baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:3001}
+  headers:
+    x-api-key: ${EURODEBT_SIM_API_KEY:-eurodebt-sim-key}
+    Content-Type: application/json
+    Accept: application/json
+    X-Eurodebt-Sim: "1"
+    X-Om-Tenant-Id: ${TRANS_INBOX_TENANT_ID:-}
+  pathMap:
+    "POST /api/v1.0/verification/submit": /api/integrations/eurodebt/webhooks/verification-submit
+    "POST /webhooks/verificationCompleted": /api/integrations/eurodebt/webhooks/verification
+defaults:
+  concurrency: 5
+  timeoutMs: 15000
+  dryRun: false
+batches:
+  - id: submit
+    count: 3
+    template: verification.submit
+    vars:
+      type: company
+  - id: completed
+    count: 4
+    template: verification.completed
+  - id: rejected
+    count: 1
+    template: verification.rejected
+reportPath: tools/eurodebt-api-simulator/.reports/smoke.ndjson

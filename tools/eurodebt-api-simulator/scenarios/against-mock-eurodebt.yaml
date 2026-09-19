@@ -1,0 +1,21 @@
+name: against-mock-eurodebt
+description: Fire against local Eurodebt mock-server (passthrough real API paths)
+target:
+  baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:4200}
+  passthrough: true
+  headers:
+    x-api-key: ${EURODEBT_SIM_API_KEY:-eurodebt-sim-key}
+    Content-Type: application/json
+    Accept: application/json
+defaults:
+  concurrency: 4
+  timeoutMs: 10000
+batches:
+  - id: submit
+    count: 5
+    template: verification.submit
+  - id: usage
+    count: 1
+    operation: GET /api/v1.0/usage
+    template: none
+reportPath: tools/eurodebt-api-simulator/.reports/against-mock-eurodebt.ndjson

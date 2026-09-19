@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 export type TransInboxRequest = {
   id: string
   receivedAt: string
-  /** Marketplace source: trans | timocom */
+  /** Marketplace / verification source: trans | timocom | eurodebt */
   source: string
   channel: string
   method: string
@@ -44,6 +44,9 @@ const HEADER_ALLOWLIST = new Set([
   'authorization',
   'x-trans-sim',
   'x-timocom-sim',
+  'x-eurodebt-sim',
+  'x-eurodebt-signature',
+  'x-api-key',
   'x-om-tenant-id',
   'x-om-organization-id',
   'x-request-id',
@@ -58,6 +61,10 @@ export function sanitizeHeaders(headers: Headers): Record<string, string> {
       out[key] = value.toLowerCase().startsWith('basic ') || value.toLowerCase().startsWith('bearer ')
         ? `${value.split(' ')[0]} ***`
         : '***'
+      return
+    }
+    if (lower === 'x-api-key') {
+      out[key] = '***'
       return
     }
     out[key] = value
