@@ -1,15 +1,16 @@
 # Logistics navigation foundation
 
 Source doc: .ai/specs/2026-09-19-app-spec-logistics-dashboard.md
-Source branch: cez/2b56ff55 (e7cdf8105), design-only; source documents are not included in this implementation branch.
-Status: in-progress
+Source branch: cez/2b56ff55 (e7cdf8105)
+Repository: waclawek/open-logistic
+Status: complete
 Engine: om-auto-create-pr (steps: 5, --loop: no)
 
 ## Goal and scope
 
-Deliver the specification's seven-page logistics navigation foundation in the existing backend shell. Add one app module, the logistics.view feature, default administrator access, five locale dictionaries, and navigation/access tests. Activate it in the existing module configuration and enforce the existing DS rules for its new code.
+Deliver seven guarded logistics pages in the existing backend shell, logistics.view access, default administrator grants, five locales, and self-contained navigation/access tests. This is the specification's static foundation: no transport records, domain APIs, migrations, GPS, analytics or operational actions.
 
-No transport records, APIs, migrations, operational buttons, fake statistics, GPS, Enterprise dependencies, new auth behavior, or global landing-page changes.
+The owner imported the implementation, specification and screenshots into develop through d0d006782. Follow-up PR #5 completes validation and documentation; it does not duplicate the application changes. The incorrectly targeted upstream PR #6242 is closed without merging and is superseded by this repository.
 
 ## Implementation Plan
 
@@ -26,19 +27,26 @@ No transport records, APIs, migrations, operational buttons, fake statistics, GP
 
 ## Risks and validation
 
-All new routes and ACL are additive; no existing contract changes. The source spec includes Migration & Backward Compatibility and numbered Phasing & Rollout, with its detailed C1/C2 breakdown linked from the spec. The module uses existing request-time guards; no custom auth/cache is introduced. Optimistic locking is not applicable to static pages without mutable entities.
+All new routes and ACL are additive. Existing authentication and organization guards handle requests; no mutable entities or optimistic-locking changes are involved.
 
-Runner: local (no running compose app found). Install locked dependencies before checks. Configured gate: yarn build:packages; yarn generate; yarn build:packages; yarn i18n:check-sync; yarn i18n:check-usage; yarn typecheck; yarn test; yarn build:app.
+Initial runner: local Windows. Both package builds, generation, translation synchronization/usage, typecheck and production app build passed. Full tests exposed existing Windows harness assumptions and a release-date documentation mismatch. Follow-up commits 4193f3ca2 and a91a17553 correct the date, native file URLs, separator/junction assertions, and npm/Yarn JavaScript entrypoint resolution without relaxing assertions or adding dependencies.
 
-GitHub preflight: gh auth status reports invalid keyring, but direct current-user request returns HTTP 403 API rate-limit exceeded. Initial public searches found no implementation/spec PR for the source path/branch. Early draft publication is deferred until tracker access recovers; no auth store changes. The user explicitly requested continued autonomous work. Verify tracker identity and repeat deduplication before publication.
+Final runner: isolated Node 24 Linux container with a code-only clone of this repository and locked dependencies. Ordered gate: yarn build:packages; yarn generate; yarn build:packages; yarn i18n:check-sync; yarn i18n:check-usage; yarn typecheck; yarn test; yarn build:app. All eight commands passed. The full test command completed 46 tasks successfully; the production app build passed on code commit 55849fdc4.
+
+## Verification evidence
+
+The full Linux gate caught and resolved the centralized logistics ACL label omission and a virtual mock for the installed Next headers module. The complete shared suite passed twice after the mock correction and again in the full run. The interrupted docs build succeeded on rerun. See the verification report for per-command results and the original Windows limitations.
+
+- 48 actual logistics unit tests passed; an independent reviewer reproduced them.
+- 24 managed browser scenarios passed in 59.1 seconds, with zero failures/skips/flakes. Coverage includes seven routes/reloads, menus, dashboard links, permissions, wildcards, revocation, organization isolation, mobile keyboard use, missing sessions, Polish and existing Customers navigation.
+- Screenshot evidence and exact implementation provenance: [verification report](../../docs/logistics/verification.md).
+- Template parity, strict scoped design-system lint, and the seven targeted docs tests passed.
+- Independent source review approved the feature after its template/coverage fixes and approved the subsequent validation tooling fixes after adding the Yarn version assertion.
+- On the destination branch, five CLI launcher tests and the lesson catalog check passed.
 
 ## Progress
 
-Delivery correction (2026-09-19): the owner requested the independent private repository https://github.com/waclawek/open-logistic. Upstream PR #6242 was closed without merging. The current implementation and source specification are being imported into this repository; subsequent work belongs here. The historical PR references below describe the superseded destination.
-
-Independent follow-up: template parity passes at c6421b465. The review's missing template and integration-source findings were fixed. The later managed browser run passed all 24 scenarios in 59.1 seconds, with no skipped or flaky results. Screenshots were visually inspected and are preserved in [the verification report](../../docs/logistics/verification.md). Full test execution still exposes existing Windows-specific create-app harness failures; this is not a complete monorepo test pass. The owner's separate-repository request supersedes the upstream PR publication step.
-
-PR: #6242
+PR: https://github.com/waclawek/open-logistic/pull/5
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles.
 
@@ -49,10 +57,8 @@ PR: #6242
 
 ### Phase 2: Integration coverage and delivery
 
-- [x] 2.1 Add integration coverage and deployment instructions.
-- [ ] 2.2 Run generators, validation and independent review; resolve findings.
-- [ ] 2.3 Publish the PR with UI evidence, labels and verification report.
+- [x] 2.1 Add integration coverage and deployment instructions. — 8d12cd7d3, c6421b465
+- [x] 2.2 Run generators, validation and independent review; resolve findings. — 4193f3ca2, a91a17553, 589b6cae4, 55849fdc4
+- [x] 2.3 Publish the PR with UI evidence, labels and verification report. — PR #5; screenshot evidence is preserved on develop and linked from the PR.
 
-Validation so far: build:packages passed twice (38 tasks); generate passed and discovered all seven logistics routes, with unrelated OpenAPI static fallback warning. DS lint passed. Unit test command required explicit testMatch glob due Windows root path normalization; 48 tests passed. GraphQL viewer confirms waclawek identity; REST rate limit does not prevent PR operations.
-
-PR: https://github.com/open-mercato/open-mercato/pull/6242 (draft, fork waclawek/open-mercato). Upstream read-only permissions prevent assignment, labels and preview deployment; claim comment posted, no lock label acquired. Source review approved after adding inaccessible-org, existing-menu and no-logistics-API assertions. Added ACL default export required by generated runtime; full typecheck now passed (38 tasks). Integration suite has 24 scenarios; live execution pending. Full yarn test uses malformed Windows Jest root patterns in existing config and reports no tests for many packages; focused actual logistics Jest run remains 48 passed.
+The follow-up PR is ready for human review after the complete gate and automated review/autofix pass. Applied the existing bug label. Configured pipeline, in-progress, priority-medium, risk-low and skip-qa labels are absent; the tracker existence guard skips them. GitHub self-approval is unavailable, so the automated review assessment is posted as a report rather than a formal approving review. No QA approval was applied.
