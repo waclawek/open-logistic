@@ -7,11 +7,14 @@
 | Transport details and decisions | `/backend/logistics/transports/:id` | `logistics.view`; decisions also `logistics.manage` |
 | Development webhook diagnostics | `/backend/trans_inbox` | `trans_inbox.view` |
 
-The transport source is Sales orders with logistics custom fields. Order 1 is the
-customer order, Order 2 is the current carrier order, and Order 3 onward are
-additional-load orders linked by `transport_parent_id`. Carrier replacements retain
-rejected history. Offers remain persistent LogisticsOffer records. Accepted offers
-produce Sales additional-load orders; rejected offers cannot be allocated.
+The transport source is Sales orders. Existing records use Logistics custom fields;
+Inbox-created client quotes use a versioned `metadata.logistics` envelope that the
+standard Sales Quote → Order conversion copies unchanged. AI Transports reads both
+forms. Order 1 is the customer order, Order 2 is the current carrier order, and
+Order 3 onward are additional-load orders linked by `transport_parent_id`. Carrier
+replacements retain rejected history. Offers remain persistent LogisticsOffer
+records. Accepted offers produce Sales additional-load orders; rejected offers
+cannot be allocated.
 
 The detail page shows customer/carrier prices, vehicle, kg and pallet capacity,
 pickup/delivery, source, carrier history and additional loads. Approval/rejection and
@@ -33,6 +36,13 @@ The Logistics group contains the canonical Inbox Ops **Proposals** page at
 places Inbox Ops list, detail, settings, and log pages in the Logistics group without
 coupling the reusable core module to Logistics. The root URL and
 `/backend/logistics/ai-inbox` remain hidden redirect aliases.
+
+Transport RFQs keep the standard Inbox `create_quote` action. The Logistics app
+adds extraction guidance for pickup/delivery, windows, cargo and customer price,
+then a command interceptor attaches `metadata.logistics` before the existing
+`sales.quotes.create` command runs. The internal version, kind and client role are
+system-assigned; they are not inferred from customer text. No Sales package source
+or separate transport entity is required.
 
 Legacy URLs `fleet`, `trips`, `map`, and `statistics` remain accessible under
 `/backend/logistics` and continue to show planned capabilities. They are hidden from
