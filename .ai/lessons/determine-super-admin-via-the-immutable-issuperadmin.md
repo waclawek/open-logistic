@@ -1,6 +1,6 @@
 ---
 title: "Determine super-admin via the immutable `isSuperAdmin` flag, never by role name"
-modules: ["auth","events"]
+modules: ["auth","events","logistics"]
 areas: ["testing","module-data","debugging"]
 topics: ["access-control","command-pattern","data-scoping"]
 ---
@@ -14,3 +14,5 @@ topics: ["access-control","command-pattern","data-scoping"]
 **Rule**: Determine super-admin status only from the immutable `auth.isSuperAdmin === true` flag, which is derived at session/API-key resolution from the `RoleAcl.is_super_admin` / `UserAcl.is_super_admin` columns (`packages/core/src/modules/auth/lib/sessionIntegrity.ts`). Never compare `auth.roles`, usernames, or any user-supplied name to a privileged string. For non-super-admin authorization prefer feature-based guards (`requireFeatures` + immutable IDs from `acl.ts`). Add a regression test that a spoofed role named `superadmin` (without the `isSuperAdmin` flag) is rejected.
 
 **Applies to**: every authorization check — API routes, command handlers, list/visibility filters, widgets, AI tools — across all modules. Audit for `=== 'superadmin'`, `.includes('superadmin')`, and `roles.some(... 'superadmin')` and replace with `auth?.isSuperAdmin === true`.
+
+**Fresh command authorization refinement (2026-09-19)**: The flag is a trusted identity attribute, not a permanently valid grant. Logistics must reload current permissions for mutations and receipt reads. The directory resolver combines the incoming flag with the freshly loaded ACL using OR; passing a stale true flag into `resolveFresh` therefore preserved revoked organization authority. The app-specific command boundary now clears the incoming flag for that fresh reload, allowing only the newly loaded ACL to grant superadmin. Tests against the actual default resolver prove revoked authority fails while current superadmins and authorized descendants still work. Explicit null/all-organizations selection must fail scope-required rather than silently falling back to the actor's home organization. See logistics command authorization closure and `commands/context.ts`.

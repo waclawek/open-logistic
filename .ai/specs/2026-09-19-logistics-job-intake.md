@@ -70,8 +70,7 @@ Guides: root/core/customers/shared/UI/backend/QA and shared contract references.
 
 ## Implementation Status
 
-In progress. Strict input/version/decimal validation, job entity/encryption/schema constraints, and receipted acceptance command are authored. Acceptance has unit coverage for scoped current authorization, mandatory versions, atomic state/receipt rollback, replay and postcommit failure. Create/edit/cancel/promise commands, API, job UI and end-to-end coverage remain outstanding. Scoped migrations/snapshot were generated offline from ORM metadata after normal db:generate failed local PostgreSQL authentication; no migration was applied.
-
+In progress. Authored strict input/version/decimal validation, job entity/encryption/schema constraints, receipted acceptance and draft create/edit commands with guarded snapshot undo/redo and same-transaction custom fields. Added factory GET/POST/PUT jobs, guarded acceptance action and actor/action-scoped receipt lookup. Route/control-flow coverage includes current authorization, protected fields, mandatory versions, rollback, replay, guard transformations, postcommit effects and safe undo. Latest local logistics suite: 294 tests across 11 suites; scoped strict compiler: zero diagnostics; app typecheck passed. These are isolated tests, not HTTP/database/browser verification. Cancel/promise commands, job UI and end-to-end coverage remain outstanding. The managed ephemeral database initialized and an app build passed, but the server exited before readiness; investigation continues. No developer database migrations were applied.
 ## Changelog
 
 ### 2026-09-19

@@ -32,5 +32,9 @@
   "logistics.errors.requestIdReused": "Ten identyfikator żądania został już użyty dla innych danych. Sprawdź jego wynik.",
   "logistics.errors.notFound": "Rekord nie jest dostępny w tej organizacji.",
   "logistics.errors.jobNotDraft": "Można przyjąć wyłącznie nieprzyjęte zlecenie w wersji roboczej.",
-  "logistics.errors.sourceUnavailable": "Wymagane źródło jest niedostępne. Spróbuj ponownie po przywróceniu dostępu."
+  "logistics.errors.sourceUnavailable": "Wymagane źródło jest niedostępne. Spróbuj ponownie po przywróceniu dostępu.",
+  "logistics.errors.invalidInput": "Sprawdź dane operacji i spróbuj ponownie.",
+  "logistics.errors.requestFailed": "Nie udało się zakończyć żądania. Sprawdź jego wynik przed ponowieniem.",
+  "logistics.errors.jobDraftRequired": "Można edytować lub przywrócić tylko niezaakceptowany szkic.",
+  "logistics.errors.undoConflict": "Rekord zmienił się po tej operacji. Odśwież go przed kolejną zmianą."
 }

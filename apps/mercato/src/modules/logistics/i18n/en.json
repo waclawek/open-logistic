@@ -32,5 +32,9 @@
   "logistics.errors.requestIdReused": "This request identifier was already used for different input. Reconcile its outcome.",
   "logistics.errors.notFound": "The record is not available in this organization.",
   "logistics.errors.jobNotDraft": "Only an unaccepted draft job can be accepted.",
-  "logistics.errors.sourceUnavailable": "The required source is unavailable. Try again after access is restored."
+  "logistics.errors.sourceUnavailable": "The required source is unavailable. Try again after access is restored.",
+  "logistics.errors.invalidInput": "Check the action input and try again.",
+  "logistics.errors.requestFailed": "The request could not be completed. Reconcile its outcome before retrying.",
+  "logistics.errors.jobDraftRequired": "Only an unaccepted draft can be edited or restored.",
+  "logistics.errors.undoConflict": "The record changed after this operation. Reload it before making another change."
 }

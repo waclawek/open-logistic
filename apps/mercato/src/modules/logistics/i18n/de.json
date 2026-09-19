@@ -32,5 +32,9 @@
   "logistics.errors.requestIdReused": "Diese Anfragekennung wurde bereits für andere Eingaben verwendet. Prüfen Sie das Ergebnis.",
   "logistics.errors.notFound": "Der Datensatz ist in dieser Organisation nicht verfügbar.",
   "logistics.errors.jobNotDraft": "Nur ein noch nicht angenommener Auftragsentwurf kann angenommen werden.",
-  "logistics.errors.sourceUnavailable": "Die erforderliche Datenquelle ist nicht verfügbar. Versuchen Sie es erneut, sobald der Zugriff wiederhergestellt ist."
+  "logistics.errors.sourceUnavailable": "Die erforderliche Datenquelle ist nicht verfügbar. Versuchen Sie es erneut, sobald der Zugriff wiederhergestellt ist.",
+  "logistics.errors.invalidInput": "Prüfen Sie die Eingaben und versuchen Sie es erneut.",
+  "logistics.errors.requestFailed": "Die Anfrage konnte nicht abgeschlossen werden. Prüfen Sie vor einem erneuten Versuch das Ergebnis.",
+  "logistics.errors.jobDraftRequired": "Nur ein nicht angenommener Entwurf kann bearbeitet oder wiederhergestellt werden.",
+  "logistics.errors.undoConflict": "Der Datensatz wurde nach dieser Aktion geändert. Laden Sie ihn vor weiteren Änderungen neu."
 }

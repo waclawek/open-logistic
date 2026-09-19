@@ -32,5 +32,9 @@
   "logistics.errors.requestIdReused": "Este identificador de solicitud ya se utilizó con otros datos. Comprueba su resultado.",
   "logistics.errors.notFound": "El registro no está disponible en esta organización.",
   "logistics.errors.jobNotDraft": "Solo se puede aceptar un trabajo en borrador que aún no haya sido aceptado.",
-  "logistics.errors.sourceUnavailable": "La fuente necesaria no está disponible. Inténtalo de nuevo cuando se restablezca el acceso."
+  "logistics.errors.sourceUnavailable": "La fuente necesaria no está disponible. Inténtalo de nuevo cuando se restablezca el acceso.",
+  "logistics.errors.invalidInput": "Revisa los datos de la acción e inténtalo de nuevo.",
+  "logistics.errors.requestFailed": "No se pudo completar la solicitud. Comprueba el resultado antes de reintentar.",
+  "logistics.errors.jobDraftRequired": "Solo se puede editar o restaurar un borrador sin aceptar.",
+  "logistics.errors.undoConflict": "El registro cambió después de esta operación. Recárgalo antes de realizar otro cambio."
 }
