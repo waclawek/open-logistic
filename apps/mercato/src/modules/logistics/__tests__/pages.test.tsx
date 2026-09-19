@@ -43,8 +43,11 @@ describe('Logistics navigation foundation', () => {
     expect(metadata.pageGroupKey).toBe('logistics.nav.group')
   })
 
-  test('declares only read access and grants it to administrators by default', () => {
-    expect(features.map((feature) => feature.id)).toEqual(['logistics.view'])
+  test('declares explicit action permissions while retaining read-only default grants', () => {
+    expect(features.map((feature) => feature.id)).toEqual([
+      'logistics.view', 'logistics.jobs.manage', 'logistics.dispatch.manage', 'logistics.execution.manage',
+      'logistics.fleet.manage', 'logistics.mileage.manage', 'logistics.corrections.manage', 'logistics.measurement.manage',
+    ])
     expect(setup.defaultRoleFeatures).toEqual({ admin: ['logistics.view'] })
     expect(pages.map((page) => page.metadata.pageOrder)).toEqual([10, 20, 30, 40, 50, 60, 70])
   })

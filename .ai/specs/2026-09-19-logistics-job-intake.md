@@ -70,7 +70,7 @@ Guides: root/core/customers/shared/UI/backend/QA and shared contract references.
 
 ## Implementation Status
 
-In progress. Strict input/version/decimal validation and job entity/encryption/schema constraints are authored. Commands, API, job UI and end-to-end coverage remain outstanding. The scoped initial migration/snapshot was generated offline from ORM metadata after normal db:generate failed local PostgreSQL authentication; no migration was applied.
+In progress. Strict input/version/decimal validation, job entity/encryption/schema constraints, and receipted acceptance command are authored. Acceptance has unit coverage for scoped current authorization, mandatory versions, atomic state/receipt rollback, replay and postcommit failure. Create/edit/cancel/promise commands, API, job UI and end-to-end coverage remain outstanding. Scoped migrations/snapshot were generated offline from ORM metadata after normal db:generate failed local PostgreSQL authentication; no migration was applied.
 
 ## Changelog
 

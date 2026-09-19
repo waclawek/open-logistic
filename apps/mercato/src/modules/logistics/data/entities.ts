@@ -1,5 +1,6 @@
 import { Check, Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy'
 import type { JobStatus, Place } from './validators'
+import { nextRecordVersion } from '../lib/version'
 
 @Entity({ tableName: 'logistics_vehicle_profiles' })
 @Index({ name: 'logistics_vehicle_scope_idx', properties: ['tenantId', 'organizationId'] })
@@ -51,7 +52,7 @@ export class VehicleProfile {
   @Property({ name: 'created_at', type: Date, onCreate: () => new Date() })
   createdAt = new Date()
 
-  @Property({ name: 'updated_at', type: Date, onUpdate: () => new Date() })
+  @Property({ name: 'updated_at', type: Date, onUpdate: (entity: VehicleProfile) => nextRecordVersion(entity.updatedAt) })
   updatedAt = new Date()
 
   @Property({ name: 'deleted_at', type: Date, nullable: true })
@@ -83,7 +84,7 @@ export class DriverProfile {
   @Property({ name: 'created_at', type: Date, onCreate: () => new Date() })
   createdAt = new Date()
 
-  @Property({ name: 'updated_at', type: Date, onUpdate: () => new Date() })
+  @Property({ name: 'updated_at', type: Date, onUpdate: (entity: DriverProfile) => nextRecordVersion(entity.updatedAt) })
   updatedAt = new Date()
 
   @Property({ name: 'deleted_at', type: Date, nullable: true })
@@ -166,9 +167,86 @@ export class TransportJob {
   @Property({ name: 'created_at', type: Date, onCreate: () => new Date() })
   createdAt = new Date()
 
-  @Property({ name: 'updated_at', type: Date, onUpdate: () => new Date() })
+  @Property({ name: 'updated_at', type: Date, onUpdate: (entity: TransportJob) => nextRecordVersion(entity.updatedAt) })
   updatedAt = new Date()
 
   @Property({ name: 'deleted_at', type: Date, nullable: true })
   deletedAt: Date | null = null
+}
+
+@Entity({ tableName: 'logistics_command_receipts' })
+@Unique({ name: 'logistics_receipt_key_unique', properties: ['tenantId', 'organizationId', 'actorUserId', 'action', 'requestId'] })
+export class CommandReceipt {
+  @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
+  id!: string
+
+  @Property({ name: 'tenant_id', type: 'uuid' })
+  tenantId!: string
+
+  @Property({ name: 'organization_id', type: 'uuid' })
+  organizationId!: string
+
+  @Property({ name: 'actor_user_id', type: 'uuid' })
+  actorUserId!: string
+
+  @Property({ name: 'request_id', type: 'uuid' })
+  requestId!: string
+
+  @Property({ type: 'text' })
+  action!: string
+
+  @Property({ name: 'input_digest', type: 'text' })
+  inputDigest!: string
+
+  @Property({ name: 'committed_at', type: Date })
+  committedAt = new Date()
+
+  @Property({ name: 'created_at', type: Date })
+  createdAt = new Date()
+
+  @Property({ name: 'updated_at', type: Date })
+  updatedAt = new Date()
+}
+
+@Entity({ tableName: 'logistics_command_results' })
+@Unique({ name: 'logistics_receipt_result_unique', properties: ['tenantId', 'organizationId', 'receiptId', 'sequence'] })
+export class CommandResultRecord {
+  @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
+  id!: string
+
+  @Property({ name: 'tenant_id', type: 'uuid' })
+  tenantId!: string
+
+  @Property({ name: 'organization_id', type: 'uuid' })
+  organizationId!: string
+
+  @Property({ name: 'receipt_id', type: 'uuid' })
+  receiptId!: string
+
+  @Property({ type: 'integer' })
+  sequence!: number
+
+  @Property({ name: 'entity_type', type: 'text' })
+  entityType!: string
+
+  @Property({ name: 'record_id', type: 'uuid' })
+  recordId!: string
+
+  @Property({ name: 'record_updated_at', type: Date })
+  recordUpdatedAt!: Date
+
+  @Property({ name: 'plan_revision', type: 'integer', nullable: true })
+  planRevision: number | null = null
+
+  @Property({ name: 'fact_revision', type: 'integer', nullable: true })
+  factRevision: number | null = null
+
+  @Property({ name: 'ledger_revision', type: 'integer', nullable: true })
+  ledgerRevision: number | null = null
+
+  @Property({ name: 'created_at', type: Date })
+  createdAt = new Date()
+
+  @Property({ name: 'updated_at', type: Date })
+  updatedAt = new Date()
 }

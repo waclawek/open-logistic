@@ -24,5 +24,12 @@
   "logistics.errors.positiveWeight": "El peso debe ser mayor que cero.",
   "logistics.errors.locationObservationIncomplete": "Indique juntos la ubicación, la hora de observación y la fuente.",
   "logistics.errors.palletCountRequired": "Indique un número positivo de palés para la carga paletizada; en otro caso deje el campo vacío.",
-  "logistics.errors.invalidWindow": "Indique intervalos válidos de recogida y entrega."
+  "logistics.errors.invalidWindow": "Indique intervalos válidos de recogida y entrega.",
+  "logistics.errors.unauthorized": "Inicia sesión para continuar.",
+  "logistics.errors.organization_scope_required": "Selecciona una organización para continuar.",
+  "logistics.errors.forbidden": "No tienes permiso para realizar esta acción.",
+  "logistics.errors.nestedCommand": "Esta acción debe ejecutarse como un comando independiente.",
+  "logistics.errors.requestIdReused": "Este identificador de solicitud ya se utilizó con otros datos. Comprueba su resultado.",
+  "logistics.errors.notFound": "El registro no está disponible en esta organización.",
+  "logistics.errors.jobNotDraft": "Solo se puede aceptar un trabajo en borrador que aún no haya sido aceptado."
 }

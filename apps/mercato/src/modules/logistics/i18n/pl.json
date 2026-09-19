@@ -24,5 +24,12 @@
   "logistics.errors.positiveWeight": "Masa musi być większa od zera.",
   "logistics.errors.locationObservationIncomplete": "Podaj razem lokalizację, czas obserwacji i źródło.",
   "logistics.errors.palletCountRequired": "Dla ładunku na paletach podaj dodatnią liczbę palet; w przeciwnym razie pozostaw pole puste.",
-  "logistics.errors.invalidWindow": "Podaj prawidłowe okna czasowe odbioru i dostawy."
+  "logistics.errors.invalidWindow": "Podaj prawidłowe okna czasowe odbioru i dostawy.",
+  "logistics.errors.unauthorized": "Zaloguj się, aby kontynuować.",
+  "logistics.errors.organization_scope_required": "Wybierz organizację, aby kontynuować.",
+  "logistics.errors.forbidden": "Nie masz uprawnień do tej operacji.",
+  "logistics.errors.nestedCommand": "Ta operacja musi zostać wykonana jako osobne polecenie.",
+  "logistics.errors.requestIdReused": "Ten identyfikator żądania został już użyty dla innych danych. Sprawdź jego wynik.",
+  "logistics.errors.notFound": "Rekord nie jest dostępny w tej organizacji.",
+  "logistics.errors.jobNotDraft": "Można przyjąć wyłącznie nieprzyjęte zlecenie w wersji roboczej."
 }

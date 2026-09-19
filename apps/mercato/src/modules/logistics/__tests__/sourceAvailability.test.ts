@@ -1,5 +1,6 @@
 import type { QueryEngine, QueryOptions, QueryResult } from '@open-mercato/shared/lib/query/types'
 import { registerEntityIds } from '@open-mercato/shared/lib/encryption/entityIds'
+import { registerModules } from '@open-mercato/shared/lib/modules/registry'
 import { getMergedAvailabilityWindows } from '@open-mercato/core/modules/planner/lib/availabilityMerge'
 import { applyAclFeatureOverrides, resetModuleContractOverridesForTests } from '@open-mercato/shared/modules/overrides'
 import { eligibilityResultSchema, type SourceSubject } from '../data/sourceAvailability'
@@ -55,7 +56,10 @@ function fixture() {
   return { tables, query, merge, dependencies, service: createSourceAvailabilityService(dependencies) }
 }
 
-beforeEach(() => registerEntityIds(entityIds))
+beforeEach(() => {
+  registerModules([{ id: 'logistics' }, { id: 'resources' }, { id: 'staff' }, { id: 'planner' }])
+  registerEntityIds(entityIds)
+})
 afterEach(() => resetModuleContractOverridesForTests())
 
 describe('authorized read-only source projections', () => {

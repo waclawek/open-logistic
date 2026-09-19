@@ -68,7 +68,7 @@ Guides: root/core/customers/shared/UI/backend/QA and shared contract references.
 
 ## Implementation Status
 
-In progress. Profile entities, scoped uniqueness/capacity/location constraints, encryption maps, master extension declarations and metadata-generated initial migration/snapshot are authored. Availability grammar and interval evaluation have 82 passing tests. Profile/source API and UI integration remain outstanding. Local generation completed; normal db:generate failed PostgreSQL authentication, so scoped SQL/snapshot were produced with the existing ORM metadata generator in connect:false mode and verified for zero snapshot drift. No migration was applied.
+In progress. Profile entities, scoped uniqueness/capacity/location constraints, encryption maps, master extension declarations and metadata-generated initial migration/snapshot are authored. Availability grammar and interval evaluation have 82 passing tests; authorized source adapter adds 40 tests using real ACL policy/planner merge and a mocked query engine. Parent integration registered required modules in the test fixture (the app test setup starts with none); the complete 227-test logistics suite passes. Profile/source DI/API and UI integration remain outstanding. Local generation completed; normal db:generate failed PostgreSQL authentication, so scoped SQL/snapshot were produced with the existing ORM metadata generator in connect:false mode and verified for zero snapshot drift. No migration was applied.
 
 ## Changelog
 

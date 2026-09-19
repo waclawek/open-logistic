@@ -24,5 +24,12 @@
   "logistics.errors.positiveWeight": "Das Gewicht muss größer als null sein.",
   "logistics.errors.locationObservationIncomplete": "Geben Sie Ort, Beobachtungszeit und Quelle zusammen an.",
   "logistics.errors.palletCountRequired": "Geben Sie bei palettierter Fracht eine positive Palettenzahl an; andernfalls lassen Sie das Feld leer.",
-  "logistics.errors.invalidWindow": "Geben Sie gültige Zeitfenster für Abholung und Lieferung an."
+  "logistics.errors.invalidWindow": "Geben Sie gültige Zeitfenster für Abholung und Lieferung an.",
+  "logistics.errors.unauthorized": "Melden Sie sich an, um fortzufahren.",
+  "logistics.errors.organization_scope_required": "Wählen Sie eine Organisation aus.",
+  "logistics.errors.forbidden": "Sie haben keine Berechtigung für diese Aktion.",
+  "logistics.errors.nestedCommand": "Diese Aktion muss als separater Befehl ausgeführt werden.",
+  "logistics.errors.requestIdReused": "Diese Anfragekennung wurde bereits für andere Eingaben verwendet. Prüfen Sie das Ergebnis.",
+  "logistics.errors.notFound": "Der Datensatz ist in dieser Organisation nicht verfügbar.",
+  "logistics.errors.jobNotDraft": "Nur ein noch nicht angenommener Auftragsentwurf kann angenommen werden."
 }

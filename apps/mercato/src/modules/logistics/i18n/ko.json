@@ -24,5 +24,12 @@
   "logistics.errors.positiveWeight": "중량은 0보다 커야 합니다.",
   "logistics.errors.locationObservationIncomplete": "위치, 확인 시각, 출처를 함께 입력하세요.",
   "logistics.errors.palletCountRequired": "팔레트 화물은 양수인 팔레트 수를 입력하고, 그 외에는 비워 두세요.",
-  "logistics.errors.invalidWindow": "올바른 픽업 및 배송 시간 범위를 입력하세요."
+  "logistics.errors.invalidWindow": "올바른 픽업 및 배송 시간 범위를 입력하세요.",
+  "logistics.errors.unauthorized": "계속하려면 로그인하세요.",
+  "logistics.errors.organization_scope_required": "계속하려면 조직을 선택하세요.",
+  "logistics.errors.forbidden": "이 작업을 수행할 권한이 없습니다.",
+  "logistics.errors.nestedCommand": "이 작업은 별도의 명령으로 실행해야 합니다.",
+  "logistics.errors.requestIdReused": "이 요청 식별자는 이미 다른 입력에 사용되었습니다. 처리 결과를 확인하세요.",
+  "logistics.errors.notFound": "이 조직에서 해당 레코드를 사용할 수 없습니다.",
+  "logistics.errors.jobNotDraft": "아직 수락되지 않은 초안 운송 작업만 수락할 수 있습니다."
 }

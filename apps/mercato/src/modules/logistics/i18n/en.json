@@ -24,5 +24,12 @@
   "logistics.errors.positiveWeight": "Weight must be greater than zero.",
   "logistics.errors.locationObservationIncomplete": "Enter the location, observation time and source together.",
   "logistics.errors.palletCountRequired": "Enter a positive pallet count for palletized cargo; otherwise leave it empty.",
-  "logistics.errors.invalidWindow": "Enter a valid pickup and delivery time window."
+  "logistics.errors.invalidWindow": "Enter a valid pickup and delivery time window.",
+  "logistics.errors.unauthorized": "Sign in to continue.",
+  "logistics.errors.organization_scope_required": "Select an organization to continue.",
+  "logistics.errors.forbidden": "You do not have permission for this action.",
+  "logistics.errors.nestedCommand": "This action must run as a separate command.",
+  "logistics.errors.requestIdReused": "This request identifier was already used for different input. Reconcile its outcome.",
+  "logistics.errors.notFound": "The record is not available in this organization.",
+  "logistics.errors.jobNotDraft": "Only an unaccepted draft job can be accepted."
 }

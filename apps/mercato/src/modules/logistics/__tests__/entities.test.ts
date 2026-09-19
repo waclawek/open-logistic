@@ -14,6 +14,9 @@ describe('logistics persistence boundaries', () => {
     expect(model.properties.tenantId.type).toBe('uuid')
     expect(model.properties.organizationId.type).toBe('uuid')
     expect(model.properties.updatedAt.onUpdate).toEqual(expect.any(Function))
+    const sameMillisecond = new Date(Date.now() + 10000)
+    const refreshVersion = model.properties.updatedAt.onUpdate as (entity: { updatedAt: Date }) => Date
+    expect(refreshVersion({ updatedAt: sameMillisecond }).getTime()).toBeGreaterThan(sameMillisecond.getTime())
     expect(Object.values(model.properties).every((property) => !property.entity)).toBe(true)
     expect(model.uniques.every((constraint) => {
       const keys = constraint.properties as string[]

@@ -66,6 +66,8 @@ R5: A16 GET /commands/[requestId] requires validated action query parameter to d
 
 R6: update only placeholder assertions for operational pages, retain all seven navigation/access/scope/session/locale regressions and planned map/proposals states. Append-only integration fixtures run in isolated disposable test databases owned by the existing ephemeral harness; destroy only that harness-owned environment. No production delete endpoints or local developer DB reset. API-created ordinary fixtures use existing cleanup helpers; retained fact fixtures are removed with isolated database teardown.
 
+Implementation transaction boundary: the receipted entry command owns the outermost transaction and rejects caller-owned transactions. Compound operations must call shared domain mutation functions inside that entry transaction, not execute nested registered commands. Result rows are normalized with sequence, entity type, record UUID, updatedAt and nullable stream revisions. Replays return those committed versions even if current records have since changed. Mutable entity onUpdate hooks advance updatedAt monotonically by at least one millisecond, including same-clock-tick writes; results are captured after flush.
+
 The installed shared code-review reference is absent. Apply the available .ai/review-checklist.md and current root/module rules, as recorded by the readiness audit; do not claim execution of the missing file. Current backward compatibility document has fourteen categories, including AI identities: those are also unchanged (AI excluded).
 
 ## Feature-review resolution
