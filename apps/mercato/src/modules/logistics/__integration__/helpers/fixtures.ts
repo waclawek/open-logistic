@@ -13,7 +13,7 @@ import {
 import { getTokenContext } from '@open-mercato/core/helpers/integration/generalFixtures'
 
 export const sections = [
-  { path: '/backend/logistics', title: 'Dispatcher dashboard' },
+  { path: '/backend/logistics', title: 'Dispatcher panel' },
   { path: '/backend/logistics/transport-jobs', title: 'Transport jobs' },
   { path: '/backend/logistics/fleet', title: 'Vehicles / drivers' },
   { path: '/backend/logistics/trips', title: 'Trips and routes' },
@@ -103,6 +103,13 @@ export { expect }
 
 export async function expectPlannedPage(page: Page, section: typeof sections[number]): Promise<void> {
   const content = page.getByTestId('logistics-page')
+  if (section.path === '/backend/logistics') {
+    await expect(content.getByRole('heading', { name: 'Dispatcher panel', exact: true })).toBeVisible()
+    await expect(content.getByRole('tab')).toHaveCount(2)
+    await expect(content.getByRole('tab', { name: 'AI Inbox', exact: true })).toBeVisible()
+    await expect(content.getByRole('tab', { name: 'AI Transports', exact: true })).toBeVisible()
+    return
+  }
   await expect(content.getByRole('heading', { name: section.title, exact: true })).toBeVisible()
   await expect(content.getByText('Planned feature', { exact: true })).toBeVisible()
 }

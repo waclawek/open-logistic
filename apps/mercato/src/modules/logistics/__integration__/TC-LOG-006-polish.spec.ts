@@ -1,7 +1,7 @@
 import { expect, sections, test } from './helpers/fixtures'
 
 const polishTitles = [
-  'Pulpit dyspozytora',
+  'Panel dyspozytora',
   'Zlecenia transportowe',
   'Pojazdy / kierowcy',
   'Przejazdy i trasy',
@@ -16,8 +16,14 @@ test('Polish logistics pages and the seven ordered navigation entries are transl
   for (const [index, section] of sections.entries()) {
     await page.goto(section.path)
     const content = page.getByTestId('logistics-page')
-    await expect(content.getByRole('heading', { name: polishTitles[index], exact: true })).toBeVisible()
-    await expect(content.getByText('Funkcja planowana', { exact: true })).toBeVisible()
+    if (index === 0) {
+      await expect(content.getByRole('heading', { name: 'Panel dyspozytora', exact: true })).toBeVisible()
+      await expect(content.getByRole('tab', { name: 'AI Inbox', exact: true })).toBeVisible()
+      await expect(content.getByRole('tab', { name: 'AI Przewozy', exact: true })).toBeVisible()
+    } else {
+      await expect(content.getByRole('heading', { name: polishTitles[index], exact: true })).toBeVisible()
+      await expect(content.getByText('Funkcja planowana', { exact: true })).toBeVisible()
+    }
   }
   const sidebar = page.getByTestId('sidebar')
   await expect(sidebar.getByRole('button', { name: 'Logistyka', exact: true })).toHaveCount(1)

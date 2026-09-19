@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { I18nProvider } from '@open-mercato/shared/lib/i18n/context'
 import { features } from '../acl'
 import { setup } from '../setup'
@@ -23,6 +23,10 @@ import statisticsPage from '../backend/logistics/statistics/page'
 import { metadata as statisticsMetadata } from '../backend/logistics/statistics/page.meta'
 import proposalsDisruptionsPage from '../backend/logistics/proposals-disruptions/page'
 import { metadata as proposalsDisruptionsMetadata } from '../backend/logistics/proposals-disruptions/page.meta'
+
+jest.mock('@open-mercato/ui/backend/DataTable', () => ({
+  DataTable: jest.requireActual('./helpers/DispatcherDataTable').DispatcherDataTable,
+}))
 
 const pages = [
   { id: 'dashboard', path: '/backend/logistics', Component: DashboardPage, metadata: dashboardMetadata },
@@ -51,7 +55,7 @@ describe('Logistics navigation foundation', () => {
 
   describe.each(['en', 'pl', 'de', 'es', 'ko'] as const)('%s locale', (locale) => {
     const dict = dictionaries[locale]
-    test.each(pages)('$path displays its translated purpose and honest availability', ({ id, Component }) => {
+    test.each(pages.slice(1))('$path displays its translated purpose and honest availability', ({ id, Component }) => {
       const { container } = render(
         <I18nProvider locale={locale} dict={dict}>
           <Component />
@@ -65,20 +69,20 @@ describe('Logistics navigation foundation', () => {
       expect(container.querySelector('form, table, input, button, canvas, iframe')).toBeNull()
       expect(container.textContent).not.toMatch(/logistics\.[a-zA-Z.]+/)
 
-      if (id !== 'dashboard') {
-        expect(screen.getByRole('link', { name: dict['logistics.back'] })).toHaveAttribute('href', '/backend/logistics')
-      }
+      expect(screen.getByRole('link', { name: dict['logistics.back'] })).toHaveAttribute('href', '/backend/logistics')
     })
 
-    test('dashboard links reach all six sections in specification order', () => {
-      render(
+    test('dashboard displays a translated demo panel with exactly two tabs', () => {
+      const { container } = render(
         <I18nProvider locale={locale} dict={dict}>
           <DashboardPage />
         </I18nProvider>,
       )
-      const links = within(screen.getByRole('navigation', { name: dict['logistics.sections.title'] })).getAllByRole('link')
-      expect(links.map((link) => link.getAttribute('href'))).toEqual(pages.slice(1).map((page) => page.path))
-      expect(links.map((link) => link.textContent)).toEqual(pages.slice(1).map((page) => dict[`logistics.${page.id}.title`]))
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(dict['logistics.dispatcher.title'])
+      expect(screen.getByText(dict['logistics.dispatcher.description'])).toBeVisible()
+      expect(screen.getAllByRole('tab')).toHaveLength(2)
+      expect(screen.getByRole('tab', { name: 'AI Inbox', exact: true })).toHaveAttribute('aria-selected', 'true')
+      expect(container.textContent).not.toMatch(/logistics\.[a-zA-Z.]+/)
     })
   })
 })

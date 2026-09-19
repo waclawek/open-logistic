@@ -31,16 +31,13 @@ test.describe('Logistics page navigation', () => {
     })
   }
 
-  test('the dashboard has exactly six section links and every section links back', async ({ page, logistics }) => {
+  test('the dashboard has two tabs and legacy sections still link back', async ({ page, logistics }) => {
     expect(logistics.organizationId).toBeTruthy()
     await page.goto(sections[0].path)
     const content = page.getByTestId('logistics-page')
-    const navigation = content.getByRole('navigation')
-    await expect(navigation.getByRole('link')).toHaveCount(6)
+    await expect(content.getByRole('tab')).toHaveCount(2)
     for (const section of sections.slice(1)) {
-      const link = navigation.getByRole('link', { name: section.title, exact: true })
-      await expect(link).toHaveAttribute('href', section.path)
-      await link.click()
+      await page.goto(section.path)
       await expectPlannedPage(page, section)
       await content.getByRole('link', { name: /dashboard/i }).click()
       await expectPlannedPage(page, sections[0])
