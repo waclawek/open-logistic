@@ -1,0 +1,4387 @@
+openapi: 3.0.0
+info:
+  title: dock-scheduler-api
+  description: ""
+  version: 1.113.4
+  contact: {}
+servers:
+  - url: https://api.platform.trans.eu
+    description: PROD
+tags: []
+paths:
+  /ext/dock-scheduler-api/v2/time-window:
+    get:
+      description: 'For a shipper, the method returns all its time windows. For a
+        carrier, the method returns all the time windows assigned to it. For
+        paging, the method uses parameters: limit and offset. Offset is numbered
+        from 0. Default offset is 0. Limit can start from 1. Default limit is
+        25. The method returns a time windows list ("content") and pagination
+        metadata: page, page_count, total_items, page_size. Time windows can be
+        filtered using the parameter "filter" and sorted using the parameter
+        "sort".'
+      operationId: TimeWindowV2Controller_getTimeWindowCollection
+      parameters:
+        - name: filter
+          required: false
+          in: query
+          description: URL-encoded JSON filter object
+          schema:
+            example: "%7B%22date_from%22%3A%222023-02-13%22%7D"
+            type: string
+        - name: sort
+          required: false
+          in: query
+          description: URL-encoded JSON sort object
+          schema:
+            example: "%7B%22field%22%3A%22DATE%22%2C%22order%22%3A%22DESC%22%7D"
+            type: string
+        - name: offset
+          required: false
+          in: query
+          description: The offset from which to start the list. Default is 0.
+          schema:
+            minimum: 0
+            default: 0
+            example: 0
+            type: number
+        - name: limit
+          required: false
+          in: query
+          description: The maximum number of announcements to return. Default is 25.
+          schema:
+            minimum: 1
+            default: 25
+            example: 25
+            type: number
+        - name: count_matches
+          required: false
+          in: query
+          description: If true then response is extended by matching results count.
+          schema:
+            default: false
+            example: true
+            type: boolean
+      responses:
+        "200":
+          description: List of time windows
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeWindowCollectionResponseV2Dto"
+        "400":
+          description: "It's only allowed to search for time windows in warehouses that
+            does belong to searcher (companyId: {companyId})"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeWindowBadRequestDto"
+        "404":
+          description: Time window not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeWindowNotFoundDto"
+      security:
+        - bearer: []
+      summary: The method returns time windows list by filter
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v2/time-window/{id}:
+    get:
+      operationId: TimeWindowV2Controller_getTimeWindowEntity
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Time window ID. Must be positive number
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            example: 98033
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeWindowEntityResponseV2Dto"
+        "403":
+          description: "Required authority: READ_OWN_TW or READ_ASSIGNED_TW"
+        "404":
+          description: Time window not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeWindowNotFoundDto"
+      security:
+        - bearer: []
+      summary: The method returns details of time window with transport
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v2/time-window/{id}/possible:
+    get:
+      operationId: TimeWindowV2Controller_getTimeWindowPossible
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Time window ID. Must be positive number
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            example: 98033
+        - name: date_from
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: date_to
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PossibleTimeWindowResponseV2Dto"
+      security:
+        - bearer: []
+      summary: The method returns possible time windows
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v2/warehouse:
+    get:
+      description: For a shipper, the method returns all its warehouses. For a
+        carrier, the method returns active warehouses in which the carrier has a
+        announcement or an available time window. Warehouses can be filtered
+        using the parameter "filter". Warehouses can be sorted using the
+        parameter "sort". Endpoint supports limit and offset parameters. Default
+        respectively 25 and 0.
+      operationId: WarehouseV2Controller_getWarehouseCollection
+      parameters:
+        - name: filter
+          required: false
+          in: query
+          description: URL-encoded JSON filter object
+          schema:
+            example: "%7B%22is_active%22%3Afalse%2C%22operation_type%22%3A%22loading%22%7D"
+            type: string
+        - name: sort
+          required: false
+          in: query
+          description: URL-encoded JSON sort ARRAY
+          schema:
+            example: "%5B%7B%22field%22%3A%22NAME%22%2C%22order%22%3A%22ASC%22%7D%5D"
+            type: string
+        - name: offset
+          required: false
+          in: query
+          description: The offset from which to start the list of announcements. Default
+            is 0.
+          schema:
+            minimum: 0
+            default: 0
+            example: 0
+            type: number
+        - name: limit
+          required: false
+          in: query
+          description: The maximum number of announcements to return. Default is 25.
+          schema:
+            minimum: 1
+            default: 25
+            example: 25
+            type: number
+      responses:
+        "200":
+          description: List of warehouses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WarehouseCollectionResponseV2Dto"
+        "403":
+          description: "Required authority: READ_AVAILABLE or READ_COMPANY"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+      security:
+        - bearer: []
+      summary: Get warehouses
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v2/announcement/search:
+    get:
+      operationId: AnnouncementV2Controller_getAnnouncementCollection
+      parameters:
+        - name: filter
+          required: false
+          in: query
+          description: URL-encoded JSON filter object
+          schema:
+            example: "%7B%22date_from%22%3A%222025-12-02%22%7D"
+            type: string
+        - name: sort
+          required: false
+          in: query
+          description: URL-encoded JSON sort object
+          schema:
+            example: "%7B%22field%22%3A%22DATE%22%2C%22order%22%3A%22ASC%22%7D"
+            type: string
+        - name: offset
+          required: false
+          in: query
+          schema:
+            minimum: 0
+            default: 0
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 25
+            type: number
+        - name: count_matches
+          required: false
+          in: query
+          schema:
+            default: false
+            type: boolean
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementCollectionResponseV2Dto"
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v2/announcement/{id}:
+    get:
+      operationId: AnnouncementV2Controller_getAnnouncement
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Announcement ID. Must be positive number
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponseV2Dto"
+      security:
+        - bearer: []
+      tags:
+        - dock-scheduler-api
+    patch:
+      operationId: AnnouncementV2Controller_updateAnnouncement
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementUpdatePayloadV2Dto"
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponseV2Dto"
+      security:
+        - bearer: []
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v2/announcement:
+    post:
+      operationId: AnnouncementV2Controller_createAnnouncement
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementCreatePayloadV2Dto"
+      responses:
+        "201":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponseV2Dto"
+        "400":
+          description: Features MULTIPLE_TW_ASSIGNMENT not available
+      security:
+        - bearer: []
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v1/announcement:
+    get:
+      operationId: AnnouncementV1Controller_getAnnouncementCollection
+      parameters:
+        - name: filter
+          required: false
+          in: query
+          description: URL-encoded JSON filter object
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: "Page number (default: 1)"
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          description: "Page size (default: 10)"
+          schema:
+            minimum: 1
+            default: 10
+            type: number
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementCollectionResponseV1Dto"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+      security:
+        - bearer: []
+      tags:
+        - dock-scheduler-api
+    post:
+      operationId: AnnouncementV1Controller_createAnnouncement
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementCreateV1Dto"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponseV1Dto"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+      security:
+        - bearer: []
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v1/announcement/{id}:
+    get:
+      operationId: AnnouncementV1Controller_getAnnouncementEntity
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Announcement ID
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponseV1Dto"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - bearer: []
+      tags:
+        - dock-scheduler-api
+    patch:
+      operationId: AnnouncementV1Controller_updateAnnouncement
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Announcement ID
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementPatchV1Dto"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponseV1Dto"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - bearer: []
+      tags:
+        - dock-scheduler-api
+    delete:
+      operationId: AnnouncementV1Controller_deleteAnnouncement
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Announcement ID
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - bearer: []
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v1/announcement/{id}/history:
+    get:
+      operationId: AnnouncementV1Controller_getAnnouncementHistory
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Announcement ID
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - bearer: []
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v1/announcement/{id}/slot:
+    patch:
+      operationId: AnnouncementV1Controller_updateAnnouncementSlot
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Announcement ID
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementSlotUpdateV1Dto"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementWriteResponseV1Dto"
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - bearer: []
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v1/announcement/{id}/stage:
+    put:
+      operationId: AnnouncementV1Controller_updateAnnouncementStage
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Announcement ID
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementStageUpdateV1Dto"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementWriteResponseV1Dto"
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - bearer: []
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v1/warehouse:
+    get:
+      operationId: WarehouseV1Controller_getWarehouseCollection
+      parameters:
+        - name: filter
+          required: false
+          in: query
+          schema:
+            $ref: "#/components/schemas/WarehouseFilterV1Dto"
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WarehouseCollectionItemV1Dto"
+      security:
+        - bearer: []
+      summary: Get warehouse collection
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v1/warehouse/{id}:
+    get:
+      operationId: WarehouseV1Controller_getWarehouseEntity
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: number
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WarehouseEntityResponseV1Dto"
+      security:
+        - bearer: []
+      summary: Get warehouse by id
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v1/warehouse/timeWindow:
+    get:
+      operationId: WarehouseTimeWindowV1Controller_getTimeWindowCollection
+      parameters:
+        - name: filter
+          required: false
+          in: query
+          description: URL-encoded JSON filter object
+          schema:
+            type: string
+        - name: sort
+          required: false
+          in: query
+          description: URL-encoded JSON sort object
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 10
+            type: number
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeWindowCollectionResponseV1Dto"
+      security:
+        - bearer: []
+      summary: Get warehouse time window collection
+      tags:
+        - dock-scheduler-api
+    post:
+      operationId: WarehouseTimeWindowV1Controller_createTimeWindow
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimeWindowWritePayloadV1Dto"
+      responses:
+        "201":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeWindowEntityResponseV1Dto"
+      security:
+        - bearer: []
+      summary: Create warehouse time window
+      tags:
+        - dock-scheduler-api
+  /ext/dock-scheduler-api/v1/warehouse/timeWindow/{id}:
+    get:
+      operationId: WarehouseTimeWindowV1Controller_getTimeWindowEntity
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Time window ID
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeWindowEntityResponseV1Dto"
+      security:
+        - bearer: []
+      summary: Get warehouse time window entity
+      tags:
+        - dock-scheduler-api
+    patch:
+      operationId: WarehouseTimeWindowV1Controller_updateTimeWindow
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Time window ID
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimeWindowWritePayloadV1Dto"
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - bearer: []
+      summary: Update warehouse time window
+      tags:
+        - dock-scheduler-api
+    delete:
+      operationId: WarehouseTimeWindowV1Controller_deleteTimeWindow
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Time window ID
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: include-announcement
+          required: false
+          in: header
+          description: When set to true, also deletes linked announcement
+          schema:
+            type: string
+            enum:
+              - "true"
+              - "false"
+      responses:
+        "204":
+          description: Time window deleted successfully
+      security:
+        - bearer: []
+      summary: Delete warehouse time window
+      tags:
+        - dock-scheduler-api
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    CoordinatesV1Dto:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - latitude
+        - longitude
+    GeoCoordinatesDto:
+      type: object
+      properties:
+        latitude:
+          type: number
+          description: Latitude coordinate.
+          example: 50.391594
+        longitude:
+          type: number
+          description: Longitude coordinate.
+          example: 16.03629
+      required:
+        - latitude
+        - longitude
+    AddressDetailsDto:
+      type: object
+      properties:
+        street:
+          type: string
+          description: Street name.
+          example: Bezručova
+        number:
+          type: string
+          description: Building number.
+          example: "265"
+        locality:
+          type: string
+          description: Locality/City name.
+          example: Česká Skalice
+        postal_code:
+          type: string
+          description: Postal code.
+          example: "55203"
+        country:
+          type: string
+          description: Country code (e.g., 14_czech_republic).
+          example: 14_czech_republic
+        coordinates:
+          nullable: true
+          default: null
+          description: Geographic coordinates.
+          allOf:
+            - $ref: "#/components/schemas/GeoCoordinatesDto"
+        description:
+          type: string
+          nullable: true
+          description: Address description.
+        remarks:
+          type: string
+          nullable: true
+          description: Remarks/additional notes.
+      required:
+        - street
+        - number
+        - locality
+        - postal_code
+        - country
+        - description
+        - remarks
+    RouteSummaryDto:
+      type: object
+      properties:
+        loading_place:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AddressDetailsDto"
+        unloading_place:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AddressDetailsDto"
+      required:
+        - loading_place
+        - unloading_place
+    CompanyDetailsDto:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Internal entity ID.
+          example: 1168557
+        telephone:
+          type: string
+          nullable: true
+          description: Company telephone number.
+          example: (0048) 7490415385
+        email:
+          type: string
+          nullable: true
+          description: Company email address.
+          example: awladyka@trans.eu
+        address:
+          nullable: true
+          description: Company registered address.
+          allOf:
+            - $ref: "#/components/schemas/AddressDetailsDto"
+        type:
+          type: string
+          nullable: true
+          description: Company type.
+          example: REGISTERED
+        legal_name:
+          type: string
+          description: Company legal name.
+          example: TFF przewoźnik + p44
+      required:
+        - id
+        - legal_name
+    WarehouseConfigurationDto:
+      type: object
+      properties:
+        slot:
+          type: number
+          description: Number of slots.
+          example: 5
+        id:
+          type: number
+          description: Configuration ID.
+          example: 16111
+        valid_from:
+          type: string
+          description: Configuration valid from date (YYYY-MM-DD).
+          example: 2024-12-19
+        valid_until:
+          type: string
+          nullable: true
+          description: Configuration valid until date (YYYY-MM-DD).
+        quantity_of_slots:
+          type: number
+          description: Quantity of slots defined.
+          example: 1
+      required:
+        - slot
+        - id
+        - valid_from
+        - valid_until
+        - quantity_of_slots
+    TimeZoneInfoDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Time zone ID.
+          example: Europe/Prague
+        offset:
+          type: string
+          description: Time zone offset string.
+          example: +01:00
+        offset_minutes:
+          type: number
+          description: Time zone offset in minutes.
+          example: 60
+      required:
+        - id
+        - offset
+        - offset_minutes
+    WarehouseDetailsDto:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Warehouse ID.
+          example: 13745
+        configurations:
+          description: List of slot configurations.
+          type: array
+          items:
+            $ref: "#/components/schemas/WarehouseConfigurationDto"
+        name:
+          type: string
+          description: Warehouse name.
+          example: Załadunek1
+        is_active:
+          type: boolean
+          description: Is the warehouse active?
+          example: true
+        is_locked:
+          type: boolean
+          description: Is the warehouse locked?
+          example: false
+        address:
+          description: Warehouse physical address.
+          allOf:
+            - $ref: "#/components/schemas/AddressDetailsDto"
+        operation_time:
+          type: string
+          description: Operation duration (ISO 8601).
+          example: PT30M
+        operation_type:
+          type: string
+          description: Type of operation.
+          example: loading
+        time_zone:
+          description: Time zone details.
+          allOf:
+            - $ref: "#/components/schemas/TimeZoneInfoDto"
+        announcement_template:
+          type: object
+          properties:
+            id:
+              type: number
+          required:
+            - id
+      required:
+        - id
+        - name
+        - is_active
+        - is_locked
+        - address
+        - operation_time
+        - operation_type
+        - time_zone
+        - announcement_template
+    ForwardPermissionsDto:
+      type: object
+      properties:
+        allow:
+          type: boolean
+          description: Allow forwarding.
+          example: true
+        disallow:
+          type: object
+          nullable: true
+          description: Disallow reason object.
+        require_carrier_data:
+          type: boolean
+          description: Require carrier data for forwarding.
+          example: false
+      required:
+        - allow
+        - disallow
+        - require_carrier_data
+    FreightOrderDetailsDto:
+      type: object
+      properties:
+        freight_id:
+          type: number
+          nullable: true
+          description: Freight ID.
+        freight_reference_number:
+          type: string
+          nullable: true
+          description: Freight reference number.
+        publication_id:
+          type: string
+          nullable: true
+          description: Publication ID.
+        order_id:
+          type: string
+          nullable: true
+          description: Order ID.
+        order_reference_number:
+          type: string
+          nullable: true
+          description: Order reference number.
+        external_reference_number:
+          type: string
+          nullable: true
+          description: External reference number.
+      required:
+        - freight_id
+        - freight_reference_number
+        - publication_id
+        - order_id
+        - order_reference_number
+        - external_reference_number
+    TimeWindowListItemDto:
+      type: object
+      properties:
+        id:
+          type: number
+        reference_number:
+          type: string
+        external_number:
+          type: string
+        status:
+          type: string
+        route:
+          $ref: "#/components/schemas/RouteSummaryDto"
+        carrier:
+          $ref: "#/components/schemas/CompanyDetailsDto"
+        shipper:
+          $ref: "#/components/schemas/CompanyDetailsDto"
+        warehouse:
+          $ref: "#/components/schemas/WarehouseDetailsDto"
+        remarks:
+          type: string
+          nullable: true
+        billable:
+          type: boolean
+        created_at:
+          type: string
+        valid_from:
+          type: string
+        valid_to:
+          type: string
+        start_time:
+          type: string
+          nullable: true
+        end_time:
+          type: string
+          nullable: true
+        range_type:
+          type: string
+        is_expired:
+          type: boolean
+        operation_type:
+          type: string
+        operation_time:
+          type: string
+        forward_permissions:
+          $ref: "#/components/schemas/ForwardPermissionsDto"
+        freight_order:
+          $ref: "#/components/schemas/FreightOrderDetailsDto"
+        announcement:
+          type: object
+          nullable: true
+        attachments:
+          type: object
+          nullable: true
+        forward:
+          type: object
+          nullable: true
+        transport:
+          type: object
+          nullable: true
+        purchase_order:
+          type: object
+          nullable: true
+      required:
+        - id
+        - reference_number
+        - external_number
+        - status
+        - route
+        - carrier
+        - shipper
+        - warehouse
+        - remarks
+        - billable
+        - created_at
+        - valid_from
+        - valid_to
+        - start_time
+        - end_time
+        - range_type
+        - is_expired
+        - operation_type
+        - operation_time
+        - forward_permissions
+        - freight_order
+        - announcement
+        - attachments
+        - forward
+        - transport
+        - purchase_order
+    TimeWindowCollectionResponseV2Dto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeWindowListItemDto"
+        total_items:
+          type: number
+          nullable: true
+        offset:
+          type: number
+        limit:
+          type: number
+        last:
+          type: boolean
+      required:
+        - content
+        - total_items
+        - offset
+        - limit
+        - last
+    TimeWindowBadRequestDto:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          example: 2025-12-02T10:05:57.730Z
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Bad Request
+        type:
+          type: string
+          example: InvalidInputParameterException
+        detail:
+          type: string
+          example: Detailed error message...
+        hint:
+          type: string
+          example: HINT_CODE
+        error_code:
+          type: string
+          example: ERR-123
+      required:
+        - timestamp
+        - status
+        - title
+        - type
+        - detail
+    TimeWindowNotFoundDto:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          description: Timestamp of when the error occurred (ISO 8601 format).
+          example: 2025-11-21T12:26:36.992781728
+        type:
+          type: string
+          description: The internal exception type thrown by the system.
+          example: HintedResourceNotFoundException
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type.
+          example: Not Found
+        status:
+          type: number
+          description: The HTTP status code.
+          example: 404
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the
+            problem.
+          example: Time window 98034 does not exist
+        hint:
+          type: string
+          description: Machine-readable hint providing context about the error reason.
+          example: TIME_WINDOW_WAS_DELETED
+        error_code:
+          type: string
+          description: Unique identifier for logging and tracking the specific error
+            instance.
+          example: 9CE78CE7A61E40ADA919C43EA268008D
+      required:
+        - timestamp
+        - type
+        - title
+        - status
+        - detail
+    OperationDto:
+      type: object
+      properties:
+        order:
+          type: number
+          description: Order of operation.
+          example: 1
+        operation_type:
+          type: string
+          description: Type of operation.
+          example: loading
+        time_window_id:
+          type: number
+          description: ID of time window.
+          example: 98033
+      required:
+        - order
+        - operation_type
+        - time_window_id
+    SpotDetailsDto:
+      type: object
+      properties:
+        order:
+          type: number
+          description: Spot order.
+          example: 1
+        operations:
+          description: List of operations at this spot.
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationDto"
+        address:
+          description: Spot address.
+          allOf:
+            - $ref: "#/components/schemas/AddressDetailsDto"
+      required:
+        - order
+        - operations
+        - address
+    RouteDetailsDto:
+      type: object
+      properties:
+        spots:
+          description: List of spots on the route.
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotDetailsDto"
+      required:
+        - spots
+    AnnouncementAssignmentDto:
+      type: object
+      properties:
+        allow_merge:
+          type: boolean
+          description: Allow merging.
+          example: false
+      required:
+        - allow_merge
+    TimeWindowEntityResponseV2Dto:
+      type: object
+      properties:
+        announcement:
+          type: object
+          nullable: true
+          description: Announcement object.
+        attachments:
+          type: object
+          nullable: true
+          description: Attachments object.
+        forward:
+          type: object
+          nullable: true
+          description: Forwarding object.
+        transport:
+          type: object
+          nullable: true
+          description: Transport object.
+        billable:
+          type: boolean
+          description: Is the time window billable.
+          example: false
+        id:
+          type: number
+          description: Time window internal ID.
+          example: 98033
+        reference_number:
+          type: string
+          description: Internal reference number.
+          example: DS/184A9DD
+        external_number:
+          type: string
+          description: External reference number.
+          example: "4444"
+        created_at:
+          type: string
+          description: Creation date and time.
+          example: 2025-11-14T09:05:04
+        valid_from:
+          type: string
+          description: Date valid from (YYYY-MM-DD).
+          example: 2025-11-14
+        valid_to:
+          type: string
+          description: Date valid to (YYYY-MM-DD).
+          example: 2025-11-14
+        start_time:
+          type: string
+          nullable: true
+          description: Start time (HH:MM:SS).
+        end_time:
+          type: string
+          nullable: true
+          description: End time (HH:MM:SS).
+        range_type:
+          type: string
+          description: Range type.
+          example: CYCLE
+        is_expired:
+          type: boolean
+          description: Is the time window expired.
+          example: true
+        status:
+          type: string
+          description: Status of the time window.
+          example: AVAILABLE
+        operation_type:
+          type: string
+          description: Type of operation.
+          example: loading
+        remarks:
+          type: string
+          nullable: true
+          description: Remarks.
+        route:
+          description: Route and spots details.
+          allOf:
+            - $ref: "#/components/schemas/RouteDetailsDto"
+        carrier:
+          description: Carrier details.
+          allOf:
+            - $ref: "#/components/schemas/CompanyDetailsDto"
+        shipper:
+          description: Shipper details.
+          allOf:
+            - $ref: "#/components/schemas/CompanyDetailsDto"
+        warehouse:
+          description: Warehouse details.
+          allOf:
+            - $ref: "#/components/schemas/WarehouseDetailsDto"
+        ramps:
+          type: array
+          items:
+            required: true
+            description: Ramps array.
+            example: []
+            type: array
+            items:
+              type: object
+        external_source:
+          type: string
+          nullable: true
+          description: External source identifier.
+        operation_time:
+          type: string
+          description: Operation duration (ISO 8601).
+          example: PT5M
+        forward_permissions:
+          description: Forwarding permissions.
+          allOf:
+            - $ref: "#/components/schemas/ForwardPermissionsDto"
+        freight_order:
+          description: Freight order details.
+          allOf:
+            - $ref: "#/components/schemas/FreightOrderDetailsDto"
+        purchase_order:
+          type: object
+          nullable: true
+          description: Purchase order details.
+        announcement_assignment:
+          description: Announcement assignment settings.
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementAssignmentDto"
+      required:
+        - announcement
+        - attachments
+        - forward
+        - transport
+        - billable
+        - id
+        - reference_number
+        - external_number
+        - created_at
+        - valid_from
+        - valid_to
+        - start_time
+        - end_time
+        - range_type
+        - is_expired
+        - status
+        - operation_type
+        - remarks
+        - route
+        - carrier
+        - shipper
+        - warehouse
+        - ramps
+        - external_source
+        - operation_time
+        - forward_permissions
+        - freight_order
+        - purchase_order
+        - announcement_assignment
+    PossibleTimeWindowResponseV2Dto:
+      type: object
+      properties:
+        time_windows:
+          type: object
+          description: |2-
+            
+                        Nested map of available time slots.
+                        <br/>Level 1 Key: **Ramp ID**
+                        <br/>Level 2 Key: **Date (YYYY-MM-DD)**
+                        <br/>Value: **List of slots**
+          example:
+            additionalProp1:
+              2025-11-21:
+                - start_time: 09:00:00
+                  end_time: 09:30:00
+                  ramp_id: 0
+            additionalProp2:
+              2025-11-22:
+                - start_time: 10:00:00
+                  end_time: 10:30:00
+                  ramp_id: 0
+        ramps:
+          type: object
+          description: "Map of ramps details. Key: **Ramp ID**."
+          example:
+            additionalProp1:
+              id: 0
+              is_active: true
+              is_locked: true
+              name: string
+              operation_type: loading
+              ramp_type: SILO
+              time_zone: string
+            additionalProp2:
+              id: 0
+              is_active: true
+              is_locked: false
+              name: Ramp B
+              operation_type: any
+              ramp_type: RAMP
+              time_zone: Europe/Warsaw
+        quantity:
+          type: number
+          description: Total quantity of available slots.
+          example: 7
+      required:
+        - time_windows
+        - ramps
+        - quantity
+    WarehouseCollectionResponseV2Dto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/WarehouseDetailsDto"
+        offset:
+          type: number
+        limit:
+          type: number
+        last:
+          type: boolean
+      required:
+        - content
+        - offset
+        - limit
+        - last
+    ApiErrorDto:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          description: Timestamp of the error (ISO 8601)
+          example: 2025-12-04T10:18:09.189Z
+        type:
+          type: string
+          description: Internal exception type
+          example: AccessDeniedException
+        title:
+          type: string
+          description: Short error title
+          example: Forbidden
+        status:
+          type: number
+          description: HTTP Status Code
+          example: 403
+        detail:
+          type: string
+          description: Detailed error description
+          example: You do not have permission to access this warehouse.
+        error_code:
+          type: string
+          description: Internal error code identifier
+          example: ERR_ACCESS_DENIED
+          nullable: true
+        hint:
+          type: string
+          description: Hint for the client
+          example: CHECK_USER_PERMISSIONS
+          nullable: true
+      required:
+        - timestamp
+        - type
+        - title
+        - status
+        - detail
+    RampDto:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        is_active:
+          type: boolean
+        ramp_type:
+          type: string
+        is_locked:
+          type: boolean
+        operation_type:
+          type: string
+        warehouse:
+          $ref: "#/components/schemas/WarehouseDetailsDto"
+      required:
+        - id
+        - name
+        - is_active
+        - ramp_type
+        - is_locked
+        - operation_type
+        - warehouse
+    TemplateParameterDto:
+      type: object
+      properties:
+        group:
+          type: string
+        name:
+          type: string
+        is_mandatory:
+          type: boolean
+        default_value:
+          type: string
+          nullable: true
+      required:
+        - group
+        - name
+        - is_mandatory
+        - default_value
+    CargoDto:
+      type: object
+      properties:
+        weight:
+          type: number
+          example: 1000
+      required:
+        - weight
+    NoteDto:
+      type: object
+      properties:
+        id:
+          type: number
+        note:
+          type: string
+        type:
+          type: string
+      required:
+        - id
+        - note
+        - type
+    AttachmentDto:
+      type: object
+      properties:
+        created_at:
+          type: string
+        file_name:
+          type: string
+        media_storage_id:
+          type: string
+        owner_name:
+          type: string
+          nullable: true
+        size:
+          type: number
+        type:
+          type: string
+      required:
+        - created_at
+        - file_name
+        - media_storage_id
+        - owner_name
+        - size
+        - type
+    AttachmentsMapDto:
+      type: object
+      properties:
+        carrier:
+          nullable: true
+          type: array
+          items:
+            $ref: "#/components/schemas/AttachmentDto"
+        shipper:
+          nullable: true
+          type: array
+          items:
+            $ref: "#/components/schemas/AttachmentDto"
+    TimeWindowAssignmentDto:
+      type: object
+      properties:
+        allow_many:
+          type: boolean
+      required:
+        - allow_many
+    AnnouncementListItemDto:
+      type: object
+      properties:
+        id:
+          type: number
+        status:
+          type: string
+          nullable: true
+        stage:
+          type: string
+          nullable: true
+        date_from:
+          type: string
+        date_to:
+          type: string
+        operation_time:
+          type: string
+        operation_type:
+          type: string
+          nullable: true
+        reference_number:
+          type: string
+          nullable: true
+        external_reference_number:
+          type: string
+          nullable: true
+        ramp:
+          $ref: "#/components/schemas/RampDto"
+        shipper:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CompanyDetailsDto"
+        carrier:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CompanyDetailsDto"
+        template_parameters:
+          type: array
+          items:
+            $ref: "#/components/schemas/TemplateParameterDto"
+        forward_permissions:
+          $ref: "#/components/schemas/ForwardPermissionsDto"
+        vehicle:
+          type: object
+          nullable: true
+        driver:
+          type: object
+          nullable: true
+        second_driver:
+          type: object
+          nullable: true
+        route:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/RouteDetailsDto"
+        forward:
+          type: object
+          nullable: true
+        transport:
+          type: object
+          nullable: true
+        freight_order:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/FreightOrderDetailsDto"
+        trans_task:
+          type: object
+          nullable: true
+        time_windows:
+          nullable: true
+          type: array
+          items:
+            type: object
+        additional_purchase_orders:
+          nullable: true
+          type: array
+          items:
+            type: object
+        cargo:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CargoDto"
+        notes:
+          nullable: true
+          type: array
+          items:
+            $ref: "#/components/schemas/NoteDto"
+        attachments:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AttachmentsMapDto"
+        time_window_assignment:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/TimeWindowAssignmentDto"
+      required:
+        - id
+        - status
+        - stage
+        - date_from
+        - date_to
+        - operation_time
+        - operation_type
+        - reference_number
+        - external_reference_number
+        - ramp
+        - shipper
+        - carrier
+        - template_parameters
+        - forward_permissions
+        - vehicle
+        - driver
+        - second_driver
+        - route
+        - forward
+        - transport
+        - freight_order
+        - trans_task
+        - time_windows
+        - additional_purchase_orders
+        - cargo
+        - notes
+        - attachments
+        - time_window_assignment
+    AnnouncementCollectionResponseV2Dto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementListItemDto"
+        offset:
+          type: number
+        limit:
+          type: number
+        last:
+          type: boolean
+        total_items:
+          type: number
+          nullable: true
+      required:
+        - content
+        - offset
+        - limit
+        - last
+        - total_items
+    AnnouncementResponseV2Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        status:
+          type: string
+          nullable: true
+        stage:
+          type: string
+          nullable: true
+        date_from:
+          type: string
+        date_to:
+          type: string
+        operation_time:
+          type: string
+        operation_type:
+          type: string
+          nullable: true
+        reference_number:
+          type: string
+          nullable: true
+        external_reference_number:
+          type: string
+          nullable: true
+        ramp:
+          $ref: "#/components/schemas/RampDto"
+        shipper:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CompanyDetailsDto"
+        carrier:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CompanyDetailsDto"
+        template_parameters:
+          type: array
+          items:
+            $ref: "#/components/schemas/TemplateParameterDto"
+        forward_permissions:
+          $ref: "#/components/schemas/ForwardPermissionsDto"
+        vehicle:
+          type: object
+          nullable: true
+        driver:
+          type: object
+          nullable: true
+        second_driver:
+          type: object
+          nullable: true
+        route:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/RouteDetailsDto"
+        forward:
+          type: object
+          nullable: true
+        transport:
+          type: object
+          nullable: true
+        freight_order:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/FreightOrderDetailsDto"
+        trans_task:
+          type: object
+          nullable: true
+        time_windows:
+          nullable: true
+          type: array
+          items:
+            type: object
+        additional_purchase_orders:
+          nullable: true
+          type: array
+          items:
+            type: object
+        cargo:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CargoDto"
+        notes:
+          nullable: true
+          type: array
+          items:
+            $ref: "#/components/schemas/NoteDto"
+        attachments:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AttachmentsMapDto"
+        time_window_assignment:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/TimeWindowAssignmentDto"
+      required:
+        - id
+        - status
+        - stage
+        - date_from
+        - date_to
+        - operation_time
+        - operation_type
+        - reference_number
+        - external_reference_number
+        - ramp
+        - shipper
+        - carrier
+        - template_parameters
+        - forward_permissions
+        - vehicle
+        - driver
+        - second_driver
+        - route
+        - forward
+        - transport
+        - freight_order
+        - trans_task
+        - time_windows
+        - additional_purchase_orders
+        - cargo
+        - notes
+        - attachments
+        - time_window_assignment
+    SimpleIdInputDto:
+      type: object
+      properties:
+        id:
+          type: number
+          description: ID (int64)
+          example: 1
+      required:
+        - id
+    PurchaseOrderInputDto:
+      type: object
+      properties:
+        number:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Purchase order number (1-50 chars)
+          example: PO-12345
+      required:
+        - number
+    ContactPhoneInputDto:
+      type: object
+      properties:
+        number:
+          type: string
+          minLength: 2
+          description: Phone number (>1 char)
+          example: "123456789"
+        prefix:
+          type: string
+          minLength: 2
+          description: Phone prefix (>1 char)
+          example: "+48"
+      required:
+        - number
+        - prefix
+    SubcontractorInputDto:
+      type: object
+      properties:
+        contact_phone:
+          $ref: "#/components/schemas/ContactPhoneInputDto"
+        email:
+          type: string
+          format: email
+          description: Email
+          example: subcontractor@example.com
+        legal_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Legal name (1-255 chars)
+          example: Subcontractor Logistics
+        telephone:
+          type: string
+          minLength: 6
+          maxLength: 20
+          description: Telephone (6-20 chars)
+          example: +48 123 456 789
+      required:
+        - contact_phone
+        - email
+        - legal_name
+        - telephone
+    CarrierInputDto:
+      type: object
+      properties:
+        type:
+          enum:
+            - REGISTERED
+            - EXTERNAL
+          type: string
+          description: Carrier Type
+          example: REGISTERED
+        id:
+          type: number
+          description: Carrier ID
+          example: 123
+        legal_name:
+          type: string
+          description: Legal name
+          example: Fast Trans
+        email:
+          type: string
+          format: email
+          description: Email (Required if EXTERNAL)
+          example: carrier@example.com
+        telephone:
+          type: string
+          minLength: 6
+          maxLength: 20
+          description: Telephone (6-20 chars)
+          example: "123456789"
+        contact_phone:
+          $ref: "#/components/schemas/ContactPhoneInputDto"
+        subcontractor:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/SubcontractorInputDto"
+      required:
+        - type
+        - id
+        - legal_name
+        - telephone
+        - contact_phone
+    IdentityDocumentInputDto:
+      type: object
+      properties:
+        issuing_authority:
+          type: string
+          description: Issuing authority
+          example: Mayor of Wroclaw
+        number:
+          type: string
+          description: Document number
+          example: ABC123456
+        type:
+          enum:
+            - IDENTITY_CARD
+            - PASSPORT
+            - RESIDENCE_CARD
+            - DRIVING_LICENSE
+            - OTHER
+          type: string
+          description: Document type
+          example: IDENTITY_CARD
+      required:
+        - issuing_authority
+        - number
+        - type
+    DriverInputDto:
+      type: object
+      properties:
+        account_id:
+          type: number
+          description: Account ID
+          example: 0
+        full_name:
+          type: string
+          description: Full name
+          example: Jan Kowalski
+        country:
+          type: string
+          description: Country code
+          example: 47_poland
+        languages:
+          type: string
+          description: Languages code
+          example: 1_pl
+        phone_number:
+          type: string
+          description: Phone number string
+          example: "+48123456789"
+        contact_phone:
+          $ref: "#/components/schemas/ContactPhoneInputDto"
+        first_document:
+          $ref: "#/components/schemas/IdentityDocumentInputDto"
+        second_document:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/IdentityDocumentInputDto"
+      required:
+        - account_id
+        - full_name
+        - country
+        - languages
+        - phone_number
+        - contact_phone
+        - first_document
+    VehicleInputDto:
+      type: object
+      properties:
+        combustion_norm:
+          type: string
+          description: Combustion norm (Dictionary value)
+          example: 8_euro_6
+        trailer_plate_number:
+          type: string
+          description: Trailer plate number
+          example: DW 54321
+        truck_plate_number:
+          type: string
+          description: Truck plate number
+          example: DW 12345
+        vehicle_manufacturer:
+          type: string
+          description: Vehicle manufacturer code (Dictionary value)
+          example: 459_scania
+      required:
+        - combustion_norm
+        - trailer_plate_number
+        - truck_plate_number
+        - vehicle_manufacturer
+    AnnouncementCreatePayloadV2Dto:
+      type: object
+      properties:
+        date_from:
+          type: string
+          description: Date from (ISO 8601)
+          example: 2025-11-24T12:50:45.593Z
+        ramp:
+          description: Ramp ID wrapper
+          allOf:
+            - $ref: "#/components/schemas/SimpleIdInputDto"
+        additional_purchase_orders:
+          description: List of additional purchase orders
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseOrderInputDto"
+        carrier:
+          $ref: "#/components/schemas/CarrierInputDto"
+        driver:
+          $ref: "#/components/schemas/DriverInputDto"
+        external_reference_number:
+          type: string
+          minLength: 0
+          maxLength: 255
+          description: External reference number (0-255 chars)
+          example: EXT-123
+        operation_time:
+          type: string
+          description: Operation time (ISO Duration)
+          example: PT30M
+        operation_type:
+          enum:
+            - loading
+            - unloading
+          type: string
+          description: Operation type
+          example: loading
+        second_driver:
+          nullable: true
+          description: Second driver details
+          allOf:
+            - $ref: "#/components/schemas/DriverInputDto"
+        time_windows:
+          description: Assigned time windows IDs
+          type: array
+          items:
+            $ref: "#/components/schemas/SimpleIdInputDto"
+        vehicle:
+          $ref: "#/components/schemas/VehicleInputDto"
+      required:
+        - date_from
+        - ramp
+    AttachmentInputDto:
+      type: object
+      properties:
+        file_name:
+          type: string
+          description: File name
+          example: document.pdf
+        media_storage_id:
+          type: string
+          description: Media storage ID
+          example: ms-uuid-123
+        size:
+          type: number
+          minimum: 0
+          description: File size in bytes
+          example: 1024
+      required:
+        - file_name
+        - media_storage_id
+        - size
+    ForwardCarrierInputDto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 123
+        type:
+          type: string
+          example: REGISTERED
+      required:
+        - id
+        - type
+    ForwardInputDto:
+      type: object
+      properties:
+        allow_forward:
+          type: boolean
+        carrier:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/ForwardCarrierInputDto"
+      required:
+        - allow_forward
+    ForwardPermissionsInputDto:
+      type: object
+      properties:
+        allow:
+          type: boolean
+        require_carrier_data:
+          type: boolean
+      required:
+        - allow
+        - require_carrier_data
+    NoteInputDto:
+      type: object
+      properties:
+        note:
+          type: string
+          description: Content of the note
+        type:
+          type: string
+          description: Type of the note
+          example: CARRIER
+      required:
+        - note
+        - type
+    OtherPlaceCoordinatesDto:
+      type: object
+      properties:
+        latitude:
+          type: number
+          example: 52
+        longitude:
+          type: number
+          example: 21
+      required:
+        - latitude
+        - longitude
+    OtherPlaceInputDto:
+      type: object
+      properties:
+        coordinates:
+          $ref: "#/components/schemas/OtherPlaceCoordinatesDto"
+        country:
+          type: string
+        description:
+          type: string
+          nullable: true
+        locality:
+          type: string
+        name:
+          type: string
+        number:
+          type: string
+        postal_code:
+          type: string
+        street:
+          type: string
+      required:
+        - coordinates
+        - country
+        - locality
+        - name
+        - number
+        - postal_code
+        - street
+    RemovedAttachmentInputDto:
+      type: object
+      properties:
+        media_storage_id:
+          type: string
+          description: Media storage ID to remove
+      required:
+        - media_storage_id
+    TrailerInputDto:
+      type: object
+      properties:
+        plate_number:
+          type: string
+      required:
+        - plate_number
+    TruckInputDto:
+      type: object
+      properties:
+        combustion_norm:
+          type: string
+          example: 8_euro_6
+        manufacturer:
+          type: string
+          example: 459_scania
+        plate_number:
+          type: string
+      required:
+        - combustion_norm
+        - manufacturer
+        - plate_number
+    VehicleUpdateInputDto:
+      type: object
+      properties:
+        trailer:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/TrailerInputDto"
+        truck:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/TruckInputDto"
+    AnnouncementUpdatePayloadV2Dto:
+      type: object
+      properties:
+        additional_purchase_orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseOrderInputDto"
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttachmentInputDto"
+        carrier:
+          $ref: "#/components/schemas/CarrierInputDto"
+        date_from:
+          type: string
+          example: 2025-11-24T16:33:54.471Z
+        driver:
+          $ref: "#/components/schemas/DriverInputDto"
+        external_reference_number:
+          type: string
+        forward:
+          $ref: "#/components/schemas/ForwardInputDto"
+        forward_permissions:
+          $ref: "#/components/schemas/ForwardPermissionsInputDto"
+        notes:
+          type: array
+          items:
+            $ref: "#/components/schemas/NoteInputDto"
+        operation_time:
+          type: string
+          example: PT30M
+        operation_type:
+          enum:
+            - loading
+            - unloading
+          type: string
+        other_place:
+          $ref: "#/components/schemas/OtherPlaceInputDto"
+        ramp:
+          $ref: "#/components/schemas/SimpleIdInputDto"
+        reason_for_refusing_to_load:
+          type: string
+        removed_additional_purchase_orders:
+          description: Orders to remove
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseOrderInputDto"
+        removed_attachments:
+          description: Attachments to remove
+          type: array
+          items:
+            $ref: "#/components/schemas/RemovedAttachmentInputDto"
+        removed_time_windows:
+          description: Time windows to remove
+          type: array
+          items:
+            $ref: "#/components/schemas/SimpleIdInputDto"
+        second_driver:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/DriverInputDto"
+        stage:
+          type: string
+          example: INITIAL
+        time_windows:
+          type: array
+          items:
+            $ref: "#/components/schemas/SimpleIdInputDto"
+        vehicle:
+          $ref: "#/components/schemas/VehicleUpdateInputDto"
+    AnnouncementListItemVehicleV1Dto:
+      type: object
+      properties:
+        truck_plate_number:
+          type: string
+          nullable: true
+        trailer_plate_number:
+          type: string
+          nullable: true
+    AnnouncementListItemDriverV1Dto:
+      type: object
+      properties:
+        full_name:
+          type: string
+          nullable: true
+        phone_number:
+          type: string
+          nullable: true
+    AnnouncementListItemAddressV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        locality:
+          type: string
+          nullable: true
+    AnnouncementListItemTimeZoneV1Dto:
+      type: object
+      properties:
+        id:
+          type: string
+        offset:
+          type: string
+        offset_minutes:
+          type: number
+      required:
+        - id
+        - offset
+        - offset_minutes
+    AnnouncementListItemWarehouseV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        is_active:
+          type: boolean
+        is_locked:
+          type: boolean
+        address:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemAddressV1Dto"
+        time_zone:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemTimeZoneV1Dto"
+      required:
+        - id
+        - name
+        - is_active
+        - is_locked
+    AnnouncementListItemRampV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        is_active:
+          type: boolean
+        is_locked:
+          type: boolean
+        warehouse:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemWarehouseV1Dto"
+      required:
+        - id
+        - name
+        - is_active
+        - is_locked
+    AnnouncementListItemCompanyV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        legal_name:
+          type: string
+        type:
+          type: string
+          nullable: true
+      required:
+        - id
+        - legal_name
+    AnnouncementListItemTimeWindowV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        external_number:
+          type: string
+          nullable: true
+        reference_number:
+          type: string
+          nullable: true
+      required:
+        - id
+    AnnouncementListItemPlaceV1Dto:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        street:
+          type: string
+          nullable: true
+        number:
+          type: string
+          nullable: true
+        locality:
+          type: string
+          nullable: true
+        postal_code:
+          type: string
+          nullable: true
+        country:
+          type: string
+          nullable: true
+    AnnouncementListItemRouteV1Dto:
+      type: object
+      properties:
+        loading_place:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemPlaceV1Dto"
+        unloading_place:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemPlaceV1Dto"
+    AnnouncementListItemTemplateV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+      required:
+        - id
+        - name
+    AnnouncementListItemV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        date_from:
+          type: string
+        date_to:
+          type: string
+        status:
+          type: string
+          nullable: true
+        stage:
+          type: string
+          nullable: true
+        arrival_delay:
+          type: number
+          nullable: true
+        reference_number:
+          type: string
+          nullable: true
+        order_reference_number:
+          type: string
+          nullable: true
+        operation_type:
+          type: string
+          nullable: true
+        remarks:
+          type: object
+          nullable: true
+        vehicle:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemVehicleV1Dto"
+        driver:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemDriverV1Dto"
+        ramp:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemRampV1Dto"
+        carrier:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemCompanyV1Dto"
+        subcontractor:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemCompanyV1Dto"
+        shipper:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemCompanyV1Dto"
+        time_window:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemTimeWindowV1Dto"
+        route:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemRouteV1Dto"
+        notes:
+          type: string
+          nullable: true
+        template:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementListItemTemplateV1Dto"
+      required:
+        - id
+        - date_from
+        - date_to
+    AnnouncementCollectionResponseV1Dto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementListItemV1Dto"
+        page:
+          type: number
+        page_count:
+          type: number
+        page_size:
+          type: number
+        total_items:
+          type: number
+      required:
+        - content
+        - page
+        - page_count
+        - page_size
+        - total_items
+    AnnouncementVehicleWeightV1Dto:
+      type: object
+      properties:
+        entrance:
+          type: number
+          nullable: true
+        leave:
+          type: number
+          nullable: true
+    AnnouncementVehicleV1Dto:
+      type: object
+      properties:
+        combustion_norm:
+          type: string
+        trailer_plate_number:
+          type: string
+        truck_plate_number:
+          type: string
+        vehicle_manufacturer:
+          type: string
+        weight:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementVehicleWeightV1Dto"
+      required:
+        - combustion_norm
+        - trailer_plate_number
+        - truck_plate_number
+        - vehicle_manufacturer
+    AnnouncementWarehouseConfigurationV1Dto:
+      type: object
+      properties:
+        slot:
+          type: number
+        id:
+          type: number
+        valid_from:
+          type: string
+        valid_until:
+          type: string
+          nullable: true
+        quantity_of_slots:
+          type: number
+      required:
+        - slot
+        - id
+        - valid_from
+        - valid_until
+        - quantity_of_slots
+    AnnouncementGeoCoordinatesV1Dto:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+    AnnouncementAddressV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+          nullable: true
+        street:
+          type: string
+        number:
+          type: string
+        locality:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+        coordinates:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementGeoCoordinatesV1Dto"
+        remarks:
+          type: string
+          nullable: true
+      required:
+        - street
+        - number
+        - locality
+        - postal_code
+        - country
+    AnnouncementTimeZoneV1Dto:
+      type: object
+      properties:
+        id:
+          type: string
+        offset:
+          type: string
+        offset_minutes:
+          type: number
+      required:
+        - id
+        - offset
+        - offset_minutes
+    AnnouncementWarehouseV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        configurations:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementWarehouseConfigurationV1Dto"
+        address:
+          $ref: "#/components/schemas/AnnouncementAddressV1Dto"
+        is_active:
+          type: boolean
+        is_locked:
+          type: boolean
+        operation_type:
+          type: string
+        time_zone:
+          $ref: "#/components/schemas/AnnouncementTimeZoneV1Dto"
+        slot:
+          type: number
+          nullable: true
+        quantity_of_slots:
+          type: number
+          nullable: true
+        rules_file_id:
+          type: string
+          nullable: true
+        rules_file_name:
+          type: string
+          nullable: true
+        rules_file_original_name:
+          type: string
+          nullable: true
+      required:
+        - id
+        - name
+        - configurations
+        - address
+        - is_active
+        - is_locked
+        - operation_type
+        - time_zone
+    AnnouncementRampV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        is_active:
+          type: boolean
+        ramp_type:
+          type: string
+        is_locked:
+          type: boolean
+        operation_type:
+          type: string
+        warehouse:
+          $ref: "#/components/schemas/AnnouncementWarehouseV1Dto"
+      required:
+        - id
+        - name
+        - is_active
+        - ramp_type
+        - is_locked
+        - operation_type
+        - warehouse
+    AnnouncementCompanyV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        legal_name:
+          type: string
+        type:
+          type: string
+          nullable: true
+        telephone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        address:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementAddressV1Dto"
+        subcontractor:
+          type: object
+          nullable: true
+      required:
+        - id
+        - legal_name
+    AnnouncementCargoV1Dto:
+      type: object
+      properties:
+        weight:
+          type: number
+      required:
+        - weight
+    AnnouncementContactPhoneV1Dto:
+      type: object
+      properties:
+        number:
+          type: string
+        prefix:
+          type: string
+      required:
+        - number
+        - prefix
+    AnnouncementIdentityDocumentV1Dto:
+      type: object
+      properties:
+        issuing_authority:
+          type: string
+        number:
+          type: string
+        type:
+          type: string
+      required:
+        - issuing_authority
+        - number
+        - type
+    AnnouncementDriverV1Dto:
+      type: object
+      properties:
+        account_id:
+          type: number
+        contact_phone:
+          $ref: "#/components/schemas/AnnouncementContactPhoneV1Dto"
+        country:
+          type: string
+        first_document:
+          $ref: "#/components/schemas/AnnouncementIdentityDocumentV1Dto"
+        full_name:
+          type: string
+        languages:
+          type: string
+        phone_number:
+          type: string
+        second_document:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementIdentityDocumentV1Dto"
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementIdentityDocumentV1Dto"
+      required:
+        - account_id
+        - contact_phone
+        - country
+        - first_document
+        - full_name
+        - languages
+        - phone_number
+        - second_document
+    AnnouncementAttachmentV1Dto:
+      type: object
+      properties:
+        created_at:
+          type: string
+        file_name:
+          type: string
+        media_storage_id:
+          type: string
+        size:
+          type: number
+        type:
+          type: string
+        owner_name:
+          type: string
+          nullable: true
+      required:
+        - created_at
+        - file_name
+        - media_storage_id
+        - size
+        - type
+    AnnouncementAttachmentsMapV1Dto:
+      type: object
+      properties:
+        carrier:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementAttachmentV1Dto"
+        shipper:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementAttachmentV1Dto"
+    AnnouncementDisallowReasonV1Dto:
+      type: object
+      properties:
+        limit:
+          type: number
+          nullable: true
+        non_forwardable_time_windows:
+          type: array
+          items:
+            type: object
+        reason:
+          type: string
+      required:
+        - limit
+        - non_forwardable_time_windows
+        - reason
+    AnnouncementForwardPermissionsV1Dto:
+      type: object
+      properties:
+        allow:
+          type: boolean
+        disallow:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementDisallowReasonV1Dto"
+        require_carrier_data:
+          type: boolean
+      required:
+        - allow
+        - require_carrier_data
+    AnnouncementFreightOrderV1Dto:
+      type: object
+      properties:
+        external_reference_number:
+          type: string
+          nullable: true
+        freight_id:
+          type: number
+          nullable: true
+        freight_reference_number:
+          type: string
+          nullable: true
+        order_id:
+          type: string
+          nullable: true
+        order_reference_number:
+          type: string
+          nullable: true
+        publication_id:
+          type: string
+          nullable: true
+      required:
+        - external_reference_number
+        - freight_id
+        - freight_reference_number
+        - order_id
+        - order_reference_number
+        - publication_id
+    AnnouncementNoteV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        note:
+          type: string
+        type:
+          type: string
+      required:
+        - id
+        - note
+        - type
+    AnnouncementRouteAddressV1Dto:
+      type: object
+      properties:
+        country:
+          type: string
+        description:
+          type: string
+          nullable: true
+        locality:
+          type: string
+        name:
+          type: string
+        number:
+          type: string
+        postal_code:
+          type: string
+        street:
+          type: string
+        coordinates:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementGeoCoordinatesV1Dto"
+      required:
+        - country
+        - locality
+        - number
+        - postal_code
+        - street
+    AnnouncementRouteOperationV1Dto:
+      type: object
+      properties:
+        operation_type:
+          type: string
+        order:
+          type: number
+        time_window_id:
+          type: number
+      required:
+        - operation_type
+        - order
+        - time_window_id
+    AnnouncementRouteSpotV1Dto:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/AnnouncementRouteAddressV1Dto"
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementRouteOperationV1Dto"
+        order:
+          type: number
+      required:
+        - address
+        - operations
+        - order
+    AnnouncementRouteV1Dto:
+      type: object
+      properties:
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementRouteSpotV1Dto"
+      required:
+        - spots
+    AnnouncementTemplateParameterV1Dto:
+      type: object
+      properties:
+        group:
+          type: string
+        name:
+          type: string
+        is_mandatory:
+          type: boolean
+        default_value:
+          type: string
+          nullable: true
+      required:
+        - group
+        - name
+        - is_mandatory
+        - default_value
+    AnnouncementResponseV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        status:
+          type: string
+          nullable: true
+        stage:
+          type: string
+          nullable: true
+        arrival_delay:
+          type: number
+          nullable: true
+        vehicle:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementVehicleV1Dto"
+        ramp:
+          $ref: "#/components/schemas/AnnouncementRampV1Dto"
+        carrier:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementCompanyV1Dto"
+        shipper:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementCompanyV1Dto"
+        cargo:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementCargoV1Dto"
+        date_from:
+          type: string
+        date_to:
+          type: string
+        operation_type:
+          type: string
+          nullable: true
+        driver:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementDriverV1Dto"
+        second_driver:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementDriverV1Dto"
+        reference_number:
+          type: string
+          nullable: true
+        external_reference_number:
+          type: string
+          nullable: true
+        additional_purchase_orders:
+          type: array
+          items:
+            type: object
+        attachments:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementAttachmentsMapV1Dto"
+        booking_deadline:
+          type: object
+          nullable: true
+        creator:
+          type: object
+          nullable: true
+        forward:
+          type: object
+          nullable: true
+        forward_permissions:
+          $ref: "#/components/schemas/AnnouncementForwardPermissionsV1Dto"
+        freight_order:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementFreightOrderV1Dto"
+        notes:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementNoteV1Dto"
+        operation_time:
+          type: string
+          nullable: true
+        reason_for_refusing_to_load:
+          type: string
+          nullable: true
+        route:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementRouteV1Dto"
+        state_change:
+          type: string
+          nullable: true
+        template_parameters:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementTemplateParameterV1Dto"
+        time_window:
+          type: object
+          nullable: true
+        trans_task:
+          type: object
+          nullable: true
+        transport:
+          type: object
+          nullable: true
+      required:
+        - id
+        - status
+        - stage
+        - vehicle
+        - ramp
+        - cargo
+        - date_from
+        - date_to
+        - operation_type
+        - driver
+        - second_driver
+        - reference_number
+        - external_reference_number
+    RampIdInputDto:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Ramp ID
+          example: 1
+      required:
+        - id
+    AnnouncementSlotUpdateV1Dto:
+      type: object
+      properties:
+        date_from:
+          type: string
+          description: Date format ISO 8601
+          example: 2022-12-01T08:00:00
+        operation_time:
+          type: string
+          description: "ISO-8601 duration format: PnDTnHnMn"
+          example: PT30M
+        ramp:
+          $ref: "#/components/schemas/RampIdInputDto"
+      required:
+        - date_from
+        - operation_time
+        - ramp
+    AnnouncementWriteResponseV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        status:
+          type: string
+          nullable: true
+        stage:
+          type: string
+          nullable: true
+        state_change:
+          type: string
+          nullable: true
+        arrival_delay:
+          type: number
+          nullable: true
+        vehicle:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementVehicleV1Dto"
+        driver:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementDriverV1Dto"
+        second_driver:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementDriverV1Dto"
+        cargo:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AnnouncementCargoV1Dto"
+        date_from:
+          type: string
+          example: 2026-07-14T10:00:00
+        date_to:
+          type: string
+          example: 2026-07-14T11:00:00
+        operation_type:
+          type: string
+          nullable: true
+        reference_number:
+          type: string
+          nullable: true
+        external_reference_number:
+          type: string
+          nullable: true
+        ramp:
+          $ref: "#/components/schemas/AnnouncementRampV1Dto"
+      required:
+        - id
+        - status
+        - stage
+        - state_change
+        - vehicle
+        - driver
+        - second_driver
+        - cargo
+        - date_from
+        - date_to
+        - operation_type
+        - reference_number
+        - external_reference_number
+        - ramp
+    AnnouncementStageUpdateV1Dto:
+      type: object
+      properties:
+        stage:
+          type: string
+          description: Announcement stage
+          example: INITIAL
+        reason_for_refusing:
+          type: string
+          description: Reason for refusing
+      required:
+        - stage
+    VehicleV1InputDto:
+      type: object
+      properties:
+        truck_plate_number:
+          type: string
+          description: Truck plate number
+        trailer_plate_number:
+          type: string
+          description: Trailer plate number
+        vehicle_manufacturer:
+          type: string
+          description: Vehicle manufacturer (id from vehicle manufacturers dictionary)
+          example: 459_scania
+        combustion_norm:
+          type: string
+          description: Combustion norm (id from combustion norms dictionary)
+          example: 8_euro_6
+    IdentityDocumentV1InputDto:
+      type: object
+      properties:
+        issuing_authority:
+          type: string
+          description: Issuing authority
+        number:
+          type: string
+          description: Document number
+        type:
+          enum:
+            - IDENTITY_CARD
+            - PASSPORT
+            - RESIDENCE_CARD
+            - DRIVING_LICENSE
+            - OTHER
+          type: string
+          description: Document type
+          example: IDENTITY_CARD
+      required:
+        - number
+        - type
+    DriverV1InputDto:
+      type: object
+      properties:
+        full_name:
+          type: string
+          description: Full name
+        phone_number:
+          type: string
+          description: Phone number
+        country:
+          type: string
+          description: Country code (id from countries dictionary)
+          example: 47_poland
+        languages:
+          description: Language ids (from languages dictionary)
+          example:
+            - 1_pl
+          type: array
+          items:
+            type: string
+        first_document:
+          $ref: "#/components/schemas/IdentityDocumentV1InputDto"
+        second_document:
+          $ref: "#/components/schemas/IdentityDocumentV1InputDto"
+    AnnouncementCreateV1Dto:
+      type: object
+      properties:
+        carrier_id:
+          type: number
+          description: Carrier ID
+        date_from:
+          type: string
+          description: Date from (ISO 8601)
+          example: 2025-11-24T12:50:45.593Z
+        date_to:
+          type: string
+          description: Date to (ISO 8601), used to compute operation_time
+          example: 2025-11-24T13:50:45.593Z
+        ramp_id:
+          type: number
+          description: Ramp ID
+        warehouse_id:
+          type: number
+          description: Warehouse ID (validated to exist before creating the announcement)
+        operation_type:
+          enum:
+            - loading
+            - unloading
+          type: string
+          description: Operation type
+        vehicle:
+          $ref: "#/components/schemas/VehicleV1InputDto"
+        driver:
+          $ref: "#/components/schemas/DriverV1InputDto"
+        second_driver:
+          $ref: "#/components/schemas/DriverV1InputDto"
+        remark:
+          type: string
+          description: Note visible to shipper and carrier
+        remark_internal:
+          type: string
+          description: Note visible only within the shipper company
+        external_reference_number:
+          type: string
+          description: External reference number
+      required:
+        - date_from
+        - date_to
+        - ramp_id
+        - warehouse_id
+    AttachmentV1InputDto:
+      type: object
+      properties:
+        file_name:
+          type: string
+          description: File name
+        media_storage_id:
+          type: string
+          description: Media storage ID
+        size:
+          type: number
+          description: File size in bytes
+      required:
+        - media_storage_id
+    SimpleIdV1InputDto:
+      type: object
+      properties:
+        id:
+          type: number
+          description: ID (int64)
+          example: 1
+      required:
+        - id
+    NoteV1InputDto:
+      type: object
+      properties:
+        note:
+          type: string
+          description: Content of the note
+          example: Some note
+        type:
+          enum:
+            - CARRIER
+            - SHIPPER
+            - SHIPPER_INTERNAL
+          type: string
+          description: Type of the note
+      required:
+        - note
+        - type
+    AnnouncementPatchV1Dto:
+      type: object
+      properties:
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttachmentV1InputDto"
+        carrier:
+          $ref: "#/components/schemas/SimpleIdV1InputDto"
+        date_from:
+          type: string
+          example: 2025-11-24T16:33:54.471Z
+        driver:
+          $ref: "#/components/schemas/DriverV1InputDto"
+        external_reference_number:
+          type: string
+          description: External reference number
+        notes:
+          type: array
+          items:
+            $ref: "#/components/schemas/NoteV1InputDto"
+        operation_time:
+          type: string
+          description: Operation time (ISO-8601 duration)
+          example: PT30M
+        operation_type:
+          enum:
+            - loading
+            - unloading
+          type: string
+          description: Operation type
+        ramp:
+          $ref: "#/components/schemas/SimpleIdV1InputDto"
+        reason_for_refusing_to_load:
+          type: string
+        second_driver:
+          $ref: "#/components/schemas/DriverV1InputDto"
+        stage:
+          enum:
+            - INITIAL
+            - CONFIRMED
+            - VEHICLE_ARRIVED
+            - STARTED
+            - FINISHED
+            - VEHICLE_LEFT
+            - INCOMPLETE
+            - NO_VEHICLE
+            - REFUSED
+          type: string
+          description: Announcement stage
+        time_window:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/SimpleIdV1InputDto"
+        vehicle:
+          $ref: "#/components/schemas/VehicleV1InputDto"
+    WarehouseFilterV1Dto:
+      type: object
+      properties:
+        search:
+          type: string
+        is_locked:
+          type: boolean
+        is_active:
+          type: boolean
+        operation_type:
+          type: string
+          enum:
+            - ANY
+            - LOADING
+            - UNLOADING
+    WarehouseAddressV1Dto:
+      type: object
+      properties:
+        street:
+          type: string
+        number:
+          type: string
+        locality:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+        coordinates:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CoordinatesV1Dto"
+        remarks:
+          type: string
+          nullable: true
+      required:
+        - street
+        - number
+        - locality
+        - postal_code
+        - country
+    WarehouseTimeZoneV1Dto:
+      type: object
+      properties:
+        id:
+          type: string
+        offset:
+          type: string
+      required:
+        - id
+        - offset
+    WarehouseCollectionItemV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        is_active:
+          type: boolean
+        is_locked:
+          type: boolean
+        address:
+          $ref: "#/components/schemas/WarehouseAddressV1Dto"
+        time_zone:
+          $ref: "#/components/schemas/WarehouseTimeZoneV1Dto"
+        operation_time:
+          type: number
+          nullable: true
+      required:
+        - id
+        - name
+        - is_active
+        - is_locked
+        - address
+        - time_zone
+        - operation_time
+    RampV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        is_active:
+          type: boolean
+        is_locked:
+          type: boolean
+        name:
+          type: string
+        operation_type:
+          type: string
+        ramp_type:
+          type: string
+      required:
+        - id
+        - is_active
+        - is_locked
+        - name
+        - operation_type
+        - ramp_type
+    WarehouseEntityResponseV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        is_active:
+          type: boolean
+        is_locked:
+          type: boolean
+        address:
+          $ref: "#/components/schemas/WarehouseAddressV1Dto"
+        time_zone:
+          $ref: "#/components/schemas/WarehouseTimeZoneV1Dto"
+        operation_time:
+          type: number
+          nullable: true
+        ramps:
+          type: array
+          items:
+            $ref: "#/components/schemas/RampV1Dto"
+      required:
+        - id
+        - name
+        - is_active
+        - is_locked
+        - address
+        - time_zone
+        - operation_time
+        - ramps
+    TimeWindowEntityV1GeoCoordinatesDto:
+      type: object
+      properties:
+        latitude:
+          type: number
+          example: 50.391594
+        longitude:
+          type: number
+          example: 16.03629
+      required:
+        - latitude
+        - longitude
+    TimeWindowEntityV1AddressDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Punkt pośredni II
+        street:
+          type: string
+          example: Giewont
+        number:
+          type: string
+          example: "1"
+        locality:
+          type: string
+          example: Wrocław
+        postal_code:
+          type: string
+          example: 34-500
+        country:
+          type: string
+          example: PL
+        coordinates:
+          nullable: true
+          default: null
+          allOf:
+            - $ref: "#/components/schemas/TimeWindowEntityV1GeoCoordinatesDto"
+      required:
+        - name
+        - street
+        - number
+        - locality
+        - postal_code
+        - country
+    TimeWindowCollectionV1RouteDto:
+      type: object
+      properties:
+        loading_place:
+          nullable: true
+          default: null
+          allOf:
+            - $ref: "#/components/schemas/TimeWindowEntityV1AddressDto"
+        unloading_place:
+          nullable: true
+          default: null
+          allOf:
+            - $ref: "#/components/schemas/TimeWindowEntityV1AddressDto"
+    TimeWindowEntityV1CarrierDto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1168557
+        legal_name:
+          type: string
+          example: TFF przewoźnik + p44
+        email:
+          type: string
+          nullable: true
+          example: awladyka@trans.eu
+        telephone:
+          type: string
+          nullable: true
+          example: (0048) 7490415385
+        type:
+          type: string
+          nullable: true
+          example: REGISTERED
+      required:
+        - id
+        - legal_name
+    TimeWindowEntityV1TimeZoneDto:
+      type: object
+      properties:
+        id:
+          type: string
+          example: Europe/Warsaw
+        offset:
+          type: string
+          example: +01:00
+      required:
+        - id
+        - offset
+    TimeWindowEntityV1WarehouseDto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 13745
+        name:
+          type: string
+          example: Załadunek1
+        time_zone:
+          $ref: "#/components/schemas/TimeWindowEntityV1TimeZoneDto"
+      required:
+        - id
+        - name
+        - time_zone
+    TimeWindowCollectionItemV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 98033
+        reference_number:
+          type: string
+          example: DS/184A9DD
+        external_number:
+          type: string
+          example: 1DX124DAW
+        valid_from:
+          type: string
+          example: 2025-11-14
+        valid_to:
+          type: string
+          example: 2025-11-14
+        start_time:
+          type: string
+          nullable: true
+          example: 09:00:00
+        end_time:
+          type: string
+          nullable: true
+          example: 18:00:00
+        range_type:
+          type: string
+          example: CYCLE
+        status:
+          type: string
+          example: AVAILABLE
+        remarks:
+          type: string
+          nullable: true
+          example: Be Carefully
+        operation_type:
+          type: string
+          example: loading
+        operation_time:
+          type: string
+          example: PT30M
+        route:
+          $ref: "#/components/schemas/TimeWindowCollectionV1RouteDto"
+        carrier:
+          $ref: "#/components/schemas/TimeWindowEntityV1CarrierDto"
+        warehouse:
+          $ref: "#/components/schemas/TimeWindowEntityV1WarehouseDto"
+        freight_order:
+          type: number
+          nullable: true
+          example: 12345
+        ramps:
+          example: []
+          type: array
+          items:
+            type: object
+        created_at:
+          type: string
+          example: 2025-11-14T09:05:04
+      required:
+        - id
+        - reference_number
+        - valid_from
+        - valid_to
+        - range_type
+        - status
+        - operation_type
+        - operation_time
+        - route
+        - carrier
+        - warehouse
+        - ramps
+        - created_at
+    TimeWindowCollectionResponseV1Dto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeWindowCollectionItemV1Dto"
+        page:
+          type: number
+          example: 1
+        page_count:
+          type: number
+          example: 5
+        page_size:
+          type: number
+          example: 10
+        total_items:
+          type: number
+          example: 42
+      required:
+        - content
+        - page
+        - page_count
+        - page_size
+        - total_items
+    TimeWindowEntityV1SpotOperationDto:
+      type: object
+      properties:
+        operation_type:
+          type: string
+          example: loading
+        order:
+          type: number
+          example: 1
+        time_window_id:
+          type: number
+          example: 98033
+      required:
+        - operation_type
+        - order
+        - time_window_id
+    TimeWindowEntityV1SpotDto:
+      type: object
+      properties:
+        order:
+          type: number
+          example: 1
+        address:
+          $ref: "#/components/schemas/TimeWindowEntityV1AddressDto"
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeWindowEntityV1SpotOperationDto"
+      required:
+        - order
+        - address
+        - operations
+    TimeWindowEntityV1RouteDto:
+      type: object
+      properties:
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeWindowEntityV1SpotDto"
+      required:
+        - spots
+    PurchaseOrderBusinessPartnerResponseV1Dto:
+      type: object
+      properties:
+        contact_person:
+          type: string
+          example: Jan Kowalski
+        name:
+          type: string
+          example: Firma Transportowa
+        number:
+          type: string
+          example: BP123
+        tax_id:
+          type: string
+          example: PL1234567890
+      required:
+        - contact_person
+        - name
+        - number
+        - tax_id
+    PurchaseOrderDeliveryPlaceResponseV1Dto:
+      type: object
+      properties:
+        city:
+          type: string
+          example: Warszawa
+        country:
+          type: string
+          example: PL
+        postal_code:
+          type: string
+          example: 00-001
+        receiver_name:
+          type: string
+          example: Magazyn Centralny
+        street:
+          type: string
+          example: Przemysłowa 1
+      required:
+        - city
+        - country
+        - postal_code
+        - receiver_name
+        - street
+    PurchaseOrderDocumentAuthorResponseV1Dto:
+      type: object
+      properties:
+        created_by:
+          type: string
+          example: admin
+        email:
+          type: string
+          example: admin@example.com
+        phone:
+          type: string
+          example: "+48123456789"
+      required:
+        - created_by
+        - email
+        - phone
+    PurchaseOrderDocumentResponseV1Dto:
+      type: object
+      properties:
+        author:
+          $ref: "#/components/schemas/PurchaseOrderDocumentAuthorResponseV1Dto"
+        created_date:
+          type: string
+          example: 2021-07-01
+      required:
+        - author
+        - created_date
+    PurchaseOrderDeliveryTimeResponseV1Dto:
+      type: object
+      properties:
+        hour:
+          type: number
+          example: 12
+        minute:
+          type: number
+          example: 30
+        nano:
+          type: number
+          example: 0
+        second:
+          type: number
+          example: 0
+      required:
+        - hour
+        - minute
+        - nano
+        - second
+    PurchaseOrderExecutionConstraintsResponseV1Dto:
+      type: object
+      properties:
+        delivery_conditions:
+          type: string
+          example: Standard delivery
+        delivery_date:
+          type: string
+          example: 2021-07-01
+        delivery_time:
+          $ref: "#/components/schemas/PurchaseOrderDeliveryTimeResponseV1Dto"
+        payment_conditions:
+          type: string
+          example: Net 30
+      required:
+        - delivery_conditions
+        - delivery_date
+        - delivery_time
+        - payment_conditions
+    PurchaseOrderInvoiceResponseV1Dto:
+      type: object
+      properties:
+        number:
+          type: string
+          example: INV/2021/001
+      required:
+        - number
+    PurchaseOrderLoadResponseV1Dto:
+      type: object
+      properties:
+        business_partner_load_number:
+          type: string
+          example: BPL001
+        category:
+          type: string
+          example: Pallets
+        commercial_number:
+          type: string
+          example: COM001
+        container_number:
+          type: string
+          example: CONT001
+        description:
+          type: string
+          example: Mixed cargo
+        forwarding_number:
+          type: string
+          example: FWD001
+        name:
+          type: string
+          example: General cargo
+        quantity:
+          type: string
+          example: "10"
+        reference_number:
+          type: string
+          example: REF001
+        type:
+          type: string
+          example: Standard
+        warehouse_unit:
+          type: string
+          example: PAL
+        weight:
+          type: string
+          example: 1000kg
+      required:
+        - business_partner_load_number
+        - category
+        - commercial_number
+        - container_number
+        - description
+        - forwarding_number
+        - name
+        - quantity
+        - reference_number
+        - type
+        - warehouse_unit
+        - weight
+    PurchaseOrderShipmentDocumentResponseV1Dto:
+      type: object
+      properties:
+        number:
+          type: string
+          example: SHIP001
+      required:
+        - number
+    PurchaseOrderWarehouseIssueResponseV1Dto:
+      type: object
+      properties:
+        number:
+          type: string
+          example: WH001
+      required:
+        - number
+    PurchaseOrderResponseV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 9007199254740991
+        business_partner:
+          $ref: "#/components/schemas/PurchaseOrderBusinessPartnerResponseV1Dto"
+        delivery_place:
+          $ref: "#/components/schemas/PurchaseOrderDeliveryPlaceResponseV1Dto"
+        document:
+          $ref: "#/components/schemas/PurchaseOrderDocumentResponseV1Dto"
+        execution_constraints:
+          $ref: "#/components/schemas/PurchaseOrderExecutionConstraintsResponseV1Dto"
+        invoice:
+          $ref: "#/components/schemas/PurchaseOrderInvoiceResponseV1Dto"
+        loads:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseOrderLoadResponseV1Dto"
+        number:
+          type: string
+          example: PO2021001
+        shipment_document:
+          $ref: "#/components/schemas/PurchaseOrderShipmentDocumentResponseV1Dto"
+        warehouse_issue:
+          $ref: "#/components/schemas/PurchaseOrderWarehouseIssueResponseV1Dto"
+      required:
+        - id
+        - business_partner
+        - delivery_place
+        - document
+        - execution_constraints
+        - invoice
+        - loads
+        - number
+        - shipment_document
+        - warehouse_issue
+    TimeWindowEntityResponseV1Dto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 98033
+        reference_number:
+          type: string
+          example: DS/184A9DD
+        external_number:
+          type: string
+          example: 1DX124DAW
+        valid_from:
+          type: string
+          example: 2025-11-14
+        valid_to:
+          type: string
+          example: 2025-11-14
+        start_time:
+          type: string
+          nullable: true
+          example: 09:00:00
+        end_time:
+          type: string
+          nullable: true
+          example: 18:00:00
+        range_type:
+          type: string
+          example: CYCLE
+        status:
+          type: string
+          example: AVAILABLE
+        remarks:
+          type: string
+          nullable: true
+          example: Be Carefully
+        operation_type:
+          type: string
+          example: loading
+        route:
+          $ref: "#/components/schemas/TimeWindowEntityV1RouteDto"
+        carrier:
+          $ref: "#/components/schemas/TimeWindowEntityV1CarrierDto"
+        warehouse:
+          $ref: "#/components/schemas/TimeWindowEntityV1WarehouseDto"
+        freight_order:
+          nullable: true
+          oneOf:
+            - type: number
+            - type: object
+        ramps:
+          example: []
+          type: array
+          items:
+            type: array
+        created_at:
+          type: string
+          example: 2025-11-14T09:05:04
+        operation_time:
+          type: string
+          example: PT30M
+        purchase_order:
+          nullable: true
+          default: null
+          allOf:
+            - $ref: "#/components/schemas/PurchaseOrderResponseV1Dto"
+      required:
+        - id
+        - reference_number
+        - valid_from
+        - valid_to
+        - range_type
+        - status
+        - operation_type
+        - route
+        - carrier
+        - warehouse
+        - ramps
+        - created_at
+        - operation_time
+        - purchase_order
+    TimeWindowCarrierInputDto:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Carrier ID (required for registered carriers)
+          example: 1068760
+        email:
+          type: string
+          format: email
+          description: Carrier email (required for external carriers)
+          example: aa@bb.pl
+        legal_name:
+          type: string
+          description: Carrier legal name
+          example: some name
+        telephone:
+          type: string
+          description: Carrier telephone
+          example: 38 73 592
+        type:
+          enum:
+            - REGISTERED
+            - EXTERNAL
+          type: string
+          description: Carrier type
+          example: EXTERNAL
+    TimeWindowSpotAddressInputDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Address name
+          example: Punkt pośredni II
+        street:
+          type: string
+          description: Street name
+          example: Giewont
+        number:
+          type: string
+          description: Building number
+          example: "1"
+        locality:
+          type: string
+          description: Locality/City name
+          example: Wrocław
+        postal_code:
+          type: string
+          description: Postal code
+          example: 34-500
+        country:
+          type: string
+          description: Country code (ISO)
+          example: PL
+      required:
+        - name
+        - street
+        - number
+        - locality
+        - postal_code
+        - country
+    TimeWindowSpotOperationInputDto:
+      type: object
+      properties:
+        operation_type:
+          enum:
+            - loading
+            - unloading
+            - customs_clearance
+          type: string
+          description: Operation type
+          example: loading
+        order:
+          type: number
+          description: Operation order
+          example: 1
+        belongs_to_time_window:
+          type: boolean
+          description: Whether operation belongs to time window
+          example: true
+      required:
+        - operation_type
+        - order
+        - belongs_to_time_window
+    TimeWindowSpotInputDto:
+      type: object
+      properties:
+        order:
+          type: number
+          description: Spot order
+          example: 1
+        warehouse_id:
+          type: number
+          description: Warehouse ID (alternative to inline address)
+          example: 1545
+        address:
+          description: Inline address (alternative to warehouse_id)
+          allOf:
+            - $ref: "#/components/schemas/TimeWindowSpotAddressInputDto"
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeWindowSpotOperationInputDto"
+      required:
+        - order
+        - operations
+    TimeWindowRouteInputDto:
+      type: object
+      properties:
+        spots:
+          description: Route spots with warehouse_id or inline address
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeWindowSpotInputDto"
+      required:
+        - spots
+    TimeWindowWritePayloadV1Dto:
+      type: object
+      properties:
+        valid_from:
+          type: string
+          description: Valid from date (YYYY-MM-DD)
+          example: 2021-03-23
+        valid_to:
+          type: string
+          description: Valid to date (YYYY-MM-DD)
+          example: 2021-03-23
+        start_time:
+          type: string
+          description: Start time (HH:MM:SS)
+          example: 09:00:00
+        remarks:
+          type: string
+          description: Remarks
+          example: Be Carefully
+        range_type:
+          type: string
+          description: Range type
+          example: CYCLE
+        external_number:
+          type: string
+          description: External number
+          example: 1DX124DAW
+        external_source:
+          type: string
+          description: External source
+          example: 1_external
+        carrier:
+          description: Carrier with id (registered) or inline data (external)
+          allOf:
+            - $ref: "#/components/schemas/TimeWindowCarrierInputDto"
+        route:
+          $ref: "#/components/schemas/TimeWindowRouteInputDto"
+        operation_time:
+          type: string
+          description: Operation time (ISO 8601 duration)
+          example: PT30M
+        end_time:
+          type: string
+          description: End time (HH:MM:SS)
+          example: 18:00:00
+        purchase_order:
+          type: object
+          description: Purchase order payload forwarded to dock-scheduler backend
+            (passthrough, not validated)
+        callback_url:
+          type: string
+          minLength: 1
+          maxLength: 2048
+          description: Callback URL for async notifications
+          example: http://example.com/msg
+      required:
+        - valid_from
+        - valid_to
+        - start_time
+        - remarks
+        - range_type
+        - external_number
+        - external_source
+        - carrier
+        - route

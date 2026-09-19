@@ -1,0 +1,3443 @@
+openapi: 3.0.3
+info:
+  version: 3.0.6
+  title: Freight Exchange
+  description: |-
+    To generate the API you have two different possibilities:
+    * download the openapi.yaml file directly via the "export" button at the top of the page and generate the API in your project via a plugin
+    * use Extensions in your IDE and connect directly to the service: https://api.stoplight.io/projects/cHJqOjIwMTI4Nw/branches/v3/export/reference/openapi.yaml
+
+    The API is capable of processing the complete lifecycle of the
+    following entity types:
+    * `Freight Offers`
+    * `Vehicle Space Offers`
+    * `Freight Quotes`
+
+    Specifically, the API can be used to carry out the following actions:
+    * Create, delete and modify `Freight Offers`
+    * Create, delete and modify `Vehicle Space Offers`
+    * Retrieve offer detail information from foreign offers
+    * Allows to negotiate conditions of received freight quotes
+  termsOfService: 'https://www.timocom.co.uk/gtc'
+  contact:
+    email: schnittstellen@timocom.com
+servers:
+  - url: 'https://api.timocom.com/freight-exchange/3'
+    description: Live Server
+  - url: 'https://sandbox.timocom.com/freight-exchange/3'
+    description: Sandbox
+paths:
+  /closed-freight-exchange-policy/publisher:
+    get:
+      tags:
+        - Closed Freight Exchange Policy
+      summary: Get Closed Freight Exchange Policies (Offer Publishing)
+      description: Get a list of all Closed Freight Exchange Policies for Offer Publishing.
+      operationId: get-closed-freight-exchange-policies-for-offer-publisher
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_closedFreightExchangePoliciesForOfferPublisherResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /closed-freight-exchange-policy/searcher:
+    get:
+      tags:
+        - Closed Freight Exchange Policy
+      summary: Get Closed Freight Exchange Policies (Offer Search)
+      description: Get a list of all Closed Freight Exchange Policies for Offer Publishing.
+      operationId: get-closed-freight-exchange-policies-for-offer-searcher
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_closedFreightExchangePoliciesForOfferSearcherResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/additional-information:
+    get:
+      tags:
+        - Enumeration
+      summary: Get AdditionalInformation
+      description: Get a list of all supported additionalInformation values.
+      operationId: get-additional-information
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/cfe-publication-types:
+    get:
+      tags:
+        - Enumeration
+      summary: Get CFE publication types
+      description: Get a list of all CFE publication types.
+      operationId: get-cfe-publication-types
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/country-codes:
+    get:
+      tags:
+        - Enumeration
+      summary: Get Country codes
+      description: Get a list of all supported countries (country codes).
+      operationId: get-country-codes
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/currencies:
+    get:
+      tags:
+        - Enumeration
+      summary: Get supported currencies (ISO codes)
+      description: Get a list of all supported currencies (currency codes).
+      operationId: get-currencies
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/logistics-document-types:
+    get:
+      tags:
+        - Enumeration
+      summary: Get logistics document types
+      description: Get a list of all logistics document types.
+      operationId: get-logistics-document-types
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/languages:
+    get:
+      tags:
+        - Enumeration
+      summary: Get languages
+      description: Get a list of all languages.
+      operationId: get-languages
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/freight-quote-statuses:
+    get:
+      tags:
+        - Enumeration
+      summary: Get freight quote statuses
+      description: Get a list of all freight quote statuses.
+      operationId: get-freight-quote-statuses
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/person-titles:
+    get:
+      tags:
+        - Enumeration
+      summary: Get PersonTitles
+      description: Get a list of all supported person title values.
+      operationId: get-person-titles
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/vehicle-properties/vehicle-bodies:
+    get:
+      tags:
+        - Enumeration
+      summary: Get vehicle bodies
+      description: Get a list of all vehicle bodies.
+      operationId: get-vehicle-bodies
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/vehicle-properties/vehicle-body-properties:
+    get:
+      tags:
+        - Enumeration
+      summary: Get vehicle body properties
+      description: Get a list of all vehicle body properties.
+      operationId: get-vehicle-body-properties
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/vehicle-properties/vehicle-equipment:
+    get:
+      tags:
+        - Enumeration
+      summary: Get vehicle body equipment
+      description: Get a list of all vehicle equipment.
+      operationId: get-vehicle-equipment
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/vehicle-properties/vehicle-load-securings:
+    get:
+      tags:
+        - Enumeration
+      summary: Get vehicle load securings
+      description: Get a list of all vehicle load securings.
+      operationId: get-vehicle-load-securings
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/vehicle-properties/vehicle-swap-bodies:
+    get:
+      tags:
+        - Enumeration
+      summary: Get vehicle swap bodies
+      description: Get a list of all vehicle swap bodies.
+      operationId: get-vehicle-swap-bodies
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /enumerations/vehicle-properties/vehicle-types:
+    get:
+      tags:
+        - Enumeration
+      summary: Get vehicle types
+      description: Get a list of all vehicle types.
+      operationId: get-vehicle-types
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_enumerationResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  '/my-freight-offers/{publicOfferId}':
+    get:
+      tags:
+        - Freight Offer
+      summary: Lookup Your Own Freight Offer
+      description: Get your own Freight Offer by its ID.
+      operationId: get-my-freight-offer
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+        - $ref: '#/components/parameters/publicOfferId'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_freightOfferResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+    delete:
+      tags:
+        - Freight Offer
+      summary: Withdraw Your Freight Offer
+      description: Withdraw a freight offer
+      operationId: delete-freight-offer
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+        - $ref: '#/components/parameters/acceptedFreightQuoteId'
+        - $ref: '#/components/parameters/publicOfferId'
+      responses:
+        '204':
+          $ref: '#/components/responses/204_deleteResponse'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+  /freight-offers:
+    get:
+      tags:
+        - Freight Search
+      summary: Lookup Freight Offers
+      description: Get a list of Freight Offers by a list of Ids.
+      operationId: get-freight-offers
+      parameters:
+        - $ref: '#/components/parameters/ids'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_freightOffersResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /my-freight-offers:
+    get:
+      tags:
+        - Freight Offer
+      summary: Lookup Your Own Freight Offers
+      description: Get all Freight Offers for the authorized TIMOCOM ID that are currently published in the TIMOCOM Marketplace.
+      operationId: get-my-freight-offers
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_freightOffersResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+    post:
+      tags:
+        - Freight Offer
+      summary: Publish Freight Offer
+      description: Post new Freight Offer.
+      operationId: post-freight-offer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/freightOffer'
+              __errors__:
+                '#/components/schemas/publicId': No foreign doc with id components found
+            examples:
+              Example 1:
+                value:
+                  objectType: freightOffer
+                  closedFreightExchangeSetting:
+                    closedFreightExchangeId: 288
+                    publicationType: EXTERNAL_LATER
+                    remark: External remark
+                    retentionDurationInMinutes: 5
+                  customer:
+                    id: 123456
+                  contactPerson:
+                    businessPhone: +49 211 88 26 88 26
+                    email: schnittstellen@timocom.com
+                    fax: +49 211 88 26 88 26
+                    firstName: Fernández
+                    languages:
+                      - de
+                    lastName: Hernández
+                    mobilePhone: +49 211 88 26 88 26
+                    title: MR
+                  internalRemark: 'This remark is visible to users of your company, only'
+                  logisticsDocumentTypes:
+                    - string
+                  publicRemark: This remark is visible to all
+                  trackable: true
+                  vehicleProperties:
+                    body:
+                      - MOVING_FLOOR
+                    bodyProperty:
+                      - FOLDING_SIDE_BOX
+                    equipment:
+                      - PORTABLE_FORKLIFT
+                    loadSecuring:
+                      - BOARD_WALL
+                    swapBody:
+                      - FORTY_FIVE_FEET_CONTAINER
+                    type:
+                      - VEHICLE_UP_TO_12_T
+                  acceptQuotes: true
+                  additionalInformation:
+                    - string
+                  freightDescription: Further description of the freight
+                  length_m: 12.31
+                  loadingPlaces:
+                    - loadingType: LOADING
+                      address:
+                        objectType: address
+                        city: Gerona
+                        country: ES
+                        postalCode: '17001'
+                      startTime: '08:15'
+                      endTime: '17:15'
+                      earliestLoadingDate: '2019-08-24'
+                      latestLoadingDate: '2019-08-26'
+                    - loadingType: LOADING
+                      address:
+                        objectType: address
+                        city: Gerona
+                        country: ES
+                        postalCode: '17001'
+                      startTime: '08:15'
+                      endTime: '17:15'
+                      earliestLoadingDate: '2019-08-24'
+                      latestLoadingDate: '2019-08-26'
+                  paymentDueWithinDays: 30
+                  price:
+                    amount: 1.5
+                    currency: EUR
+                  weight_t: 5.55
+      responses:
+        '201':
+          $ref: '#/components/responses/201_createResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  '/freight-offers/{publicOfferId}/freight-quotes':
+    get:
+      tags:
+        - Receive Freight Quotes
+      summary: Get Received Freight Quotes for Your Freight Offer
+      description: 'Use /my-freight-offers/{publicOfferId}/freight-quotes instead of this path. See description there.'
+      operationId: get-freight-quotes-by-freight-offer-id
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+        - $ref: '#/components/parameters/publicOfferId'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_freightQuotesResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      deprecated: true
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  '/my-freight-offers/{publicOfferId}/freight-quotes':
+    get:
+      tags:
+        - Receive Freight Quotes
+      summary: Get Received Freight Quotes for Your Freight Offer
+      description: Get a list of Freight Quotes by a Freight Offer ID (TIMOCOM’s publicOfferId). The timocom_id (query param) must be the TIMOCOM ID of the freight offer referenced by the publicOfferId path param.
+      operationId: get-freight-quotes-by-my-freight-offer-id
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+        - $ref: '#/components/parameters/publicOfferId'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_freightQuotesResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /freight-quotes:
+    post:
+      tags:
+        - Submit Freight Quote
+      summary: Make a quote for a freight offer
+      description: Post a Freight Quote for a Freight Offer referenced by its publicOfferId.
+      operationId: post-freight-quote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/freightQuote'
+      responses:
+        '201':
+          $ref: '#/components/responses/201_createResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  '/freight-quotes/{freightQuoteId}':
+    get:
+      tags:
+        - Submit Freight Quote
+      summary: Lookup Freight Quote
+      description: Get a Freight Quote by its ID.
+      operationId: get-freight-quote
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+        - $ref: '#/components/parameters/freightQuoteId'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_freightQuoteResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+    delete:
+      tags:
+        - Submit Freight Quote
+      summary: Withdraw Freight Quote
+      description: Withdraw a freight quote
+      operationId: delete-freight-quotes-freightQuoteId
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+        - $ref: '#/components/parameters/freightQuoteId'
+      responses:
+        '204':
+          $ref: '#/components/responses/204_deleteResponse'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+  '/my-vehicle-space-offers/{publicOfferId}':
+    get:
+      tags:
+        - Vehicle Space Offer
+      summary: Lookup Your Own Vehicle Space Offer
+      description: Get your own Vehicle Space Offer by its ID.
+      operationId: get-my-vehicle-space-offer
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+        - $ref: '#/components/parameters/publicOfferId'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_vehicleSpaceOfferResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+    delete:
+      tags:
+        - Vehicle Space Offer
+      summary: Withdraw Your Vehicle Space Offer
+      description: Withdraw a vehicle space offer
+      operationId: delete-vehicle-space-offer
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+        - $ref: '#/components/parameters/publicOfferId'
+      responses:
+        '204':
+          $ref: '#/components/responses/204_deleteResponse'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+  /vehicle-space-offers:
+    get:
+      tags:
+        - Vehicle Space Search
+      summary: Lookup Vehicle Space Offers
+      description: Get a list of Vehicle Space Offers by a list of Ids
+      operationId: get-vehicle-space-offers
+      parameters:
+        - $ref: '#/components/parameters/ids'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_vehicleSpaceOffersResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+  /my-vehicle-space-offers:
+    get:
+      tags:
+        - Vehicle Space Offer
+      summary: Lookup Your Own Vehicle Space Offers
+      description: Get all Vehicle Space Offers for the authorized TIMOCOM ID that are currently published in the TIMOCOM Marketplace.
+      operationId: get-my-vehicle-space-offers
+      parameters:
+        - $ref: '#/components/parameters/timocom_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_vehicleSpaceOffersResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+    post:
+      tags:
+        - Vehicle Space Offer
+      summary: Publish Vehicle Space Offer
+      description: Post new Vehicle Space Offer.
+      operationId: post-vehicle-space-offer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/vehicleSpaceOffer'
+              __errors__:
+                '#/components/schemas/publicId': No foreign doc with id components found
+      responses:
+        '201':
+          $ref: '#/components/responses/201_createResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+      x-internal: false
+  /freight-offers/search:
+    post:
+      tags:
+        - Freight Search
+      summary: Find Freight Offers
+      description: Search for a list of Freight Offers.
+      operationId: post-search-freight-offers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/offerSearchFilter'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_freightOffersResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+  /vehicle-space-offers/search:
+    post:
+      tags:
+        - Vehicle Space Search
+      summary: Find Vehicle Space Offers
+      description: Search for a list of Vehicle Space Offers.
+      operationId: post-search-vehicle-space-offers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/offerSearchFilter'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_vehicleSpaceOffersResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422_paramValidationFailure'
+      security:
+        - authorization: []
+      servers:
+        - url: 'https://api.timocom.com/freight-exchange/3'
+          description: Live Server
+        - url: 'https://sandbox.timocom.com/freight-exchange/3'
+          description: Sandbox
+tags:
+  - name: Enumeration
+    description: Enumerations are used to define a set of named constants.
+  - name: Freight Offer
+    description: Publish and withdraw freight offer
+  - name: Freight Search
+    description: 'Freight Search allows you to access one of the largest freight markets in Europe. With up to 1 million freight offers on the spot market every day, it enables efficient utilization of your vehicle space.'
+  - name: Vehicle Space Search
+    description: Vehicle Search allows you to access one of the largest freight markets in Europe. It enables you to find reliable transport partner out of our secure and checked carrier network.
+  - name: Receive Freight Quotes
+    description: Freight Quote Search allows you to search for freight quotes you received for your published freight offer.
+  - name: Submit Freight Quote
+    description: 'Submit, lookup and withdraw freight quote for a specified freight offer.'
+  - name: Closed Freight Exchange Policy
+    description: CFE policy describes the rules for publishing and searching offers in a closed freight exchange.
+components:
+  parameters:
+    ids:
+      name: ids
+      in: query
+      description: a comma-separated set of passed publicIds (e.g. freightOffer.id) up to max 30.
+      required: true
+      style: form
+      schema:
+        type: array
+        maxItems: 30
+        items:
+          $ref: '#/components/schemas/publicId'
+    acceptedFreightQuoteId:
+      name: accepted_freight_quote_id
+      in: query
+      description: 'Id of the freight quote you want to accept when withdrawing a freight offer. All other freight quotes will be rejected. If this param is omitted, all freight quotes of this offer will be rejected.'
+      required: false
+      schema:
+        $ref: '#/components/schemas/publicId'
+    timocom_id:
+      name: timocom_id
+      in: query
+      description: TIMOCOM ID of the client
+      required: true
+      schema:
+        $ref: '#/components/schemas/timocomId'
+    freightQuoteId:
+      name: freightQuoteId
+      in: path
+      description: Id of the freight quote
+      required: true
+      schema:
+        $ref: '#/components/schemas/publicId'
+    publicOfferId:
+      name: publicOfferId
+      in: path
+      description: TIMOCOM’s ID of a offer (freight or vehicle space)
+      required: true
+      schema:
+        $ref: '#/components/schemas/publicId'
+  securitySchemes:
+    authorization:
+      type: http
+      scheme: basic
+  responses:
+    '400':
+      description: |-
+        Request is broken
+        1. is of an unknown format / illegal object structure
+        3. or missing identifier
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/problem'
+    '404':
+      description: |-
+        Request is broken. The requested entity can not be found
+        1. Constraints are violated in a read request, e.g. a invalid mandatory id
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/problem'
+    '415':
+      description: |-
+        Request is broken
+        1. The payload is of an illegal (not acceptable) type
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/problem'
+    '503':
+      description: 'The service is temporarily unavailable, due to maintenance or overload.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/problem'
+    422_paramValidationFailure:
+      description: |-
+        Certain elements of the request contain errors. For instance, a value may exceed the allowed range for an element, or a mandatory element might be absent. Consequently, the API will report an error status in its response.
+
+        Despite these issues, the request was successfully processed (and as a result of the processing, the API told you what is wrong in the request). It is up to you what you will do with this information. Perhaps you will give some feedback to the user and point out which part of the data he just entered caused the error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/problem'
+    200_closedFreightExchangePoliciesForOfferPublisherResponse:
+      description: response for a look-up of all closed freight exchange publisher policies the calling customer is member of.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/closedFreightExchangePoliciesForOfferPublisherResponse'
+    200_closedFreightExchangePoliciesForOfferSearcherResponse:
+      description: response for a look-up of all closed freight exchange searcher policies the calling customer is member of.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/closedFreightExchangePoliciesForOfferSearcherResponse'
+    200_enumerationResponse:
+      description: response for a look-up of a set of enumeration values.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/enumerationResponse'
+    200_freightOfferResponse:
+      description: response for a look-up of your own freight offer by its publicOfferId.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/freightOfferResponse'
+            __errors__:
+              '#/components/schemas/publicId': No foreign doc with id components found
+    200_freightOffersResponse:
+      description: response for a look-up of a set of passed publicOfferIds.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/freightOffersResponse'
+            __errors__:
+              '#/components/schemas/publicId': No foreign doc with id components found
+    200_freightQuoteResponse:
+      description: response for a look-up of a freight quote by its passed publicId.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/freightQuoteResponse'
+    200_freightQuotesResponse:
+      description: response for getting all freight quotes of my given freight offer.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/freightQuotesResponse'
+    200_vehicleSpaceOfferResponse:
+      description: response for a look-up of your own vehicle space offer by its publicOfferId.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/vehicleSpaceOfferResponse'
+            __errors__:
+              '#/components/schemas/publicId': No foreign doc with id components found
+    200_vehicleSpaceOffersResponse:
+      description: response for a look-up of a set of passed publicOfferIds.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/vehicleSpaceOffersResponse'
+            __errors__:
+              '#/components/schemas/publicId': No foreign doc with id components found
+    201_createResponse:
+      description: 'response for a creation (post) of a freight offer, vehicle space offer or freight quote.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/createResponse'
+    204_deleteResponse:
+      description: 'response for a withdraw (deletion) of a freight offer, vehicle space offer or freight quote by its id.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/deleteResponse'
+  schemas:
+    freightOffer:
+      title: Freight Offer
+      description: 'A freight offer that is published within the freight exchange indicates a demand for transportation. It contains information related to the goods to be transported. distance_km field is set in result of a search request, only.'
+      allOf:
+        - $ref: '#/components/schemas/offer'
+        - type: object
+          properties:
+            acceptQuotes:
+              type: boolean
+              description: Shows that a quote is/was accepted.
+            additionalInformation:
+              type: array
+              description: Additional information about the goods.
+              items:
+                $ref: '#/components/schemas/additionalInformation'
+            distance_km:
+              $ref: '#/components/schemas/kilometres'
+            freightDescription:
+              type: string
+              description: Description of the freight.
+              minLength: 3
+              maxLength: 50
+              example: Mandatory further description of the freight
+            length_m:
+              $ref: '#/components/schemas/metres'
+            loadingPlaces:
+              type: array
+              description: Loading places of the freight.
+              minItems: 2
+              maxItems: 10
+              items:
+                $ref: '#/components/schemas/loadingPlace'
+            paymentDueWithinDays:
+              type: integer
+              description: Payment is due within specified number of days.
+              minimum: 0
+              maximum: 999
+              example: 30
+            price:
+              $ref: '#/components/schemas/money'
+            weight_t:
+              $ref: '#/components/schemas/tons'
+          required:
+            - acceptQuotes
+            - freightDescription
+            - length_m
+            - loadingPlaces
+            - weight_t
+      x-examples:
+        example-1:
+          objectType: freightOffer
+          closedFreightExchangeSetting: null
+          contactPerson:
+            businessPhone: '+349900678'
+            email: fernandez@hernandezyfernandez.es
+            fax: '+349900679'
+            firstName: Jorge
+            languages:
+              - es
+              - de
+            lastName: Hernández
+            mobilePhone: '+349900680'
+            title: MR
+          'creationDateTime ': '2022-09-13T13:22:09.3037464Z'
+          customer:
+            companyAddress:
+              objectType: postalAddress
+              city: Barcelona
+              country: ES
+              geoCoordinate: null
+              geocoded: false
+              postalCode: '08002'
+              streetOrPostbox: 'Las Ramblas, 234, 1°'
+            creationDateTime: null
+            fax: '+349900601'
+            id: 99
+            name: Hernández y Fernández S.A.
+            phone: '+34212778899'
+            postalAddress:
+              objectType: postalAddress
+              city: Barcelona
+              country: ES
+              geoCoordinate: null
+              geocoded: false
+              postalCode: '08001'
+              streetOrPostbox: P.O. Box 374
+            taxId: TAX-47-87
+          deeplink: 'https://timocom.com/example/vehiclespace/hggaXk77z'
+          id: offer-471-publicId
+          internalRemark: This remark is visible to users of your company
+          logisticsDocumentTypes: null
+          publicRemark: This remark is visible to all
+          trackable: true
+          vehicleProperties:
+            body:
+              - BOX
+            bodyProperty: []
+            equipment:
+              - ESCORT_VEHICLE_TYPE_3
+            loadSecuring:
+              - ANTI_SLIP_MATS
+            swapBody: []
+            type:
+              - VEHICLE_UP_TO_3_5_T
+          acceptQuotes: true
+          additionalInformation: []
+          distance_km: 4711
+          freightDescription: Optional further description of the freight
+          length_m: 7.76
+          loadingPlaces:
+            - address:
+                objectType: address
+                city: Valencia
+                country: ES
+                geoCoordinate: null
+                geocoded: false
+                postalCode: '46001'
+              earliestLoadingDate: '2022-09-16'
+              endTime: null
+              latestLoadingDate: '2022-09-17'
+              loadingType: null
+              startTime: null
+            - address:
+                objectType: address
+                city: Solingen
+                country: DE
+                geoCoordinate: null
+                geocoded: false
+                postalCode: '42697'
+              earliestLoadingDate: '2022-09-18'
+              endTime: null
+              latestLoadingDate: '2022-09-18'
+              loadingType: null
+              startTime: null
+          paymentDueWithinDays: 45
+          price:
+            amount: 750
+            currency: EUR
+          weight_t: 3.44
+    offer:
+      type: object
+      title: Offer
+      description: Base class with shared and common fields for Freight Offer and Vehicle Space Offer.
+      properties:
+        closedFreightExchangeSetting:
+          $ref: '#/components/schemas/closedFreightExchangeSetting'
+        contactPerson:
+          $ref: '#/components/schemas/contactPerson'
+        creationDateTime:
+          type: string
+          description: |-
+            Filled in response objects, only. Ignored in store
+            requests.
+          format: date-time
+          example: '2019-08-24T14:15:22Z'
+        customer:
+          $ref: '#/components/schemas/customer'
+        deeplink:
+          type: string
+          description: 'URL deep link to the TIMOCOM offer details. Will be set by TIMOCOM and in search results, only.'
+          pattern: 'https?://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'
+          maxLength: 100
+          readOnly: true
+          example: 'https://timocom.com/example/freight/hggaXk77z'
+        excludedCustomers:
+          type: array
+          description: |-
+            List of customer timocomIds that are excluded from
+            seeing the offer. List may be empty. The list is limited to 1000 entries.
+          items:
+            $ref: '#/components/schemas/timocomId'
+        id:
+          type: string
+          description: |-
+            Unique ID on TIMOCOM side. Only set in result of a
+            search request.
+          example: offer-471-publicId
+        internalRemark:
+          type: string
+          description: 'Remark, internally visible for users of the publishing customer.'
+          maxLength: 50
+          example: 'This remark is visible to users of your company, only'
+        logisticsDocumentTypes:
+          type: array
+          description: |-
+            Vehicle/freight documents e.g.
+            * GMP_CERTIFICATE
+          items:
+            type: string
+        publicRemark:
+          type: string
+          description: 'Remark, publicly visible within the offer.'
+          maxLength: 500
+          example: This remark is visible to all
+        trackable:
+          type: boolean
+          description: |
+            Localisation with TIMOCOM Tracking available.
+        useMessenger:
+          type: boolean
+          description: 'If set to true, the login email address for the TIMOCOM Marketplace must be specified in the contact person. The email is used to assign the user to the offer.'
+          example: true
+        vehicleProperties:
+          $ref: '#/components/schemas/vehicleProperties'
+      required:
+        - contactPerson
+        - trackable
+        - vehicleProperties
+      discriminator:
+        propertyName: objectType
+      x-examples:
+        example-1:
+          useMessenger: true
+          closedFreightExchangeSetting:
+            closedFreightExchangeId: 0
+            publicationDateTime: '2019-08-24T14:15:22Z'
+            publicationType: INTERNAL_ONLY
+            remark: string
+            retentionDurationInMinutes: 5
+          contactPerson:
+            businessPhone: string
+            email: user@example.com
+            fax: string
+            firstName: string
+            languages:
+              - string
+            lastName: string
+            mobilePhone: string
+            title: MR
+          creationDateTime: '2019-08-24T14:15:22Z'
+          customer:
+            companyAddress:
+              objectType: postalAddress
+              city: string
+              country: string
+              geoCoordinate:
+                longitude: -180
+                latitude: -90
+              geocoded: false
+              postalCode: string
+              streetOrPostbox: string
+            creationDateTime: '2019-08-24T14:15:22Z'
+            fax: string
+            id: string
+            name: string
+            phone: string
+            postalAddress:
+              objectType: postalAddress
+              city: string
+              country: string
+              geoCoordinate:
+                longitude: -180
+                latitude: -90
+              geocoded: false
+              postalCode: string
+              streetOrPostbox: string
+            taxId: string
+          deeplink: string
+          id:
+            $ref: '#/components/schemas/publicId'
+          internalRemark: string
+          logisticsDocumentTypes:
+            - string
+          publicRemark: string
+          trackable: true
+          vehicleProperties:
+            body:
+              - string
+            bodyProperty:
+              - string
+            equipment:
+              - string
+            loadSecuring:
+              - string
+            swapBody:
+              - string
+            type:
+              - string
+    closedFreightExchangeSetting:
+      type: object
+      title: Closed Freight Exchange Setting
+      description: |-
+        The Closed Freight Exchange (briefly CFE, or in German: Geschlossene Frachtenbörse) is a concept of grouping TIMOCOM customers for offer publication constraints purposes. The common use case is that an offer with CFE settings will be published exclusively within the CFE in the first place. This means that it is not visible to any TIMOCOM customer which is not member of the set CFE. After a set duration of time (maybe never) it will be automatically visible to all TIMOCOM customers unless it has not been withdrawn before.
+
+        If your company has a valid CFE contract with TIMOCOM you are able to send via the API all Closed Freight Exchange settings with the submitted offer.
+      properties:
+        closedFreightExchangeId:
+          $ref: '#/components/schemas/closedFreightExchangeId'
+        publicationDateTime:
+          type: string
+          description: |
+            At this calculated timestamp the offer will be
+            published outside of the CFE. Not to be set on client side.
+          format: date-time
+          example: '2019-08-24T14:15:22Z'
+        publicationType:
+          $ref: '#/components/schemas/closedFreightExchangePublicationType'
+        remark:
+          type: string
+          description: 'Remark visible to members of this Closed Freight Exchange, only.'
+          maxLength: 150
+          example: External Remark
+        retentionDurationInMinutes:
+          type: integer
+          description: 'Retention time for remaining in CFE, visible for CFE members, only'
+          format: duration
+          example: 5
+      required:
+        - closedFreightExchangeId
+        - publicationType
+      x-examples:
+        example-1:
+          closedFreightExchangeId: 288
+          publicationDateTime: '2019-08-24T14:15:22Z'
+          publicationType: INTERNAL_ONLY
+          remark: Internal Group Remark
+        example-2:
+          closedFreightExchangeId: 0
+          publicationDateTime: '2019-08-24T14:15:22Z'
+          publicationType: EXTERNAL_LATER
+          remark: External remark
+          retentionDurationInMinutes: 5
+    closedFreightExchangeId:
+      type: integer
+      title: CFE ID
+      description: Unique ID of a Closed Freight Exchange.
+      example: 288
+    closedFreightExchangePublicationType:
+      type: string
+      enum:
+        - INTERNAL_ONLY
+        - EXTERNAL_LATER
+      description: |-
+        Publication type: Visible within, only or publish
+        outside of the CFE after expired retention time.
+      example: EXTERNAL_LATER
+    contactPerson:
+      type: object
+      title: Contact Person
+      description: A contact person describes who can be contacted by interested parties via which communication channels. A contact person is sent within an offer and is disposed when the offer is deleted or expires. The data is nowhere else referenceable or usable in the TIMOCOM Marketplace.
+      properties:
+        businessPhone:
+          $ref: '#/components/schemas/phone'
+        email:
+          type: string
+          description: E-mail address of the contact person.
+          format: email
+          example: schnittstellen@timocom.com
+        fax:
+          $ref: '#/components/schemas/phone'
+        firstName:
+          type: string
+          description: First name of the contact person.
+          maxLength: 50
+          example: Fernández
+        languages:
+          type: array
+          description: List of languages the contact person speaks and wants to be contacted.
+          items:
+            $ref: '#/components/schemas/language'
+        lastName:
+          type: string
+          description: Last name of the contact person.
+          maxLength: 50
+          example: Hernández
+        mobilePhone:
+          $ref: '#/components/schemas/phone'
+        title:
+          type: string
+          description: |-
+            Form of address of the contact person e.g.:
+            - MR
+            - MRS
+          maxLength: 100
+          example: MR
+      required:
+        - email
+        - firstName
+        - languages
+        - lastName
+        - title
+      x-examples:
+        example-1:
+          businessPhone: '+349900678'
+          email: fernandez@hernandezyfernandez.es
+          fax: '+349900679'
+          firstName: Jorge
+          languages:
+            - es
+            - de
+          lastName: Hernández
+          mobilePhone: '+349900680'
+          title: MR
+    phone:
+      type: string
+      title: Phone
+      description: International Phone Number
+      pattern: '^\+?(?:[0-9]\s?){6,14}[0-9]$'
+      minLength: 4
+      maxLength: 30
+      example: +49 211 88 26 88 26
+      x-examples:
+        example-1: +49 211 88 26 88 26
+    language:
+      type: string
+      title: Language
+      description: |-
+        2 letter language code as defined by ISO-639.
+        Currently supported values:
+        * af
+        * ar
+        * az
+        * be
+        * bg
+        * bs
+        * ca
+        * ce
+        * co
+        * cs
+        * da
+        * de
+        * el
+        * en
+        * eo
+        * es
+        * et
+        * eu
+        * fa
+        * fi
+        * fo
+        * fr
+        * fy
+        * ga
+        * gd
+        * gl
+        * he
+        * hr
+        * hu
+        * hy
+        * id
+        * is
+        * it
+        * ja
+        * ka
+        * kk
+        * ku
+        * kw
+        * ky
+        * lb
+        * li
+        * lt
+        * lv
+        * mk
+        * mn
+        * mt
+        * nl
+        * no
+        * oc
+        * pl
+        * ps
+        * pt
+        * rm
+        * ro
+        * ru
+        * sc
+        * sk
+        * sl
+        * sq
+        * sr
+        * sv
+        * sw
+        * th
+        * tr
+        * uk
+        * uz
+        * vi
+        * wa
+        * zh
+      format: ISO-639
+      example: de
+      x-examples:
+        example-1: de
+        example-2: gl
+    customer:
+      type: object
+      title: Customer
+      description: A company that is a customer of TIMOCOM. Except for 'id' fields are ignored in publish offer requests.
+      properties:
+        companyAddress:
+          $ref: '#/components/schemas/postalAddress'
+        creationDateTime:
+          type: string
+          description: |-
+            Filled in response objects, only. Ignored in store
+            requests.
+          format: date-time
+          example: '2019-08-24T14:15:22Z'
+        fax:
+          $ref: '#/components/schemas/phone'
+        id:
+          $ref: '#/components/schemas/timocomId'
+        name:
+          type: string
+          description: Name of the company.
+          maxLength: 50
+          example: Hernández y Fernández S.A.
+        phone:
+          $ref: '#/components/schemas/phone'
+        postalAddress:
+          $ref: '#/components/schemas/postalAddress'
+        taxId:
+          type: string
+          description: Tax ID of the company.
+          maxLength: 50
+          example: TAX-47-87
+      required:
+        - id
+      x-examples:
+        example-1:
+          companyAddress:
+            objectType: postalAddress
+            city: Barcelona
+            country: ES
+            geoCoordinate: null
+            geocoded: false
+            postalCode: '08002'
+            streetOrPostbox: 'Las Ramblas, 234, 1°'
+          creationDateTime: '2019-08-24T14:15:22Z'
+          fax: '+349900601'
+          id: 99
+          name: Hernández y Fernández S.A.
+          phone: '+34212778899'
+          postalAddress:
+            objectType: postalAddress
+            city: Barcelona
+            country: ES
+            geoCoordinate: null
+            geocoded: false
+            postalCode: '08001'
+            streetOrPostbox: P.O. Box 374
+          taxId: TAX-47-87
+    postalAddress:
+      title: Postal Address
+      description: The particulars of the place where an organization is situated.
+      allOf:
+        - $ref: '#/components/schemas/address'
+        - type: object
+          properties:
+            streetOrPostbox:
+              type: string
+              example: PO 3454
+      x-examples:
+        example-1:
+          objectType: postalAddress
+          city: Gerona
+          country: ES
+          geoCoordinate:
+            longitude: 2.82493
+            latitude: 41.98311
+          geocoded: true
+          postalCode: '17001'
+          streetOrPostbox: PO 3454
+    address:
+      type: object
+      title: Address
+      description: |
+        The particulars of the place where a freight offer has to be picked up or needs to be shipped to. In case of a vehicle offer the address symbolizes the starting point of the vehicle.
+      properties:
+        objectType:
+          type: string
+          enum:
+            - address
+            - postalAddress
+        city:
+          type: string
+          maxLength: 100
+          example: Gerona
+        country:
+          $ref: '#/components/schemas/countryCode'
+        geoCoordinate:
+          $ref: '#/components/schemas/geoCoordinate'
+        geocoded:
+          type: boolean
+          description: |-
+            Relevant for responses, only. True if address could be
+            geocoded by TIMOCOM.
+          readOnly: true
+          default: false
+        postalCode:
+          type: string
+          example: '17001'
+      required:
+        - country
+      discriminator:
+        propertyName: objectType
+        mapping:
+          address: '#/components/schemas/address'
+          postalAddress: '#/components/schemas/postalAddress'
+      x-examples:
+        example-1:
+          city: Barcelona
+          country: ES
+          geoCoordinate: null
+          geocoded: false
+          postalCode: '08002'
+        example-2:
+          city: Gerona
+          country: ES
+          geoCoordinate: null
+          geocoded: false
+          postalCode: '17001'
+        example-3:
+          city: Gerona
+          country: ES
+          geoCoordinate:
+            longitude: 2.82493
+            latitude: 41.98311
+          geocoded: true
+          postalCode: '17001'
+    countryCode:
+      type: string
+      title: Country Code
+      description: |-
+        2 letter language code as defined by ISO 3166-1 alpha-2.
+        A maximum of 5 different countries for start are
+        supported. The same goes for destination.
+        Currently supported values:
+        * AD
+        * AE
+        * AF
+        * AL
+        * AM
+        * AT
+        * AZ
+        * BA
+        * BE
+        * BG
+        * BH
+        * BY
+        * CH
+        * CN
+        * CY
+        * CZ
+        * DE
+        * DK
+        * DZ
+        * EE
+        * EG
+        * ER
+        * ES
+        * ET
+        * FI
+        * FO
+        * FR
+        * GB
+        * GE
+        * GI
+        * GR
+        * HR
+        * HU
+        * IE
+        * IL
+        * IN
+        * IQ
+        * IR
+        * IS
+        * IT
+        * JO
+        * KG
+        * KW
+        * KZ
+        * LB
+        * LI
+        * LT
+        * LU
+        * LV
+        * LY
+        * MA
+        * MC
+        * MD
+        * ME
+        * MK
+        * MN
+        * MT
+        * NL
+        * NO
+        * NP
+        * OM
+        * PK
+        * PL
+        * PT
+        * QA
+        * RO
+        * RS
+        * RU
+        * SA
+        * SE
+        * SI
+        * SK
+        * SM
+        * SY
+        * TJ
+        * TM
+        * TN
+        * TR
+        * UA
+        * UZ
+        * VA
+        * YE
+      example: ES
+      x-examples:
+        example-1: DE
+        example-2: GR
+    geoCoordinate:
+      type: object
+      title: Geo Coordinate
+      description: Describes a position in longitude and latitude according to WGS84.
+      properties:
+        longitude:
+          type: number
+          description: The longitude component of a gps Position.
+          minimum: -180
+          maximum: 180
+          multipleOf: 0.00001
+          example: 2.82493
+        latitude:
+          type: number
+          description: The latitude component of a gps Position.
+          minimum: -90
+          maximum: 90
+          multipleOf: 0.00001
+          example: 41.98311
+      required:
+        - longitude
+        - latitude
+      x-examples:
+        example-1:
+          longitude: -180
+          latitude: -90
+        example-2:
+          longitude: 2.82493
+          latitude: 41.98311
+    timocomId:
+      type: integer
+      title: Customer ID
+      description: Unique ID of a customer on TIMOCOM side.
+      example: 288
+    vehicleProperties:
+      type: object
+      title: Vehicle Properties
+      description: 'Generic type used to describe the properties of a certain vehicle with its values. '
+      properties:
+        body:
+          type: array
+          description: At least one value is required.
+          items:
+            $ref: '#/components/schemas/vehicleBody'
+        bodyProperty:
+          type: array
+          items:
+            $ref: '#/components/schemas/vehicleBodyProperty'
+        equipment:
+          type: array
+          description: Special equipment that might be required to carry out a transport.
+          items:
+            $ref: '#/components/schemas/vehicleEquipment'
+        loadSecuring:
+          type: array
+          items:
+            $ref: '#/components/schemas/vehicleLoadSecuring'
+        swapBody:
+          type: array
+          items:
+            $ref: '#/components/schemas/vehicleSwapBody'
+        type:
+          type: array
+          description: Exactly one value is required for vehicle space and at least one value is required for freight.
+          items:
+            $ref: '#/components/schemas/vehicleType'
+      required:
+        - body
+        - type
+      x-examples:
+        example-1:
+          body:
+            - MOVING_FLOOR
+          bodyProperty:
+            - FOLDING_SIDE_BOX
+          equipment:
+            - PORTABLE_FORKLIFT
+          loadSecuring:
+            - BOARD_WALL
+          swapBody:
+            - FORTY_FIVE_FEET_CONTAINER
+          type:
+            - VEHICLE_UP_TO_12_T
+        example-2:
+          body:
+            - MOVING_FLOOR
+          equipment:
+            - PORTABLE_FORKLIFT
+          loadSecuring:
+            - BOARD_WALL
+          swapBody:
+            - FORTY_FIVE_FEET_CONTAINER
+          type:
+            - VEHICLE_UP_TO_12_T
+        example-3:
+          body:
+            - MOVING_FLOOR
+          type:
+            - VEHICLE_UP_TO_12_T
+    vehicleBody:
+      type: string
+      title: Vehicle Body
+      description: |-
+        Defines available types of special vehicle bodies for different purposes like THERMO or
+        CURTAIN_SIDER. Currently accepted values:
+
+        * BOX
+        * CAR_TRANSPORTER
+        * CHASSIS
+        * COIL_WELL
+        * CURTAIN_SIDER
+        * DRAWER
+        * DUMP_TRAILER
+        * EXTENDABLE_TRAILER
+        * FLATBED
+        * INLOADER
+        * JUMBO
+        * LOW_LOADER
+        * MEGA
+        * MOVING_FLOOR
+        * MOVING_FLOOR_FILL_MATERIAL
+        * PLATFORM
+        * REFRIGERATOR
+        * SEMI_TRAILER_WITH_INCLINED_TABLE
+        * SILO
+        * SPECIAL_TRUCK
+        * SWAP_BODY_TRUCK
+        * TANK
+        * TAUTLINER
+        * THERMO
+        * TIPPER_ROLL_OFF
+        * TRACTOR_UNIT
+        * VAN_CAR
+      example: MOVING_FLOOR
+      x-examples:
+        example-1: TAUTLINER
+    vehicleBodyProperty:
+      type: string
+      title: Vehicle Body Property
+      description: |-
+        Properties of the transporting vehicle's body e.g.:
+
+        * AIR_SUSPENDED
+        * BACK_TIPPER
+        * CODE_XL
+        * DOUBLE_EVAPORATOR
+        * DOUBLE_FLOOR
+        * ELEVATING_ROOF
+        * FOLDING_SIDE_BOX
+        * HANGING_GARMENT_CONTAINER
+        * LONG_TRUCK
+        * LOW_FLOOR
+        * LOW_LOADING_RAILS
+        * REMOVAL_VAN
+        * SLIDING_ROOF
+        * SLIDING_CURTAIN
+        * SIDE_TIPPER
+        * WIDENABLE
+      example: FOLDING_SIDE_BOX
+      x-examples:
+        example-1: LONG_TRUCK
+    vehicleEquipment:
+      type: string
+      title: Vehicle Equipment
+      description: |-
+        Special equipment that might be required to carry out a transport e.g.:
+
+        * ACCESS_RAMP
+        * ADR_EQUIPMENT_SET
+        * A_PLATE
+        * CUSTOMS_SEAL_STRING
+        * ESCORT_VEHICLE_TYPE_3
+        * ESCORT_VEHICLE_TYPE_4
+        * FIXED_LOADING_CRANE
+        * MEAT_HOOK
+        * PARTITION_WALL
+        * PORTABLE_FORKLIFT
+        * PORTABLE_PUMP_TRUCK
+        * SATELLITE_TRACKING
+        * SECOND_DRIVER
+        * TAIL_LIFT
+        * TARPAULIN_COVER
+        * WOOD_STANCHIONS
+      example: PORTABLE_FORKLIFT
+      x-examples:
+        example-1: PARTITION_WALL
+    vehicleLoadSecuring:
+      type: string
+      title: Vehicle Load Securing
+      description: |-
+        Special load securing that is required to carry out a transport.
+
+        * ANTI_SLIP_MATS
+        * BOARD_WALL
+        * EDGE_PROTECTION
+        * LASHING_STRAPS
+        * LOCKING_BAR
+        * PALLET_STOP_BAR
+        * PERFORATED_BATTEN
+        * STANCHIONS
+        * TENSION_CHAIN
+      example: BOARD_WALL
+      x-examples:
+        example-1: PALLET_STOP_BAR
+    vehicleSwapBody:
+      type: string
+      title: Vehicle Swap Body
+      description: |-
+        Vehicle Swap Bodies are interchangeable load carriers that can be separated from the carrier vehicle (truck).
+
+        * FORTY_FEET_CONTAINER
+        * FORTY_FIVE_FEET_CONTAINER
+        * HALFPIPE_DUMPER
+        * ROLL_ON_ROLL_OFF_CONTAINER
+        * SWAP_BODY
+        * TWENTY_FEET_CONTAINER
+      example: FORTY_FIVE_FEET_CONTAINER
+      x-examples:
+        example-1: FORTY_FIVE_FEET_CONTAINER
+    vehicleType:
+      type: string
+      title: Vehicle Type
+      description: |-
+        Defines basic types of vehicles that can carry out a transport e.g.
+
+        * TRAILER
+        * VEHICLE_UP_TO_12_T
+        * VEHICLE_UP_TO_3_5_T
+        * VEHICLE_UP_TO_7_5_T
+        * WAGGON_AND_DRAG
+      example: VEHICLE_UP_TO_12_T
+      x-examples:
+        example-1: VEHICLE_UP_TO_12_T
+    additionalInformation:
+      type: string
+      title: Additional Information
+      description: |-
+        Additional information about the goods:
+
+          * CRANE_LOADING_UNLOADING
+          * LOADING_EQUIPMENT_EXCHANGE
+          * LOAD_FOR_DIRECT_DELIVERY
+          * ROUNDTRIP
+          * SIDE_LOADING
+          * FULL_LOAD
+          * PART_LOAD
+          * NO_TRANSHIPMENT
+          * NO_ADDITIONAL_LOAD
+          * NO_VAN
+          * SPECIAL_TRANSPORT_TIME_SENSITIVE
+          * HEAVY_LOAD
+          * OVERSIZE_WIDTH
+          * OVERSIZE_HEIGHT
+          * OVERSIZE_LENGTH
+      example: LOADING_EQUIPMENT_EXCHANGE
+      x-examples:
+        example-1: SIDE_LOADING
+    kilometres:
+      type: integer
+      title: Kilometres
+      description: The amount describes unit and subunit of length in kilometres in a single value.
+      minimum: 0
+      maximum: 200
+      example: 55
+      x-examples:
+        example-1: 55
+    metres:
+      type: number
+      title: Metres
+      description: 'The amount describes unit and subunit of length in metres in a single value, where the integer part (digits before the decimal point) is for the major unit and fractional part (digits after the decimal point) is for the minor unit.'
+      minimum: 0
+      maximum: 99.99
+      multipleOf: 0.01
+      example: 12.31
+      x-examples:
+        example-1: 12.31
+    loadingPlace:
+      type: object
+      title: Loading Place
+      description: A place where freight is loaded or unloaded.
+      properties:
+        loadingType:
+          type: string
+          enum:
+            - LOADING
+            - UNLOADING
+          description: |-
+            Loading type. Must be LOADING for first loading
+            place and UNLOADING for last loading place.
+          example: LOADING
+        address:
+          $ref: '#/components/schemas/address'
+        startTime:
+          type: string
+          description: (Un)loading start time of the loading place.
+          format: '^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+          example: '08:15'
+        endTime:
+          type: string
+          description: (Un)loading end time of the loading place.
+          format: '^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+          example: '17:15'
+        earliestLoadingDate:
+          type: string
+          description: 'Earliest (un)loading date of the loading place. If no value is known, it is recommended to set it to the value of the ‘latestLoadingDate’.'
+          format: date
+          example: '2019-08-24'
+        latestLoadingDate:
+          type: string
+          description: Latest (un)loading date of the loading place. Mandatory field in first loading place (start place).
+          format: date
+          example: '2019-08-26'
+      required:
+        - loadingType
+        - earliestLoadingDate
+        - latestLoadingDate
+      x-examples:
+        example-1:
+          loadingType: LOADING
+          address:
+            objectType: address
+            city: Gerona
+            country: ES
+            geoCoordinate:
+              longitude: 2.82493
+              latitude: 41.98311
+            geocoded: true
+            postalCode: '17001'
+          startTime: '08:15:22Z'
+          endTime: '17:15:22Z'
+          earliestLoadingDate: '2019-08-24'
+          latestLoadingDate: '2019-08-26'
+        example-2:
+          loadingType: UNLOADING
+          address:
+            objectType: address
+            city: Gerona
+            country: ES
+            geoCoordinate:
+              longitude: 2.82495
+              latitude: 41.98317
+            geocoded: true
+            postalCode: '17001'
+          startTime: '08:15:22Z'
+          endTime: '17:15:22Z'
+          earliestLoadingDate: '2019-08-24'
+          latestLoadingDate: '2019-08-26'
+    money:
+      type: object
+      title: Money
+      description: A monetary amount specified in a particular currency.
+      properties:
+        amount:
+          type: number
+          description: 'The amount describes unit and subunit of the currency in a single value, where the integer part (digits before the decimal point) is for the major unit and fractional part (digits after the decimal point) is for the minor unit.'
+          minimum: 0.01
+          maximum: 999999999.99
+          multipleOf: 0.01
+          example: 1.5
+        currency:
+          type: string
+          description: |-
+            3 letter currency code as defined by ISO-4217. Current accepted values:
+            * ALL
+            * AMD
+            * AZN
+            * BAM
+            * BGN
+            * BYN
+            * CHF
+            * CZK
+            * DKK
+            * EUR
+            * GBP
+            * GEL
+            * HRK
+            * HUF
+            * ISK
+            * KZT
+            * MDL
+            * MKD
+            * NOK
+            * PLN
+            * RON
+            * RSD
+            * RUB
+            * SEK
+            * TRY
+            * UAH
+            * USD
+          format: iso-4217
+          example: EUR
+      required:
+        - amount
+        - currency
+      x-examples:
+        example-1:
+          amount: 0.01
+          currency: EUR
+        example-2:
+          amount: 1
+          currency: USD
+    tons:
+      type: number
+      title: Tons
+      description: 'The amount describes unit and subunit of weight in tons in a single value, where the integer part (digits before the decimal point) is for the major unit and fractional part (digits after the decimal point) is for the minor unit.'
+      minimum: 0
+      maximum: 99.99
+      multipleOf: 0.01
+      example: 5.55
+      x-examples:
+        example-1: 5
+        example-2: 1.55
+    freightQuote:
+      type: object
+      title: Freight Quote
+      allOf:
+        - type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/publicId'
+            status:
+              $ref: '#/components/schemas/freightQuoteStatus'
+            offerId:
+              type: string
+            price:
+              $ref: '#/components/schemas/money'
+            expirationDateTime:
+              type: string
+              format: date-time
+            contactPerson:
+              $ref: '#/components/schemas/contactPerson'
+            publicRemark:
+              type: string
+            customer:
+              $ref: '#/components/schemas/customer'
+          required:
+            - offerId
+            - price
+            - expirationDateTime
+            - contactPerson
+            - customer
+    publicId:
+      type: string
+      title: Public ID
+      description: 'Alphanumeric unique ID which is used to identify an entity (freight offer, vehicle space offer, freight quote) in the TIMOCOM system. Will be generated on TIMOCOM side, only.'
+      maxLength: 30
+      example: NdKoYeUDQheRB14EeyJzTg
+    freightQuoteStatus:
+      type: string
+      title: Freight Quote Status
+      description: |-
+        * ACTIVE
+        * ACCEPTED
+        * REJECTED
+        * WITHDRAWN
+        * EXPIRED
+      x-examples:
+        Example 1: ACTIVE
+    vehicleSpaceOffer:
+      title: Vehicle Space Offer
+      description: |-
+        A vehicle space offer that is published within the freight exchange indicates available vehicle space. It contains information related to available vehicle.
+
+        * The Sum of truckLength_m and trailerLength_m has to be greater than 0.
+        * The Sum of truckWeight_t and trailerWeight_t has to be greater than 0.
+      allOf:
+        - $ref: '#/components/schemas/offer'
+        - type: object
+          properties:
+            start:
+              $ref: '#/components/schemas/address'
+            destination:
+              $ref: '#/components/schemas/vehicleSpaceDestinationChoice'
+            loadingDate:
+              type: string
+              description: Loading date (current date + max 31 days).
+              format: date
+            trailerLength_m:
+              $ref: '#/components/schemas/metres'
+            truckLength_m:
+              $ref: '#/components/schemas/metres'
+            trailerWeight_t:
+              $ref: '#/components/schemas/tons'
+            truckWeight_t:
+              $ref: '#/components/schemas/tons'
+          required:
+            - start
+            - destination
+            - loadingDate
+      x-examples:
+        example-1:
+          closedFreightExchangeSetting: null
+          contactPerson:
+            businessPhone: '+349900678'
+            email: fernandez@hernandezyfernandez.es
+            fax: '+349900679'
+            firstName: Jorge
+            languages:
+              - es
+              - de
+            lastName: Hernández
+            mobilePhone: '+349900680'
+            title: MR
+          'creationDateTime ': '2022-09-13T14:58:31.9606213Z'
+          customer:
+            companyAddress:
+              objectType: postalAddress
+              city: Barcelona
+              country: ES
+              geoCoordinate: null
+              geocoded: false
+              postalCode: '08002'
+              streetOrPostbox: 'Las Ramblas, 234, 1°'
+            creationDateTime: null
+            fax: '+349900601'
+            id: 99
+            name: Hernández y Fernández S.A.
+            phone: '+34212778899'
+            postalAddress:
+              objectType: postalAddress
+              city: Barcelone
+              country: ES
+              geoCoordinate: null
+              geocoded: false
+              postalCode: '08001'
+              streetOrPostbox: P.O. Box 374
+            taxId: TAX-47-87
+          deeplink: 'https://timocom.com/example/freight/hggaXk77z'
+          id: offer-471-publicId
+          internalRemark: 'This remark is visible to users of your company, only'
+          logisticsDocumentTypes: null
+          publicRemark: This remark is visible to all
+          trackable: true
+          vehicleProperties:
+            body:
+              - BOX
+            bodyProperty: []
+            equipment:
+              - ESCORT_VEHICLE_TYPE_3
+            loadSecuring:
+              - ANTI_SLIP_MATS
+            swapBody: []
+            type:
+              - VEHICLE_UP_TO_3_5_T
+          destination:
+            area:
+              city: Gerona
+              country: ES
+              geoCoordinate: null
+              geocoded: false
+              postalCode: '17001'
+              radius: 15
+          start:
+            city: Solingen
+            country: DE
+            geoCoordinate: null
+            geocoded: false
+            postalCode: '42697'
+          loadingDate: '2022-09-18'
+          trailerLength_m: 6.5
+          trailerWeight_t: 4.88
+          truckLength_m: 12
+          truckWeight_t: 3.5
+    vehicleSpaceDestinationChoice:
+      title: Vehicle Space Destination
+      description: The destination area of a vehicle space.
+      oneOf:
+        - $ref: '#/components/schemas/vehicleSpaceDestinationArea'
+        - $ref: '#/components/schemas/vehicleSpaceDestinationCountries'
+      discriminator:
+        propertyName: objectType
+      x-examples:
+        example-1:
+          city: Gerona
+          country: ES
+          geoCoordinate:
+            longitude: 2.82493
+            latitude: 41.98311
+          geocoded: true
+          postalCode: '17001'
+          size_km: 200
+        example-2:
+          countries:
+            - DE
+    vehicleSpaceDestinationArea:
+      type: object
+      title: Vehicle Space Destination Area
+      allOf:
+        - $ref: '#/components/schemas/discriminatorAware'
+        - type: object
+          additionalProperties: false
+          properties:
+            area:
+              $ref: '#/components/schemas/area'
+      x-examples:
+        example-1:
+          city: Gerona
+          country: ES
+          geoCoordinate:
+            longitude: 2.82493
+            latitude: 41.98311
+          geocoded: true
+          postalCode: '17001'
+          size_km: 200
+    discriminatorAware:
+      type: object
+      title: DiscriminatorAware
+      description: |
+        Base model for providing a discriminator type field for model types extending a field-less model.
+      properties:
+        objectType:
+          type: string
+    area:
+      type: object
+      title: Area
+      description: Defines the size of the area around an address.
+      properties:
+        address:
+          $ref: '#/components/schemas/address'
+        size_km:
+          $ref: '#/components/schemas/kilometres'
+      x-examples:
+        example-1:
+          city: Gerona
+          country: ES
+          geoCoordinate: null
+          geocoded: false
+          postalCode: '17001'
+          size_km: 15
+        example-2:
+          city: Gerona
+          country: ES
+          geoCoordinate:
+            longitude: 2.82493
+            latitude: 41.98311
+          geocoded: true
+          postalCode: '17001'
+          size_km: 200
+    vehicleSpaceDestinationCountries:
+      type: object
+      title: Vehicle Space Destination Countries
+      description: 'W/o wrapping of the countries list, no model class (in Java) which implements the interface VehicleSpaceDestinationChoice would be generated.'
+      allOf:
+        - $ref: '#/components/schemas/discriminatorAware'
+        - type: object
+          additionalProperties: false
+          properties:
+            countries:
+              type: array
+              items:
+                $ref: '#/components/schemas/countryCode'
+      x-examples:
+        example-1:
+          countries:
+            - DE
+    offerSearchFilter:
+      type: object
+      title: Offer Search Filter
+      description: Is used to search for any offer (freight or vehicle space) in the TIMOCOM Marketplace.
+      properties:
+        sortings:
+          type: array
+          description: Sorting order of the result list.
+          items:
+            $ref: '#/components/schemas/sortingStep'
+        exclusiveLeftLowerBoundDateTime:
+          type: string
+          description: exclusive (>) lower bound for creation date time.
+          format: date-time
+          example: '2019-08-24T14:15:22Z'
+        inclusiveRightUpperBoundDateTime:
+          type: string
+          description: |-
+            inclusive (<=) right upper bound of creation
+            date time.
+            Detail:
+            In particular if
+            exclusiveLeftLowerBoundDateTime is
+            set, too, this field is the
+            inclusive right upper bound of a
+            search interval in matters
+            of the update timestamp.
+            Timestamp of the first (of possibly multiple)
+            request(s) with these filter
+            parameters, necessary for
+            proper pagination. I.e. if you want to have consistent
+            data for multiple pagination requests you should keep
+            this value (along with the lower bound) fix.
+            A value more than 8 hours in the
+            past will be rejected (status
+            UNPROCESSABLE_ENTITY)
+            and the response will
+            contain a message key
+            INVALID_QUERY_DATE_TIME of message level
+            ERROR. A value in the
+            future is set to current
+            timestamp on server side.
+          format: date-time
+          example: '2019-08-24T14:20:22Z'
+        startLocation:
+          $ref: '#/components/schemas/locationSearch'
+        destinationLocation:
+          $ref: '#/components/schemas/locationSearch'
+        loadingDate:
+          $ref: '#/components/schemas/offerDateSearchChoice'
+        firstResult:
+          type: integer
+          description: |
+            Pagination: Sets the offset position in the result set to start pagination, starting with 0. firstResult = (pageNumber-1) * maxResults.
+          minimum: 0
+          default: 0
+          example: 0
+        maxResults:
+          type: integer
+          description: 'Pagination: Maximum number of returned element of result set. Value is additionally bounded above (currently to 30) on server side.'
+          maximum: 30
+          default: 30
+          example: 20
+        lengthRange_m:
+          $ref: '#/components/schemas/metreRange'
+        weightRange_t:
+          $ref: '#/components/schemas/tonRange'
+        vehicleProperties:
+          $ref: '#/components/schemas/vehicleProperties'
+      required:
+        - inclusiveRightUpperBoundDateTime
+        - startLocation
+        - destinationLocation
+        - firstResult
+        - maxResults
+      x-examples:
+        example-1:
+          sortings:
+            - ascending: true
+              field: string
+          exclusiveLeftLowerBoundDateTime: '2019-08-24T14:15:22Z'
+          inclusiveRightUpperBoundDateTime: '2019-08-24T14:15:22Z'
+          startLocation:
+            city: string
+            country: string
+            geoCoordinate:
+              longitude: -180
+              latitude: -90
+            geocoded: false
+            postalCode: string
+            size_km: 200
+          destinationLocation:
+            city: string
+            country: string
+            geoCoordinate:
+              longitude: -180
+              latitude: -90
+            geocoded: false
+            postalCode: string
+            size_km: 200
+          loadingDate:
+            start: '2019-08-24'
+            end: '2019-08-24'
+          firstResult: 0
+          maxResults: 30
+          lengthRange_m:
+            inclusiveMinimum: 12.31
+            inclusiveMaximum: 12.31
+          weightRange_t:
+            inclusiveMaximum: 0
+            inclusiveMinimum: 0
+          vehicleProperties:
+            body:
+              - string
+            bodyProperty:
+              - string
+            equipment:
+              - string
+            loadSecuring:
+              - string
+            swapBody:
+              - string
+            type:
+              - string
+    sortingStep:
+      type: object
+      title: Sorting Step
+      properties:
+        ascending:
+          type: boolean
+          default: true
+        field:
+          type: string
+          description: Field name to be sorted by. Valid values are currently “loadingDate” and “creationDateTime”.
+          example: loadingDate
+      required:
+        - ascending
+      x-examples:
+        example-1:
+          ascending: true
+          field: loadingDate
+    locationSearch:
+      title: Location Search
+      description: Filter parameter for areas/countries. One and only one choice elements must be set.
+      oneOf:
+        - $ref: '#/components/schemas/areaSearch'
+        - $ref: '#/components/schemas/postalCodeAreasArray'
+      discriminator:
+        propertyName: objectType
+      x-examples:
+        example-1:
+          city: Gerona
+          country: ES
+          geoCoordinate:
+            longitude: 2.82493
+            latitude: 41.98311
+          geocoded: true
+          postalCode: '17001'
+          size_km: 200
+        example-2:
+          postalCodeAreas:
+            - country: ES
+              postalCodes:
+                - '03'
+                - '04'
+            - country: DE
+              postalCodes:
+                - '41'
+                - '42'
+    areaSearch:
+      type: object
+      title: Area search sub filter
+      description: Part of an offer search describing the area filter fields
+      additionalProperties: false
+      properties:
+        area:
+          $ref: '#/components/schemas/area'
+      allOf:
+        - $ref: '#/components/schemas/discriminatorAware'
+    postalCodeAreasArray:
+      title: Postal Code Areas Array
+      description: An array of postal code areas (Mandatory list ensures instantiation of impl class).
+      allOf:
+        - type: object
+          properties:
+            postalCodeAreas:
+              type: array
+              items:
+                $ref: '#/components/schemas/postalCodeAreas'
+        - $ref: '#/components/schemas/discriminatorAware'
+      x-examples:
+        example-1:
+          postalCodeAreas:
+            - country: ES
+              postalCodes:
+                - '03'
+                - '04'
+            - country: DE
+              postalCodes:
+                - '41'
+                - '42'
+    postalCodeAreas:
+      type: object
+      title: Postal Code Areas
+      description: Multiple postal code areas of a country. Postal code area is determined by a postal code fragment (prefix).
+      properties:
+        country:
+          $ref: '#/components/schemas/countryCode'
+        postalCodes:
+          type: array
+          items:
+            type: string
+      x-examples:
+        example-1:
+          country: ES
+          postalCodes:
+            - '43'
+    offerDateSearchChoice:
+      title: Offer Date Search Choice
+      description: Either...or choice of date sub filter model
+      oneOf:
+        - $ref: '#/components/schemas/dateInterval'
+        - $ref: '#/components/schemas/individualDates'
+      discriminator:
+        propertyName: objectType
+      x-examples:
+        example-1:
+          start: '2019-08-24'
+          end: '2019-08-26'
+        example-2:
+          items:
+            - '2019-08-24'
+            - '2019-08-25'
+            - '2019-08-27'
+    dateInterval:
+      title: Date Interval
+      description: Any of the dates within this interval.
+      allOf:
+        - type: object
+          properties:
+            start:
+              type: string
+              description: Left lower bound (inclusive).
+              format: date
+              example: '2019-08-24'
+            end:
+              type: string
+              description: |
+                Right upper bound (inclusive).
+              format: date
+              example: '2019-08-27'
+        - $ref: '#/components/schemas/discriminatorAware'
+      x-examples:
+        example-1:
+          start: '2019-08-24'
+          end: '2019-08-27'
+    individualDates:
+      title: Individual Dates
+      description: 'List of dates (logically composed by a disjunction), compared with loading interval/date (cargo) respective start date (truck). At least one and up to 5 date elements must be set.'
+      allOf:
+        - type: object
+          properties:
+            dates:
+              type: array
+              format: date
+              items:
+                type: string
+                format: date
+        - $ref: '#/components/schemas/discriminatorAware'
+      x-examples:
+        example-1:
+          dates:
+            - '2019-08-24'
+            - '2019-08-25'
+            - '2019-08-27'
+    metreRange:
+      type: object
+      title: Metre Range
+      description: Filter criteria that can be defined to find offers which length is within the defined range.
+      properties:
+        inclusiveMinimum:
+          $ref: '#/components/schemas/metres'
+        inclusiveMaximum:
+          $ref: '#/components/schemas/metres'
+      x-examples:
+        example-1:
+          inclusiveMinimum: 10.5
+          inclusiveMaximum: 12.5
+    tonRange:
+      type: object
+      title: Ton Range
+      description: Filter criteria that can be defined to find offers which weight is within the defined range.
+      properties:
+        inclusiveMinimum:
+          $ref: '#/components/schemas/tons'
+        inclusiveMaximum:
+          $ref: '#/components/schemas/tons'
+      x-examples:
+        example-1:
+          inclusiveMinimum: 0
+          inclusiveMaximum: 5
+    problem:
+      type: object
+      title: Problem
+      properties:
+        detail:
+          type: string
+          description: |
+            A human readable explanation specific to this occurrence of the problem that is helpful to locate the problem and give advice on how to proceed. Written in English and readable for engineers, usually not suited for non technical stakeholders and not localized.
+          example: some description for the error situation
+        instance:
+          type: string
+          description: |
+            A URI reference that identifies the specific occurrence of the problem, e.g. by adding a fragment identifier or sub-path to the problem type. May be used to locate the root of this problem in the source code.
+          format: uri-reference
+          example: /some/uri-reference#specific-occurrence-context
+        invalid-params:
+          type: array
+          description: A list of invalid input parameters for this problem.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of the invalid input parameter.
+                example: length
+              reason:
+                type: string
+                description: The reason why this input parameter is invalid.
+                example: must be a positive integer
+        meta:
+          $ref: '#/components/schemas/freightExchangeResponseMeta'
+        status:
+          type: integer
+          description: |
+            The HTTP status code generated by the origin server for this occurrence of the problem.
+          format: int32
+          minimum: 100
+          exclusiveMaximum: true
+          maximum: 600
+        title:
+          type: string
+          description: |
+            A short summary of the problem type. Written in English and readable for engineers, usually not suited for non technical stakeholders and not localized.
+          example: some title for the error situation
+        type:
+          type: string
+          description: |
+            A URI reference that uniquely identifies the problem type only in the context of the provided API. Opposed to the specification in RFC-7807, it is neither recommended to be dereferenceable and point to a human-readable documentation nor globally unique for the problem type.
+          format: uri-reference
+          default: 'about:blank'
+          example: /some/uri-reference
+      x-examples:
+        example-1:
+          detail: some description for the error situation
+          instance: /some/uri-reference#specific-occurrence-context
+          invalid-params:
+            - name: length
+              reason: must be a positive integer
+          meta:
+            requestId: 47-11-request-id
+            responseTimestamp: '2022-09-13T13:22:09.3011033Z'
+          status: 100
+          title: some title for the error situation
+          type: /some/uri-reference
+    freightExchangeResponseMeta:
+      type: object
+      title: Freight Exchange Response Meta
+      properties:
+        requestId:
+          type: string
+          example: 47-11-request-id
+        responseTimestamp:
+          type: string
+          format: date-time
+          example: '2022-09-13T13:22:09.3011033Z'
+      x-examples:
+        example-1:
+          requestId: 47-11-request-id
+          responseTimestamp: '2022-09-13T13:22:09.3011033Z'
+    closedFreightExchangePoliciesForOfferPublisherResponse:
+      title: Closed Freight Exchange Policy for Offer Publisher Response (Upcoming)
+      allOf:
+        - $ref: '#/components/schemas/freightExchangeResponse'
+        - type: object
+          properties:
+            payload:
+              type: array
+              items:
+                $ref: '#/components/schemas/closedFreightExchangePolicyForOfferPublisher'
+    freightExchangeResponse:
+      type: object
+      title: Freight Exchange Response
+      description: Common base model for all Freight Exchange responses.
+      properties:
+        meta:
+          $ref: '#/components/schemas/freightExchangeResponseMeta'
+      discriminator:
+        propertyName: objectType
+    closedFreightExchangePolicyForOfferPublisher:
+      type: object
+      title: Closed Freight Exchange
+      description: |-
+        The Closed Freight Exchange (briefly CFE, or in German: Geschlossene Frachtenbörse) is a concept of grouping TIMOCOM customers for offer publication constraints purposes. The common use case is that an offer with CFE settings will be published exclusively within the CFE in the first place. This means that it is not visible to any TIMOCOM customer which is not member of the set CFE. After a set duration of time (maybe never) it will be automatically visible to all TIMOCOM customers unless it has not been withdrawn before.
+
+        If your company has a valid CFE contract with TIMOCOM you are able to query for all CFE your TIMOCOM ID is part of.
+      properties:
+        closedFreightExchangeId:
+          $ref: '#/components/schemas/closedFreightExchangeId'
+        closedFreightExchangeName:
+          type: string
+          description: Name of the Closed Freight Exchange.
+          maxLength: 50
+          example: CFE Acme Group Southern Europe
+        mandatoryForFreightOffer:
+          type: boolean
+          description: |-
+            If true, you have to publish your offer in this CFE first, i.e. the closedFreightExchangeSetting field is mandatory for
+            any freight offer to be submitted.
+          example: true
+        mandatoryForVehicleSpaceOffer:
+          type: boolean
+          description: |-
+            If true, you have to publish your offer in this CFE first, i.e. the closedFreightExchangeSetting is mandatory for
+            any vehicle space offer to be submitted.
+          example: true
+        allowedPublicationTypes:
+          type: array
+          description: Allowed publication types for this CFE. If the list contains just 'INTERNAL_ONLY' the offers will never be visible outside of the CFE.
+          items:
+            $ref: '#/components/schemas/closedFreightExchangePublicationType'
+          example:
+            - INTERNAL_ONLY
+            - EXTERNAL_LATER
+        retentionDurationLowerBoundInMinutes:
+          type: integer
+          description: Lower bound of the retention duration in minutes. This is the minimum value to be set for the retention duration in closedFreightExchangeSetting.
+          example: 5
+        retentionDurationUpperBoundInMinutes:
+          type: integer
+          description: Upper bound of the retention duration in minutes. This is the maximum value to be set for the retention duration in closedFreightExchangeSetting.
+          example: 50
+        defaultRetentionDurationInMinutes:
+          type: integer
+          description: |-
+            Default retention duration in minutes. 
+            This is the default value to be set for the retention duration in closedFreightExchangeSetting (i.e. filled on TIMOCOM side if not provided in closedFreightExchangeSetting).
+          example: 30
+      required:
+        - closedFreightExchangeId
+        - closedFreightExchangeName
+        - mandatoryForFreightOffer
+        - mandatoryForVehicleSpaceOffer
+        - allowedPublicationTypes
+    closedFreightExchangePoliciesForOfferSearcherResponse:
+      title: Closed Freight Exchange Policy for Offer Searcher Response (Upcoming)
+      allOf:
+        - $ref: '#/components/schemas/freightExchangeResponse'
+        - type: object
+          properties:
+            payload:
+              type: array
+              items:
+                $ref: '#/components/schemas/closedFreightExchangePolicyForOfferSearcher'
+    closedFreightExchangePolicyForOfferSearcher:
+      type: object
+      title: Closed Freight Exchange Policy for Offer Search
+      properties:
+        closedFreightExchangeId:
+          $ref: '#/components/schemas/closedFreightExchangeId'
+        closedFreightExchangeName:
+          type: string
+          description: Name of the Closed Freight Exchange.
+          maxLength: 50
+          example: CFE 1
+      required:
+        - closedFreightExchangeId
+        - closedFreightExchangeName
+    enumerationResponse:
+      title: Enumeration Response
+      allOf:
+        - $ref: '#/components/schemas/freightExchangeResponse'
+        - type: object
+          properties:
+            payload:
+              type: array
+              items:
+                $ref: '#/components/schemas/enumDescriptor'
+    enumDescriptor:
+      type: object
+      description: Describes a reference value and its translations into different languages.
+      properties:
+        value:
+          type: string
+          description: The referenced value.
+        since:
+          type: string
+          description: The date when the value was introduced. Format YYYY-MM.
+        translations:
+          type: array
+          items:
+            $ref: '#/components/schemas/translation'
+    translation:
+      type: object
+      description: Translation of a value into a specific language.
+      properties:
+        value:
+          type: string
+          description: The translated value.
+        language:
+          $ref: '#/components/schemas/language'
+    freightOfferResponse:
+      title: Freight Offer Response
+      allOf:
+        - $ref: '#/components/schemas/freightExchangeResponse'
+        - type: object
+          properties:
+            payload:
+              $ref: '#/components/schemas/freightOffer'
+    freightOffersResponse:
+      title: Freight Offers Response
+      allOf:
+        - $ref: '#/components/schemas/freightExchangeResponse'
+        - type: object
+          properties:
+            payload:
+              type: array
+              items:
+                $ref: '#/components/schemas/freightOffer'
+      x-examples:
+        Lookup Freight Offers:
+          meta:
+            requestId: 47-11-request-id
+            responseTimestamp: '2022-09-13T13:22:09.3011033Z'
+          responseType: freightOfferResponse
+          payload:
+            - closedFreightExchangeSetting: null
+              contactPerson:
+                businessPhone: '+349900678'
+                email: fernandez@hernandezyfernandez.es
+                fax: '+349900679'
+                firstName: Jorge
+                languages:
+                  - es
+                  - de
+                lastName: Hernández
+                mobilePhone: '+349900680'
+                title: MR
+              'creationDateTime ': '2022-09-13T13:22:09.3037464Z'
+              customer:
+                companyAddress:
+                  objectType: postalAddress
+                  city: Barcelona
+                  country: ES
+                  geoCoordinate: null
+                  geocoded: false
+                  postalCode: '08002'
+                  streetOrPostbox: 'Las Ramblas, 234, 1°'
+                creationDateTime: null
+                fax: '+349900601'
+                id: 99
+                name: Hernández y Fernández S.A.
+                phone: '+34212778899'
+                postalAddress:
+                  objectType: postalAddress
+                  city: Barcelona
+                  country: ES
+                  geoCoordinate: null
+                  geocoded: false
+                  postalCode: '08001'
+                  streetOrPostbox: P.O. Box 374
+                taxId: TAX-47-87
+              deeplink: 'https://timocom.com/example/vehiclespace/hggaXk77z'
+              id: offer-471-publicId
+              internalRemark: 'This remark is visible to users of your company, only'
+              logisticsDocumentTypes: null
+              publicRemark: This remark is visible to all
+              trackable: true
+              vehicleProperties:
+                body:
+                  - BOX
+                bodyProperty: []
+                equipment:
+                  - ESCORT_VEHICLE_TYPE_3
+                loadSecuring:
+                  - ANTI_SLIP_MATS
+                swapBody: []
+                type:
+                  - VEHICLE_UP_TO_3_5_T
+              acceptQuotes: true
+              additionalInformation: []
+              distance_km: 4711
+              freightDescription: Optional further description of the freight
+              length_m: 7.76
+              loadingPlaces:
+                - address:
+                    objectType: address
+                    city: Valencia
+                    country: ES
+                    geoCoordinate: null
+                    geocoded: false
+                    postalCode: '46001'
+                  earliestLoadingDate: '2022-09-16'
+                  endTime: null
+                  latestLoadingDate: '2022-09-17'
+                  loadingType: null
+                  startTime: null
+                - address:
+                    objectType: address
+                    city: Solingen
+                    country: DE
+                    geoCoordinate: null
+                    geocoded: false
+                    postalCode: '42697'
+                  earliestLoadingDate: '2022-09-18'
+                  endTime: null
+                  latestLoadingDate: null
+                  loadingType: null
+                  startTime: null
+              paymentDueWithinDays: 45
+              price:
+                amount: 750
+                currency: EUR
+              weight_t: 3.44
+        Find Freight Offers:
+          meta:
+            requestId: 47-11-request-id
+            responseTimestamp: '2022-09-13T13:22:09.3011033Z'
+          payload:
+            - closedFreightExchangeSetting:
+                closedFreightExchangeId: 288
+                publicationDateTime: '2019-08-24T14:15:22Z'
+                publicationType: EXTERNAL_LATER
+                remark: External remark
+                retentionDurationInMinutes: 5
+              creationDateTime: '2019-08-24T14:15:22Z'
+              customer:
+                companyAddress:
+                  city: Gerona
+                  country: ES
+                  geoCoordinate:
+                    longitude: 2.82493
+                    latitude: 41.98311
+                  geocoded: false
+                  postalCode: '17001'
+                  streetOrPostbox: PO 3454
+                creationDateTime: '2019-08-24T14:15:22Z'
+                fax: +49 211 88 26 88 26
+                id: 288
+                name: Hernández y Fernández S.A.
+                phone: +49 211 88 26 88 26
+                postalAddress:
+                  city: Gerona
+                  country: ES
+                  geoCoordinate:
+                    longitude: 2.82493
+                    latitude: 41.98311
+                  geocoded: false
+                  postalCode: '17001'
+                  streetOrPostbox: PO 3454
+                taxId: TAX-47-87
+              deeplink: 'https://timocom.com/example/freight/hggaXk77z'
+              id: offer-471-publicId
+              internalRemark: 'This remark is visible to users of your company, only'
+              logisticsDocumentTypes:
+                - string
+              publicRemark: This remark is visible to all
+              trackable: true
+              vehicleProperties:
+                body:
+                  - MOVING_FLOOR
+                bodyProperty:
+                  - FOLDING_SIDE_BOX
+                equipment:
+                  - PORTABLE_FORKLIFT
+                loadSecuring:
+                  - BOARD_WALL
+                swapBody:
+                  - FORTY_FIVE_FEET_CONTAINER
+                type:
+                  - VEHICLE_UP_TO_12_T
+              acceptQuotes: true
+              additionalInformation:
+                - string
+              distance_km: 55
+              freightDescription: Optional further description of the freight
+              length_m: 12.31
+              loadingPlaces:
+                - loadingType: LOADING
+                  address:
+                    city: Gerona
+                    country: ES
+                    geoCoordinate:
+                      longitude: 2.82493
+                      latitude: 41.98311
+                    geocoded: false
+                    postalCode: '17001'
+                  startTime: '08:15'
+                  endTime: '17:15'
+                  earliestLoadingDate: '2019-08-24'
+                  latestLoadingDate: '2019-08-26'
+                - loadingType: LOADING
+                  address:
+                    city: Gerona
+                    country: ES
+                    geoCoordinate:
+                      longitude: 2.82493
+                      latitude: 41.98311
+                    geocoded: false
+                    postalCode: '17001'
+                  startTime: '08:15'
+                  endTime: '17:15'
+                  earliestLoadingDate: '2019-08-24'
+                  latestLoadingDate: '2019-08-26'
+              paymentDueWithinDays: 30
+              price:
+                amount: 1.5
+                currency: EUR
+              weight_t: 5.55
+    freightQuoteResponse:
+      title: Freight Quote Response
+      allOf:
+        - $ref: '#/components/schemas/freightExchangeResponse'
+        - type: object
+          properties:
+            payload:
+              $ref: '#/components/schemas/freightQuote'
+    freightQuotesResponse:
+      title: Freight Quotes Response
+      allOf:
+        - $ref: '#/components/schemas/freightExchangeResponse'
+        - type: object
+          properties:
+            payload:
+              type: array
+              items:
+                $ref: '#/components/schemas/freightQuote'
+    vehicleSpaceOfferResponse:
+      title: Vehicle Space Offer Response
+      allOf:
+        - $ref: '#/components/schemas/freightExchangeResponse'
+        - type: object
+          properties:
+            payload:
+              $ref: '#/components/schemas/vehicleSpaceOffer'
+    vehicleSpaceOffersResponse:
+      title: Vehicle Space Offers Response
+      allOf:
+        - $ref: '#/components/schemas/freightExchangeResponse'
+        - type: object
+          properties:
+            payload:
+              type: array
+              items:
+                $ref: '#/components/schemas/vehicleSpaceOffer'
+      x-examples:
+        Lookup Vehicle Space Offers:
+          meta:
+            requestId: 47-11-request-id
+            responseTimestamp: '2022-09-13T14:58:31.95852Z'
+          responseType: vehicleSpaceOffersResponse
+          payload:
+            - closedFreightExchangeSetting: null
+              contactPerson:
+                businessPhone: '+349900678'
+                email: fernandez@hernandezyfernandez.es
+                fax: '+349900679'
+                firstName: Jorge
+                languages:
+                  - es
+                  - de
+                lastName: Hernández
+                mobilePhone: '+349900680'
+                title: MR
+              creationDateTime: '2022-09-13T14:58:31.9606213Z'
+              customer:
+                companyAddress:
+                  objectType: postalAddress
+                  city: Barcelona
+                  country: ES
+                  geoCoordinate: null
+                  geocoded: false
+                  postalCode: '08002'
+                  streetOrPostbox: 'Las Ramblas, 234, 1°'
+                creationDateTime: null
+                fax: '+349900601'
+                id: 99
+                name: Hernández y Fernández S.A.
+                phone: '+34212778899'
+                postalAddress:
+                  objectType: postalAddress
+                  city: Barcelona
+                  country: ES
+                  geoCoordinate: null
+                  geocoded: false
+                  postalCode: '08001'
+                  streetOrPostbox: P.O. Box 374
+                taxId: TAX-47-87
+              deeplink: 'https://timocom.com/example/freight/hggaXk77z'
+              id: offer-471-publicId
+              internalRemark: 'This remark is visible to users of your company, only'
+              logisticsDocumentTypes: null
+              publicRemark: This remark is visible to all
+              trackable: true
+              vehicleProperties:
+                body:
+                  - BOX
+                bodyProperty: []
+                equipment:
+                  - ESCORT_VEHICLE_TYPE_3
+                loadSecuring:
+                  - ANTI_SLIP_MATS
+                swapBody: []
+                type:
+                  - VEHICLE_UP_TO_3_5_T
+              destination:
+                area:
+                  city: Gerona
+                  country: ES
+                  geoCoordinate: null
+                  geocoded: false
+                  postalCode: '17001'
+                  radius: 15
+              start:
+                city: Solingen
+                country: DE
+                geoCoordinate: null
+                geocoded: false
+                postalCode: '42697'
+              loadingDate: '2022-09-18'
+              trailerLength_m: 6.5
+              trailerWeight_t: 4.88
+              truckLength_m: null
+              truckWeight_t: null
+        Find Vehicle Spaces Offers:
+          meta:
+            requestId: 47-11-request-id
+            responseTimestamp: '2022-09-13T13:22:09.3011033Z'
+          payload:
+            - closedFreightExchangeSetting:
+                closedFreightExchangeId: 288
+                publicationDateTime: '2019-08-24T14:15:22Z'
+                publicationType: EXTERNAL_LATER
+                remark: External remark
+                retentionDurationInMinutes: 5
+              creationDateTime: '2019-08-24T14:15:22Z'
+              customer:
+                companyAddress:
+                  city: Gerona
+                  country: ES
+                  geoCoordinate:
+                    longitude: 2.82493
+                    latitude: 41.98311
+                  geocoded: false
+                  postalCode: '17001'
+                  streetOrPostbox: PO 3454
+                creationDateTime: '2019-08-24T14:15:22Z'
+                fax: +49 211 88 26 88 26
+                id: 288
+                name: Hernández y Fernández S.A.
+                phone: +49 211 88 26 88 26
+                postalAddress:
+                  city: Gerona
+                  country: ES
+                  geoCoordinate:
+                    longitude: 2.82493
+                    latitude: 41.98311
+                  geocoded: false
+                  postalCode: '17001'
+                  streetOrPostbox: PO 3454
+                taxId: TAX-47-87
+              deeplink: 'https://timocom.com/example/freight/hggaXk77z'
+              id: offer-471-publicId
+              internalRemark: 'This remark is visible to users of your company, only'
+              logisticsDocumentTypes:
+                - string
+              publicRemark: This remark is visible to all
+              trackable: true
+              vehicleProperties:
+                body:
+                  - MOVING_FLOOR
+                bodyProperty:
+                  - FOLDING_SIDE_BOX
+                equipment:
+                  - PORTABLE_FORKLIFT
+                loadSecuring:
+                  - BOARD_WALL
+                swapBody:
+                  - FORTY_FIVE_FEET_CONTAINER
+                type:
+                  - VEHICLE_UP_TO_12_T
+              start:
+                city: Gerona
+                country: ES
+                geoCoordinate:
+                  longitude: 2.82493
+                  latitude: 41.98311
+                geocoded: false
+                postalCode: '17001'
+              destination:
+                objectType: areaSearch
+                area:
+                  address:
+                    city: Gerona
+                    country: ES
+                    geoCoordinate:
+                      longitude: 2.82493
+                      latitude: 41.98311
+                    geocoded: false
+                    postalCode: '17001'
+                  size_km: 55
+                additionalProperties: null
+              loadingDate: '2019-08-24'
+              trailerLength_m: 12.31
+              truckLength_m: 12.31
+              trailerWeight_t: 5.55
+              truckWeight_t: 5.55
+    createResponse:
+      title: Create resource Response
+      allOf:
+        - $ref: '#/components/schemas/freightExchangeResponse'
+        - type: object
+          properties:
+            payload:
+              $ref: '#/components/schemas/publicIdPayload'
+    publicIdPayload:
+      title: Public ID as payload
+      description: |
+        Payload for a public ID.
+        The public ID is a unique ID on TIMOCOM side. Used for responses of create requests.
+      allOf:
+        - type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/publicId'
+    deleteResponse:
+      title: Delete resource Response
+      allOf:
+        - $ref: '#/components/schemas/freightExchangeResponse'
+security:
+  - authorization: []

@@ -1,0 +1,4715 @@
+openapi: 3.0.0
+info:
+  title: orders-api
+  description: ""
+  version: 1.113.4
+  contact: {}
+servers:
+  - url: https://api.platform.trans.eu
+    description: PROD
+tags: []
+paths:
+  /ext/orders-api/v1/orders/{orderId}/additional-costs/{costId}/accept:
+    patch:
+      operationId: ManageV1Controller_acceptAdditionalCost
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: costId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders/{orderId}/additional-costs/{costId}/reject:
+    patch:
+      operationId: ManageV1Controller_rejectAdditionalCost
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: costId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectAdditionalCostDto"
+      responses:
+        "200":
+          description: ""
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders/{orderId}/additional-costs/{costId}:
+    put:
+      operationId: ManageV1Controller_updateAdditionalCost
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: costId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAdditionalCostDto"
+      responses:
+        "200":
+          description: ""
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders-created/{orderId}/costs:
+    post:
+      operationId: ManageV1Controller_createOrderCost
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderCostDto"
+      responses:
+        "200":
+          description: ""
+        "204":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders-created/{orderId}/costs/{costId}:
+    put:
+      operationId: ManageV1Controller_updateOrderCost
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: costId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderCostDto"
+      responses:
+        "200":
+          description: ""
+        "204":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+    delete:
+      operationId: ManageV1Controller_deleteOrderCost
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: costId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+        "204":
+          description: ""
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders/{orderId}:
+    patch:
+      description: Update an existing order. Currently supports updating the shipment
+        external ID.
+      operationId: ManageV1Controller_updateOrder
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          description: Order UUID
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchOrderDto"
+      responses:
+        "204":
+          description: Order updated successfully
+        "400":
+          description: Bad request - validation failed
+        "401":
+          description: Unauthorized - authentication required
+        "404":
+          description: Order not found
+        "422":
+          description: Validation error - input data validation failed
+      security:
+        - bearer: []
+      summary: Update order
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders/{orderId}/amendments:
+    post:
+      description: Creates a new amendment for an existing order.
+      operationId: ManageV1Controller_addOrderAmendment
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          description: Order UUID
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostOrderAmendmentDto"
+      responses:
+        "204":
+          description: Amendment created successfully
+        "400":
+          description: Bad request - malformed payload
+        "401":
+          description: Unauthorized - authentication required
+        "404":
+          description: Order not found
+        "422":
+          description: Validation error returned by external orders service
+      security:
+        - bearer: []
+      summary: Add order amendment
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders-received:
+    get:
+      operationId: OrdersReadV1Controller_getOrdersReceived
+      parameters:
+        - name: sortBy
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: order
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersReceivedCollectionV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v1/archive-orders-received:
+    get:
+      operationId: OrdersReadV1Controller_getArchiveOrdersReceived
+      parameters:
+        - name: sortBy
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: order
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersReceivedArchiveV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders-received/{id}:
+    get:
+      operationId: OrdersReadV1Controller_getOrderReceived
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersReceivedEntityV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders-created:
+    get:
+      operationId: OrdersReadV1Controller_getOrdersCreated
+      parameters:
+        - name: sortBy
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: order
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersCreatedCollectionV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+    post:
+      deprecated: true
+      description: >-
+        Create a new order with freight details including loads, spots, payment
+        terms, and requirements.
+
+
+        **DEPRECATED:** This endpoint (POST /ext/orders-api/v1/orders-created)
+        is maintained for backward compatibility. Use POST
+        /ext/orders-api/v1/orders instead.
+      operationId: OrdersCreateV1Controller_createOrderDeprecated
+      parameters: []
+      requestBody:
+        required: true
+        description: Create order payload (validated at runtime with JSON Schema,
+          including numeric measurement shorthand where supported).
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                external_source: external-integration
+                additional_terms: null
+                number: null
+                incoterm: null
+                allow_forwarding_to_subcontractor: false
+                freight:
+                  shipment_external_id: null
+                  carrier_remarks: null
+                  distance_estimated: 420
+                  distance: null
+                  is_roundtrip: false
+                  reference_number: REF-2024-001
+                  transit_time: null
+                  carrier:
+                    company_id: 100001
+                  shipper:
+                    company_id: 200002
+                    assignee:
+                      account_id: 5001
+                      family_name: Kowalski
+                      given_name: Jan
+                      email: jan.kowalski@example.com
+                      telephone: "+48123456789"
+                      trans_id: trans-5001
+                  capacity: 24
+                  loading_meters: null
+                  height: null
+                  width: null
+                  length: null
+                  volume: null
+                  loads:
+                    - load_id: load-001
+                      is_stackable: true
+                      is_exchangeable: false
+                      type_of_load: pallets
+                      amount: 33
+                      name: Electronics
+                      description: null
+                      shipment_request_load_id: null
+                      weight: 12000
+                      height: 1.8
+                      width: 1.2
+                      length: 2.4
+                      volume: null
+                      loading_meters: null
+                      cleaning_regime: null
+                      idtf: null
+                  spots:
+                    - name: Warehouse A — loading
+                      spot_order: 1
+                      description: null
+                      place:
+                        address:
+                          locality: Warsaw
+                          postal_code: 00-001
+                          country: PL
+                          street: Logistyczna
+                          number: "10"
+                          description: null
+                          tracking: null
+                        coordinates:
+                          latitude: 52.2297
+                          longitude: 21.0122
+                        foreign_id: null
+                        detailed_location_id: null
+                        location_id: null
+                        radius: null
+                        timezone: Europe/Warsaw
+                      operations:
+                        - type: loading
+                          operation_order: 1
+                          slot: null
+                          timespans:
+                            begin: 2024-06-10T08:00:00Z
+                            end: 2024-06-10T16:00:00Z
+                          operation_time: null
+                          time_window: null
+                          time_window_reason: null
+                          loads:
+                            - load_id: load-001
+                              weight: 12000
+                    - name: DC B — unloading
+                      spot_order: 2
+                      description: null
+                      place:
+                        address:
+                          locality: Berlin
+                          postal_code: "10115"
+                          country: DE
+                          street: Hauptstraße
+                          number: "5"
+                          description: null
+                          tracking: null
+                        coordinates:
+                          latitude: 52.52
+                          longitude: 13.405
+                        foreign_id: null
+                        detailed_location_id: null
+                        location_id: null
+                        radius: null
+                        timezone: Europe/Berlin
+                      operations:
+                        - type: unloading
+                          operation_order: 1
+                          slot: null
+                          timespans:
+                            begin: 2024-06-11T06:00:00Z
+                            end: 2024-06-11T14:00:00Z
+                          operation_time: null
+                          time_window: null
+                          time_window_reason: null
+                          loads:
+                            - load_id: load-001
+                              weight: null
+                  requirements:
+                    is_ftl: true
+                    other_requirements: []
+                    required_adr_classes: []
+                    required_truck_bodies:
+                      - curtain
+                    required_ways_of_loading: []
+                    shipping_remarks: null
+                    vehicle_size_id: null
+                    is_tracking_system_required: false
+                    temperature: null
+                    transport:
+                      count: 1
+                      total_weight: null
+                      type: ftl
+                      settlement_basis: null
+                      schedule_type: null
+                    required_tipper_trailer_additional_equipment: []
+                    required_door_types: []
+                    exemption_from_adr: null
+                payment:
+                  days: 30
+                  price:
+                    value: 4500
+                    currency: EUR
+                    type: route
+                    protected: false
+                monitoring:
+                  required: false
+                  providers: null
+                insurance:
+                  load: null
+                  third_party: null
+                attachments_requirements: null
+                driver: null
+                vehicle: null
+      responses:
+        "201":
+          description: Order created successfully (entity-shaped response; see internal
+            mapping layer for fields).
+        "400":
+          description: Bad request - validation failed
+        "401":
+          description: Unauthorized - authentication required
+        "422":
+          description: Validation error - input data validation failed
+      security:
+        - bearer: []
+      summary: Create order (deprecated path)
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders-created/{id}:
+    get:
+      operationId: OrdersReadV1Controller_getOrderCreated
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersCreatedEntityV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v1/archive-orders-created:
+    get:
+      operationId: OrdersReadV1Controller_getArchiveOrdersCreated
+      parameters:
+        - name: sortBy
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: order
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersCreatedArchiveV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders:
+    post:
+      operationId: OrdersCreateV1Controller_createOrder
+      parameters: []
+      requestBody:
+        required: true
+        description: Create order payload (validated at runtime with JSON Schema,
+          including numeric measurement shorthand where supported).
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                external_source: external-integration
+                additional_terms: null
+                number: null
+                incoterm: null
+                allow_forwarding_to_subcontractor: false
+                freight:
+                  shipment_external_id: null
+                  carrier_remarks: null
+                  distance_estimated: 420
+                  distance: null
+                  is_roundtrip: false
+                  reference_number: REF-2024-001
+                  transit_time: null
+                  carrier:
+                    company_id: 100001
+                  shipper:
+                    company_id: 200002
+                    assignee:
+                      account_id: 5001
+                      family_name: Kowalski
+                      given_name: Jan
+                      email: jan.kowalski@example.com
+                      telephone: "+48123456789"
+                      trans_id: trans-5001
+                  capacity: 24
+                  loading_meters: null
+                  height: null
+                  width: null
+                  length: null
+                  volume: null
+                  loads:
+                    - load_id: load-001
+                      is_stackable: true
+                      is_exchangeable: false
+                      type_of_load: pallets
+                      amount: 33
+                      name: Electronics
+                      description: null
+                      shipment_request_load_id: null
+                      weight: 12000
+                      height: 1.8
+                      width: 1.2
+                      length: 2.4
+                      volume: null
+                      loading_meters: null
+                      cleaning_regime: null
+                      idtf: null
+                  spots:
+                    - name: Warehouse A — loading
+                      spot_order: 1
+                      description: null
+                      place:
+                        address:
+                          locality: Warsaw
+                          postal_code: 00-001
+                          country: PL
+                          street: Logistyczna
+                          number: "10"
+                          description: null
+                          tracking: null
+                        coordinates:
+                          latitude: 52.2297
+                          longitude: 21.0122
+                        foreign_id: null
+                        detailed_location_id: null
+                        location_id: null
+                        radius: null
+                        timezone: Europe/Warsaw
+                      operations:
+                        - type: loading
+                          operation_order: 1
+                          slot: null
+                          timespans:
+                            begin: 2024-06-10T08:00:00Z
+                            end: 2024-06-10T16:00:00Z
+                          operation_time: null
+                          time_window: null
+                          time_window_reason: null
+                          loads:
+                            - load_id: load-001
+                              weight: 12000
+                    - name: DC B — unloading
+                      spot_order: 2
+                      description: null
+                      place:
+                        address:
+                          locality: Berlin
+                          postal_code: "10115"
+                          country: DE
+                          street: Hauptstraße
+                          number: "5"
+                          description: null
+                          tracking: null
+                        coordinates:
+                          latitude: 52.52
+                          longitude: 13.405
+                        foreign_id: null
+                        detailed_location_id: null
+                        location_id: null
+                        radius: null
+                        timezone: Europe/Berlin
+                      operations:
+                        - type: unloading
+                          operation_order: 1
+                          slot: null
+                          timespans:
+                            begin: 2024-06-11T06:00:00Z
+                            end: 2024-06-11T14:00:00Z
+                          operation_time: null
+                          time_window: null
+                          time_window_reason: null
+                          loads:
+                            - load_id: load-001
+                              weight: null
+                  requirements:
+                    is_ftl: true
+                    other_requirements: []
+                    required_adr_classes: []
+                    required_truck_bodies:
+                      - curtain
+                    required_ways_of_loading: []
+                    shipping_remarks: null
+                    vehicle_size_id: null
+                    is_tracking_system_required: false
+                    temperature: null
+                    transport:
+                      count: 1
+                      total_weight: null
+                      type: ftl
+                      settlement_basis: null
+                      schedule_type: null
+                    required_tipper_trailer_additional_equipment: []
+                    required_door_types: []
+                    exemption_from_adr: null
+                payment:
+                  days: 30
+                  price:
+                    value: 4500
+                    currency: EUR
+                    type: route
+                    protected: false
+                monitoring:
+                  required: false
+                  providers: null
+                insurance:
+                  load: null
+                  third_party: null
+                attachments_requirements: null
+                driver: null
+                vehicle: null
+      responses:
+        "201":
+          description: Order created successfully (entity-shaped response; see internal
+            mapping layer for fields).
+        "400":
+          description: Bad request - validation failed
+        "401":
+          description: Unauthorized - authentication required
+        "422":
+          description: Validation error - input data validation failed
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v1/orders/{id}/invoice:
+    get:
+      description: Retrieves invoice information for a specific order
+      operationId: OrdersInvoiceV1Controller_getInvoice
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Order UUID
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceResponseDto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      summary: Get invoice for order
+      tags:
+        - orders-api
+    post:
+      description: Adds an invoice attachment to a specific order
+      operationId: OrdersInvoiceV1Controller_addInvoice
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Order UUID
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInvoiceDto"
+      responses:
+        "200":
+          description: ""
+        "201":
+          description: Invoice added successfully
+        "204":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Bad request - validation failed
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      summary: Add invoice to order
+      tags:
+        - orders-api
+  /ext/orders-api/v2/orders-created:
+    get:
+      operationId: OrdersReadV2Controller_getOrdersCreated
+      parameters:
+        - name: filter
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: search
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: sortBy
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: order
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersCollectionItemV2Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v2/orders-created/{id}:
+    get:
+      operationId: OrdersReadV2Controller_getOrderCreatedById
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersEntityV2Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v2/orders-received:
+    get:
+      operationId: OrdersReadV2Controller_getOrdersReceived
+      parameters:
+        - name: filter
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: search
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: sortBy
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: order
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersCollectionItemV2Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v2/orders-received/{id}:
+    get:
+      operationId: OrdersReadV2Controller_getOrderReceivedById
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersEntityV2Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+  /ext/orders-api/v2/transport/{id}:
+    get:
+      operationId: OrdersReadV2Controller_getTransport
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersV2Transport"
+      security:
+        - bearer: []
+      tags:
+        - orders-api
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    RejectAdditionalCostDto:
+      type: object
+      properties:
+        comment:
+          type: string
+          nullable: true
+      required:
+        - comment
+    AdditionalCostPriceDto:
+      type: object
+      properties:
+        value:
+          type: number
+        percentage:
+          type: number
+        currency:
+          type: string
+    AdditionalCostAttachmentDto:
+      type: object
+      properties:
+        mediaId:
+          type: string
+        mediaName:
+          type: string
+      required:
+        - mediaId
+        - mediaName
+    UpdateAdditionalCostDto:
+      type: object
+      properties:
+        category:
+          type: string
+        name:
+          type: string
+        price:
+          $ref: "#/components/schemas/AdditionalCostPriceDto"
+        settlement_method:
+          type: string
+        description:
+          type: string
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdditionalCostAttachmentDto"
+        transportIds:
+          type: array
+          items:
+            type: string
+      required:
+        - category
+        - name
+        - price
+        - settlement_method
+        - description
+    CreateOrderCostDto:
+      type: object
+      properties:
+        category:
+          type: string
+        name:
+          type: string
+        price:
+          $ref: "#/components/schemas/AdditionalCostPriceDto"
+        settlement_method:
+          type: string
+        description:
+          type: string
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdditionalCostAttachmentDto"
+        transportIds:
+          type: array
+          items:
+            type: string
+      required:
+        - category
+        - name
+        - price
+        - settlement_method
+        - description
+    PatchOrderFreightDto:
+      type: object
+      properties:
+        shipment_external_id:
+          type: string
+          description: External shipment identifier
+          example: SHIP-12345
+          nullable: true
+      required:
+        - shipment_external_id
+    PatchOrderDto:
+      type: object
+      properties:
+        freight:
+          description: Freight details to update
+          allOf:
+            - $ref: "#/components/schemas/PatchOrderFreightDto"
+      required:
+        - freight
+    OrderAmendmentMeasurementDto:
+      type: object
+      properties:
+        value:
+          type: number
+          description: Measurement value
+          example: 12.5
+        unit_code:
+          type: string
+          description: Measurement unit code
+          example: t
+    OrderAmendmentLoadDto:
+      type: object
+      properties:
+        load_id:
+          type: string
+          description: Load identifier
+          example: load-1
+        amount:
+          type: number
+          nullable: true
+          description: Amount
+          example: 10
+        is_stackable:
+          type: boolean
+          description: If load is stackable
+          example: true
+        is_exchangeable:
+          type: boolean
+          description: If load is exchangeable
+          example: false
+        type_of_load:
+          type: string
+          nullable: true
+          description: Load type
+          example: pallet
+        name:
+          type: string
+          nullable: true
+          description: Load name
+        description:
+          type: string
+          nullable: true
+          description: Load description
+        shipment_request_load_id:
+          type: number
+          nullable: true
+          description: Shipment request load id
+          example: 1001
+        weight:
+          nullable: true
+          description: Weight
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentMeasurementDto"
+        height:
+          nullable: true
+          description: Height
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentMeasurementDto"
+        width:
+          nullable: true
+          description: Width
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentMeasurementDto"
+        length:
+          nullable: true
+          description: Length
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentMeasurementDto"
+        volume:
+          nullable: true
+          description: Volume
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentMeasurementDto"
+        cleaning_regime:
+          type: string
+          nullable: true
+          description: Cleaning regime
+        loading_meters:
+          nullable: true
+          description: Loading meters
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentMeasurementDto"
+        idtf:
+          type: string
+          nullable: true
+          description: IDTF code
+    OrderAmendmentTransportRequirementsDto:
+      type: object
+      properties:
+        settlement_basis:
+          type: string
+          nullable: true
+          description: Settlement basis
+        type:
+          type: string
+          enum:
+            - ltl
+            - ftl
+            - multi_ftl
+          description: Transport type
+        count:
+          type: number
+          nullable: true
+          description: Transport count
+          example: 1
+        total_weight:
+          nullable: true
+          description: Total weight
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentMeasurementDto"
+    OrderAmendmentRequirementsDto:
+      type: object
+      properties:
+        transport:
+          description: Transport requirements
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentTransportRequirementsDto"
+    OrderAmendmentSpotTrackingDto:
+      type: object
+      properties:
+        email:
+          type: string
+          nullable: true
+          description: Tracking email
+          example: track@example.com
+        is_shared:
+          type: boolean
+          description: If tracking is shared
+          example: true
+    OrderAmendmentSpotAddressDto:
+      type: object
+      properties:
+        locality:
+          type: string
+          description: City
+          example: Warsaw
+        postal_code:
+          type: string
+          description: Postal code
+          example: 00-001
+        country:
+          type: string
+          description: Country code
+          example: PL
+        street:
+          type: string
+          nullable: true
+          description: Street
+          example: Marszalkowska
+        number:
+          type: string
+          nullable: true
+          description: Building number
+          example: 10A
+        description:
+          type: string
+          nullable: true
+          description: Address description
+        tracking:
+          nullable: true
+          description: Tracking settings
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentSpotTrackingDto"
+    OrderAmendmentSpotCoordinatesDto:
+      type: object
+      properties:
+        latitude:
+          type: number
+          nullable: true
+          description: Latitude
+          example: 52.2297
+        longitude:
+          type: number
+          nullable: true
+          description: Longitude
+          example: 21.0122
+    OrderAmendmentSpotPlaceDto:
+      type: object
+      properties:
+        address:
+          description: Place address
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentSpotAddressDto"
+        timezone:
+          type: string
+          nullable: true
+          description: Timezone
+          example: Europe/Warsaw
+        coordinates:
+          nullable: true
+          description: Coordinates
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentSpotCoordinatesDto"
+    OrderAmendmentSpotOperationTimespanDto:
+      type: object
+      properties:
+        begin:
+          type: string
+          description: Operation start time in ISO format
+          example: 2026-01-15T08:00:00Z
+        end:
+          type: string
+          description: Operation end time in ISO format
+          example: 2026-01-15T10:00:00Z
+    OrderAmendmentOperationLoadDto:
+      type: object
+      properties:
+        load_id:
+          type: string
+          description: Load identifier
+          example: load-1
+        weight:
+          nullable: true
+          description: Load weight
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentMeasurementDto"
+    OrderAmendmentSpotOperationDto:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - loading
+            - unloading
+            - customs_clearance
+          description: Operation type
+        operation_order:
+          type: number
+          description: Operation order
+          example: 1
+        slot:
+          type: number
+          nullable: true
+          description: Slot size
+          example: 1
+        timespans:
+          description: Operation time range
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentSpotOperationTimespanDto"
+        loads:
+          nullable: true
+          description: Loads assigned to operation
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderAmendmentOperationLoadDto"
+    OrderAmendmentSpotDto:
+      type: object
+      properties:
+        id:
+          type: number
+          nullable: true
+          description: Spot identifier
+          example: 1
+        name:
+          type: string
+          nullable: true
+          description: Spot name
+          example: Loading point
+        spot_order:
+          type: number
+          description: Spot order
+          example: 1
+        place:
+          description: Spot place
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentSpotPlaceDto"
+        operations:
+          nullable: true
+          description: Spot operations
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderAmendmentSpotOperationDto"
+        description:
+          type: string
+          nullable: true
+          description: Spot description
+    OrderAmendmentFreightDto:
+      type: object
+      properties:
+        loads:
+          nullable: true
+          description: Freight loads
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderAmendmentLoadDto"
+        distance_estimated:
+          type: number
+          nullable: true
+          description: Estimated distance
+          example: 320.5
+        requirements:
+          description: Freight requirements
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentRequirementsDto"
+        shipment_external_id:
+          type: string
+          nullable: true
+          description: Shipment external identifier
+        spots:
+          nullable: true
+          description: Spots
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderAmendmentSpotDto"
+        transit_time:
+          type: number
+          nullable: true
+          description: Transit time
+          example: 480
+    OrderAmendmentPriceDto:
+      type: object
+      properties:
+        value:
+          type: number
+          description: Price value
+          example: 2500
+        currency:
+          type: string
+          description: Currency
+          example: EUR
+        type:
+          type: string
+          description: Price type
+          example: route
+    OrderAmendmentPaymentDto:
+      type: object
+      properties:
+        days:
+          type: number
+          description: Payment days
+          example: 30
+        price:
+          description: Price settings
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentPriceDto"
+    PostOrderAmendmentDto:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+          description: Amendment identifier (UUID)
+          format: uuid
+        freight:
+          description: Freight amendment section
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentFreightDto"
+        additional_terms:
+          type: string
+          nullable: true
+          description: Additional terms
+        payment:
+          description: Payment amendment section
+          allOf:
+            - $ref: "#/components/schemas/OrderAmendmentPaymentDto"
+    OrdersReceivedV1Metadata:
+      type: object
+      properties:
+        order_price_was_changed_by_contract_update:
+          type: boolean
+    OrdersReceivedV1FreightPartner:
+      type: object
+      properties:
+        assignee:
+          type: object
+          nullable: true
+          description: Assignee information
+        legal_name:
+          type: string
+        vat_id:
+          type: string
+      required:
+        - legal_name
+        - vat_id
+    OrdersReceivedV1FreightLoad:
+      type: object
+      properties:
+        amount:
+          type: number
+        description:
+          type: string
+          nullable: true
+        name:
+          type: string
+        type_of_load:
+          type: string
+      required:
+        - amount
+        - name
+        - type_of_load
+    OrdersReceivedV1FreightRequirementsTransport:
+      type: object
+      properties:
+        count:
+          type: number
+          nullable: true
+        type:
+          type: string
+      required:
+        - type
+    OrdersReceivedV1FreightRequirements:
+      type: object
+      properties:
+        transport:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersReceivedV1FreightRequirementsTransport"
+    OrdersReceivedV1SpotOperationLoad:
+      type: object
+      properties:
+        load:
+          $ref: "#/components/schemas/OrdersReceivedV1FreightLoad"
+        weight:
+          type: number
+          nullable: true
+      required:
+        - load
+    OrdersReceivedV1Timespan:
+      type: object
+      properties:
+        begin:
+          type: string
+        end:
+          type: string
+      required:
+        - begin
+        - end
+    OrdersReceivedV1SpotOperation:
+      type: object
+      properties:
+        loads:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersReceivedV1SpotOperationLoad"
+        operation_order:
+          type: number
+        operation_time:
+          type: number
+          nullable: true
+        time_window:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersReceivedV1Timespan"
+        time_window_reason:
+          type: string
+          nullable: true
+        timespans:
+          $ref: "#/components/schemas/OrdersReceivedV1Timespan"
+        type:
+          type: string
+      required:
+        - loads
+        - operation_order
+        - timespans
+        - type
+    OrdersReceivedV1Address:
+      type: object
+      properties:
+        country:
+          type: string
+        description:
+          type: string
+          nullable: true
+        locality:
+          type: string
+        number:
+          type: string
+          nullable: true
+        postal_code:
+          type: string
+        street:
+          type: string
+        tracking:
+          type: string
+          nullable: true
+      required:
+        - country
+        - locality
+        - number
+        - postal_code
+        - street
+    OrdersReceivedV1Coordinates:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - latitude
+        - longitude
+    OrdersReceivedV1Place:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/OrdersReceivedV1Address"
+        coordinates:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersReceivedV1Coordinates"
+        timezone:
+          type: string
+          nullable: true
+      required:
+        - address
+    OrdersReceivedV1Spot:
+      type: object
+      properties:
+        description:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersReceivedV1SpotOperation"
+        place:
+          $ref: "#/components/schemas/OrdersReceivedV1Place"
+        spot_order:
+          type: number
+      required:
+        - operations
+        - place
+        - spot_order
+    OrdersReceivedV1Freight:
+      type: object
+      properties:
+        carrier:
+          $ref: "#/components/schemas/OrdersReceivedV1FreightPartner"
+        distance:
+          type: number
+          nullable: true
+        is_roundtrip:
+          type: boolean
+          nullable: true
+        loads:
+          nullable: true
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersReceivedV1FreightLoad"
+        reference_number:
+          type: string
+          nullable: true
+        requirements:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersReceivedV1FreightRequirements"
+        shipment_external_id:
+          type: string
+          nullable: true
+        shipper:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersReceivedV1FreightPartner"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersReceivedV1Spot"
+        surcharges:
+          type: object
+          description: Freight surcharges; empty object when none (Tyk parity).
+        transit_time:
+          type: number
+          nullable: true
+      required:
+        - carrier
+        - spots
+        - surcharges
+    OrderApiInvoice:
+      type: object
+      properties:
+        invoice_id:
+          type: string
+          nullable: true
+        invoice_issuance_date:
+          type: string
+        invoice_number:
+          type: string
+        media_id:
+          type: string
+        currency:
+          type: string
+        gross_value:
+          type: number
+        net_value:
+          type: number
+        payment_offset_days:
+          type: number
+        tax_value:
+          type: number
+        payment_due_date:
+          type: string
+        sales_date:
+          type: string
+      required:
+        - invoice_issuance_date
+        - invoice_number
+    OrdersReceivedV1Monitoring:
+      type: object
+      properties:
+        expected_monitoring_id:
+          type: string
+          nullable: true
+        providers:
+          type: array
+          items:
+            type: string
+        required:
+          type: boolean
+      required:
+        - providers
+        - required
+    OrdersReceivedV1PaymentPrice:
+      type: object
+      properties:
+        currency:
+          type: string
+          nullable: true
+        protected:
+          type: boolean
+        type:
+          type: string
+          nullable: true
+        value:
+          type: number
+          nullable: true
+      required:
+        - currency
+        - protected
+        - type
+        - value
+    OrdersReceivedV1Payment:
+      type: object
+      properties:
+        days:
+          type: number
+        price:
+          $ref: "#/components/schemas/OrdersReceivedV1PaymentPrice"
+        period:
+          type: string
+          nullable: true
+        total_estimated_price:
+          type: object
+          properties:
+            currency:
+              type: string
+            type:
+              type: string
+            value:
+              type: number
+          required:
+            - currency
+            - type
+            - value
+      required:
+        - days
+        - price
+    OrdersReceivedV1SettlementQuantity:
+      type: object
+      properties:
+        unit_code:
+          type: string
+        value:
+          type: number
+      required:
+        - unit_code
+        - value
+    OrdersReceivedV1SettlementTotalPrice:
+      type: object
+      properties:
+        currency:
+          type: string
+          nullable: true
+        type:
+          type: string
+        value:
+          type: number
+      required:
+        - currency
+        - type
+        - value
+    OrdersReceivedV1Settlement:
+      type: object
+      properties:
+        quantity:
+          $ref: "#/components/schemas/OrdersReceivedV1SettlementQuantity"
+        total_price:
+          $ref: "#/components/schemas/OrdersReceivedV1SettlementTotalPrice"
+      required:
+        - quantity
+        - total_price
+    OrdersReceivedV1Status:
+      type: object
+      properties:
+        comment:
+          type: string
+          nullable: true
+        value:
+          type: string
+      required:
+        - value
+    OrderApiArchiveVehicleUnit:
+      type: object
+      properties:
+        capacity:
+          type: number
+          nullable: true
+        dispatcher_id:
+          type: number
+          nullable: true
+        id:
+          type: number
+          nullable: true
+        kind:
+          type: string
+          nullable: true
+        loading_meters:
+          type: number
+          nullable: true
+        registration_plate_number:
+          type: string
+          nullable: true
+        revision:
+          type: number
+          nullable: true
+        type:
+          type: string
+          nullable: true
+    OrderApiArchiveVehicle:
+      type: object
+      properties:
+        semi_trailer:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveVehicleUnit"
+        truck:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveVehicleUnit"
+    OrdersReceivedCollectionV1Dto:
+      type: object
+      properties:
+        _metadata:
+          $ref: "#/components/schemas/OrdersReceivedV1Metadata"
+        attachments:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+        driver:
+          type: string
+          nullable: true
+        ecmr_id:
+          type: string
+          nullable: true
+        freight:
+          $ref: "#/components/schemas/OrdersReceivedV1Freight"
+        id:
+          type: string
+        invoice:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiInvoice"
+        legacy_freight_id:
+          type: number
+          nullable: true
+        monitoring:
+          $ref: "#/components/schemas/OrdersReceivedV1Monitoring"
+        number:
+          type: string
+        payment:
+          $ref: "#/components/schemas/OrdersReceivedV1Payment"
+        settlement:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersReceivedV1Settlement"
+        status:
+          $ref: "#/components/schemas/OrdersReceivedV1Status"
+        vehicle:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveVehicle"
+      required:
+        - _metadata
+        - attachments
+        - created_at
+        - freight
+        - id
+        - monitoring
+        - number
+        - payment
+        - status
+    OrderApiEntityAdditionalCostPrice:
+      type: object
+      properties:
+        type:
+          type: string
+        value:
+          type: number
+        percentage:
+          type: number
+          nullable: true
+      required:
+        - type
+        - value
+    AdditionalCostStatus:
+      type: object
+      properties:
+        value:
+          type: object
+        comment:
+          type: string
+          nullable: true
+      required:
+        - value
+    OrderApiEntityAdditionalCostsItem:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          type: string
+        name:
+          type: string
+        price:
+          $ref: "#/components/schemas/OrderApiEntityAdditionalCostPrice"
+        settlement_method:
+          type: string
+        description:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdditionalCostAttachmentDto"
+        transportIds:
+          type: array
+          items:
+            type: string
+        status:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AdditionalCostStatus"
+      required:
+        - id
+        - category
+        - name
+        - price
+        - settlement_method
+        - created_at
+        - updated_at
+    OrderApiEntityAdditionalCostSection:
+      type: object
+      properties:
+        sum:
+          type: number
+        currency:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiEntityAdditionalCostsItem"
+      required:
+        - sum
+        - currency
+        - items
+    OrderApiEntityAdditionalCosts:
+      type: object
+      properties:
+        for_carrier:
+          $ref: "#/components/schemas/OrderApiEntityAdditionalCostSection"
+        for_shipper:
+          $ref: "#/components/schemas/OrderApiEntityAdditionalCostSection"
+      required:
+        - for_carrier
+        - for_shipper
+    OrderApiArchiveAttachmentCompany:
+      type: object
+      properties:
+        company_id:
+          type: number
+      required:
+        - company_id
+    OrderApiArchiveAttachment:
+      type: object
+      properties:
+        company:
+          $ref: "#/components/schemas/OrderApiArchiveAttachmentCompany"
+        source_id:
+          type: string
+          nullable: true
+        type_id:
+          type: string
+        description:
+          type: string
+          nullable: true
+        media_id:
+          type: string
+        media_name:
+          type: string
+      required:
+        - company
+        - type_id
+        - media_id
+        - media_name
+    OrderApiArchiveDriver:
+      type: object
+      properties:
+        account_id:
+          type: number
+          nullable: true
+        family_name:
+          type: string
+          nullable: true
+        given_name:
+          type: string
+          nullable: true
+        full_name:
+          type: string
+          nullable: true
+        contact_phone:
+          type: string
+          nullable: true
+    OrderApiArchiveFreightCarrier:
+      type: object
+      properties:
+        assignee:
+          type: object
+          nullable: true
+          description: Assignee information (always null for archive)
+        company_id:
+          type: number
+        legal_name:
+          type: string
+        vat_id:
+          type: string
+      required:
+        - company_id
+        - legal_name
+        - vat_id
+    OrderApiArchiveTimespan:
+      type: object
+      properties:
+        begin:
+          type: string
+        end:
+          type: string
+      required:
+        - begin
+        - end
+    OrderApiArchiveFirstLastPlace:
+      type: object
+      properties:
+        country:
+          type: string
+        date:
+          type: string
+          nullable: true
+        locality:
+          type: string
+        name:
+          type: string
+          nullable: true
+        number:
+          type: string
+          nullable: true
+        postal_code:
+          type: string
+        street:
+          type: string
+        time_window:
+          type: string
+          nullable: true
+        time_window_reason:
+          type: string
+          nullable: true
+        timespans:
+          $ref: "#/components/schemas/OrderApiArchiveTimespan"
+        timezone:
+          type: string
+          nullable: true
+      required:
+        - country
+        - locality
+        - postal_code
+        - street
+        - timespans
+    OrderApiArchiveFreightRequirementsTransport:
+      type: object
+      properties:
+        count:
+          type: number
+          nullable: true
+        type:
+          type: string
+      required:
+        - type
+    OrderApiArchiveFreightRequirements:
+      type: object
+      properties:
+        transport:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveFreightRequirementsTransport"
+    OrderApiArchiveFreightShipper:
+      type: object
+      properties:
+        assignee:
+          type: object
+          description: Assignee information
+        company_id:
+          type: number
+        legal_name:
+          type: string
+        vat_id:
+          type: string
+      required:
+        - assignee
+        - company_id
+        - legal_name
+        - vat_id
+    OrderApiFreightSpotOperationLoad:
+      type: object
+      properties:
+        name:
+          type: string
+        type_of_load:
+          type: string
+        weight:
+          type: number
+          nullable: true
+        height:
+          type: number
+          nullable: true
+        width:
+          type: number
+          nullable: true
+        length:
+          type: number
+          nullable: true
+        volume:
+          type: number
+          nullable: true
+        amount:
+          type: number
+        description:
+          type: string
+          nullable: true
+        is_stackable:
+          type: boolean
+        is_exchangeable:
+          type: boolean
+        load_id:
+          type: string
+          nullable: true
+        loading_meters:
+          type: number
+          nullable: true
+        spot_operation_loads:
+          type: object
+      required:
+        - name
+        - type_of_load
+        - amount
+        - is_stackable
+        - is_exchangeable
+    OrderApiFreightSpotTimespan:
+      type: object
+      properties:
+        begin:
+          type: string
+        end:
+          type: string
+      required:
+        - begin
+        - end
+    OrderApiFreightSpotOperation:
+      type: object
+      properties:
+        loads:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiFreightSpotOperationLoad"
+        operation_order:
+          type: number
+        operation_time:
+          type: number
+          nullable: true
+        time_window:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiFreightSpotTimespan"
+        time_window_reason:
+          type: string
+          nullable: true
+        timespans:
+          $ref: "#/components/schemas/OrderApiFreightSpotTimespan"
+        type:
+          type: string
+      required:
+        - loads
+        - operation_order
+        - timespans
+        - type
+    OrderApiAddress:
+      type: object
+      properties:
+        country:
+          type: string
+        description:
+          type: string
+          nullable: true
+        locality:
+          type: string
+        number:
+          type: string
+          nullable: true
+        postal_code:
+          type: string
+        street:
+          type: string
+        tracking:
+          type: string
+          nullable: true
+      required:
+        - country
+        - locality
+        - postal_code
+        - street
+    OrderApiCoordinates:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - latitude
+        - longitude
+    OrderApiFreightSpotPlace:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/OrderApiAddress"
+        coordinates:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiCoordinates"
+      required:
+        - address
+    OrderApiFreightSpot:
+      type: object
+      properties:
+        description:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiFreightSpotOperation"
+        place:
+          $ref: "#/components/schemas/OrderApiFreightSpotPlace"
+        spot_order:
+          type: number
+      required:
+        - operations
+        - place
+        - spot_order
+    OrderApiArchiveFreight:
+      type: object
+      properties:
+        carrier:
+          $ref: "#/components/schemas/OrderApiArchiveFreightCarrier"
+        contract_id:
+          type: string
+          nullable: true
+        first_loading_place:
+          $ref: "#/components/schemas/OrderApiArchiveFirstLastPlace"
+        id:
+          type: string
+          nullable: true
+        is_roundtrip:
+          type: boolean
+          nullable: true
+        last_unloading_place:
+          $ref: "#/components/schemas/OrderApiArchiveFirstLastPlace"
+        publication_id:
+          type: number
+          nullable: true
+        reference_number:
+          type: string
+          nullable: true
+        requirements:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveFreightRequirements"
+        shipment_external_id:
+          type: string
+          nullable: true
+        shipper:
+          $ref: "#/components/schemas/OrderApiArchiveFreightShipper"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiFreightSpot"
+        surcharges:
+          type: object
+          nullable: true
+          description: Freight surcharges (always null for archive)
+        transit_time:
+          type: number
+          nullable: true
+      required:
+        - carrier
+        - first_loading_place
+        - is_roundtrip
+        - last_unloading_place
+        - shipper
+        - spots
+    OrderApiPaymentPrice:
+      type: object
+      properties:
+        currency:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+        value:
+          type: number
+          nullable: true
+      required:
+        - currency
+        - type
+        - value
+    OrderApiPaymentTotalEstimatedPrice:
+      type: object
+      properties:
+        currency:
+          type: string
+        type:
+          type: string
+        value:
+          type: number
+      required:
+        - currency
+        - type
+        - value
+    OrderApiPayment:
+      type: object
+      properties:
+        days:
+          type: number
+        price:
+          $ref: "#/components/schemas/OrderApiPaymentPrice"
+        period:
+          type: string
+          nullable: true
+        total_estimated_price:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiPaymentTotalEstimatedPrice"
+      required:
+        - days
+        - price
+    OrdersArchiveRatingPossibilityInterval:
+      type: object
+      properties:
+        begin:
+          type: string
+          nullable: true
+        end:
+          type: string
+          nullable: true
+    OrdersArchiveRatingPossibilityIntervals:
+      type: object
+      properties:
+        carrier:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersArchiveRatingPossibilityInterval"
+        shipper:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersArchiveRatingPossibilityInterval"
+    OrdersArchiveRating:
+      type: object
+      properties:
+        by_carrier:
+          type: number
+          nullable: true
+        by_shipper:
+          type: number
+          nullable: true
+        rating_possibility_intervals:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersArchiveRatingPossibilityIntervals"
+    OrderApiSource:
+      type: object
+      properties:
+        author_account_id:
+          type: number
+        source_date:
+          type: string
+        source_id:
+          type: string
+        type:
+          type: string
+      required:
+        - author_account_id
+        - source_date
+        - source_id
+        - type
+    OrderApiArchiveTransportRoutesEntity:
+      type: object
+      properties:
+        distance:
+          type: number
+      required:
+        - distance
+    OrderApiArchiveTransportRoutes:
+      type: object
+      properties:
+        historical:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveTransportRoutesEntity"
+        declared:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveTransportRoutesEntity"
+        suggested:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveTransportRoutesEntity"
+        estimated:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveTransportRoutesEntity"
+        contracted:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveTransportRoutesEntity"
+    OrderApiArchiveTransportSpotPlace:
+      type: object
+      properties:
+        timezone:
+          type: string
+          nullable: true
+    OrderApiArchiveTransportSpotTimespan:
+      type: object
+      properties:
+        begin:
+          type: string
+        end:
+          type: string
+      required:
+        - begin
+        - end
+    OrderApiArchiveTransportSpot:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        index:
+          type: number
+        operation_id:
+          type: string
+          nullable: true
+        place:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveTransportSpotPlace"
+        timespans:
+          $ref: "#/components/schemas/OrderApiArchiveTransportSpotTimespan"
+        weight:
+          type: number
+          nullable: true
+      required:
+        - index
+        - timespans
+    OrderApiArchiveTransport:
+      type: object
+      properties:
+        driver:
+          type: string
+          nullable: true
+        id:
+          type: string
+        routes:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveTransportRoutes"
+        semi_trailer:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveVehicleUnit"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiArchiveTransportSpot"
+        status:
+          type: string
+        transport_number:
+          type: string
+        truck:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveVehicleUnit"
+      required:
+        - id
+        - spots
+        - status
+        - transport_number
+    OrdersReceivedArchiveItemV1Dto:
+      type: object
+      properties:
+        acceptance:
+          type: object
+          properties:
+            accepted_at:
+              type: string
+            accepted_by:
+              type: object
+              properties:
+                account_id:
+                  type: number
+              selfRequired: true
+          required:
+            - accepted_at
+            - accepted_by
+        additional_costs:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiEntityAdditionalCosts"
+        archived_at:
+          type: string
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiArchiveAttachment"
+        created_at:
+          type: string
+        driver:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveDriver"
+        ecmr_id:
+          type: string
+          nullable: true
+        freight:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveFreight"
+        id:
+          type: string
+        invoice:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiInvoice"
+        legacy_freight_id:
+          type: number
+          nullable: true
+        monitoring:
+          type: object
+        number:
+          type: string
+        payment:
+          $ref: "#/components/schemas/OrderApiPayment"
+        rating:
+          $ref: "#/components/schemas/OrdersArchiveRating"
+        settlement:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersReceivedV1Settlement"
+        source:
+          $ref: "#/components/schemas/OrderApiSource"
+        status:
+          type: object
+          properties:
+            comment:
+              type: string
+              nullable: true
+            value:
+              type: string
+          required:
+            - comment
+            - value
+        transports:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiArchiveTransport"
+        vehicle:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveVehicle"
+      required:
+        - attachments
+        - created_at
+        - id
+        - monitoring
+        - number
+        - payment
+        - status
+    OrdersReceivedArchiveV1Dto:
+      type: object
+      properties:
+        orders-archive:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersReceivedArchiveItemV1Dto"
+        page:
+          type: number
+        page_count:
+          type: number
+      required:
+        - orders-archive
+        - page
+        - page_count
+    OrderApiFreightAssignee:
+      type: object
+      properties:
+        account_id:
+          type: number
+        email:
+          type: string
+        family_name:
+          type: string
+        fax:
+          type: string
+          nullable: true
+        given_name:
+          type: string
+        telephone:
+          type: string
+          nullable: true
+        trans_id:
+          type: string
+      required:
+        - account_id
+        - email
+        - family_name
+        - given_name
+        - trans_id
+    OrderApiFreightCarrier:
+      type: object
+      properties:
+        assignee:
+          nullable: true
+          description: Carrier assignee (null when absent)
+          allOf:
+            - $ref: "#/components/schemas/OrderApiFreightAssignee"
+        legal_name:
+          type: string
+        vat_id:
+          type: string
+      required:
+        - assignee
+        - legal_name
+        - vat_id
+    OrderApiFreightShipper:
+      type: object
+      properties:
+        assignee:
+          type: object
+          description: Assignee information
+        legal_name:
+          type: string
+        vat_id:
+          type: string
+      required:
+        - assignee
+        - legal_name
+        - vat_id
+    OrderApiFreightRequirementsTemperature:
+      type: object
+      properties:
+        min:
+          type: number
+        max:
+          type: number
+      required:
+        - min
+        - max
+    OrderApiFreightRequirementsTransport:
+      type: object
+      properties:
+        count:
+          type: number
+          nullable: true
+        schedule_type:
+          type: string
+          nullable: true
+        settlement_basis:
+          type: string
+          nullable: true
+        total_weight:
+          type: number
+          nullable: true
+        type:
+          type: string
+      required:
+        - type
+    OrderApiFreightRequirements:
+      type: object
+      properties:
+        temperature:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiFreightRequirementsTemperature"
+        exemption_from_adr:
+          type: string
+          nullable: true
+        is_ftl:
+          type: boolean
+          nullable: true
+        monitoring:
+          type: string
+          nullable: true
+        other_requirements:
+          type: array
+          items:
+            type: string
+        required_adr_classes:
+          type: array
+          items:
+            type: string
+        required_door_types:
+          type: array
+          items:
+            type: string
+        required_tipper_trailer_additional_equipment:
+          type: array
+          items:
+            type: string
+        required_truck_bodies:
+          type: array
+          items:
+            type: string
+        required_ways_of_loading:
+          type: array
+          items:
+            type: string
+        shipping_remarks:
+          type: string
+          nullable: true
+        transport:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiFreightRequirementsTransport"
+        vehicle_size_id:
+          type: string
+    OrderApiFreightCapacity:
+      type: object
+      properties:
+        value:
+          type: number
+        unit_code:
+          type: string
+      required:
+        - value
+        - unit_code
+    OrderApiFreightLoad:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        amount:
+          type: number
+        type_of_load:
+          type: string
+        height:
+          type: number
+          nullable: true
+          description: Entity responses use plain numbers (not `{ value, unit_code }`).
+        length:
+          type: number
+          nullable: true
+        volume:
+          type: number
+          nullable: true
+        weight:
+          type: number
+          nullable: true
+        width:
+          type: number
+          nullable: true
+        is_exchangeable:
+          type: boolean
+          nullable: true
+        is_stackable:
+          type: boolean
+          nullable: true
+        load_id:
+          type: string
+          nullable: true
+        shipment_request_load_id:
+          type: string
+          nullable: true
+        loading_meters:
+          type: number
+          nullable: true
+        spot_operation_loads:
+          type: object
+      required:
+        - name
+        - amount
+        - type_of_load
+    OrderApiEntityFreight:
+      type: object
+      properties:
+        carrier:
+          $ref: "#/components/schemas/OrderApiFreightCarrier"
+        id:
+          type: string
+        distance:
+          type: number
+          nullable: true
+        reference_number:
+          type: object
+          nullable: true
+        shipper:
+          $ref: "#/components/schemas/OrderApiFreightShipper"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiFreightSpot"
+        requirements:
+          $ref: "#/components/schemas/OrderApiFreightRequirements"
+        capacity:
+          $ref: "#/components/schemas/OrderApiFreightCapacity"
+        shipment_external_id:
+          type: string
+          nullable: true
+        transit_time:
+          type: number
+          nullable: true
+        is_roundtrip:
+          type: boolean
+          nullable: true
+          description: Intentional Transit extension vs Tyk schema — see
+            `tools/tyk-transit-orders-api-schema-diff-ignore.json`.
+        surcharges:
+          type: object
+          nullable: true
+          description: Freight surcharges
+        loads:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiFreightLoad"
+      required:
+        - carrier
+        - spots
+        - capacity
+    OrderApiMonitoring:
+      type: object
+      properties:
+        providers:
+          type: array
+          items:
+            type: string
+        required:
+          type: boolean
+        expected_monitoring_id:
+          type: string
+      required:
+        - providers
+    OrderApiStatus:
+      type: object
+      properties:
+        comment:
+          type: string
+        value:
+          type: string
+      required:
+        - comment
+        - value
+    OrderApiInsuranceValue:
+      type: object
+      properties:
+        currency:
+          type: string
+        value:
+          type: number
+      required:
+        - currency
+        - value
+    OrderApiInsurance:
+      type: object
+      properties:
+        load:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiInsuranceValue"
+        third_party:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiInsuranceValue"
+    OrderApiEntityAttachmentsRequirements:
+      type: object
+      properties:
+        required_types:
+          type: array
+          items:
+            type: string
+        other_attachment_type_description:
+          type: string
+          nullable: true
+      required:
+        - required_types
+    OrderApiEntityMetadataRestriction:
+      type: object
+      properties:
+        applied_restrictions:
+          type: array
+          items:
+            type: string
+        reason:
+          type: string
+          nullable: true
+      required:
+        - applied_restrictions
+    OrderApiEntityMetadata:
+      type: object
+      properties:
+        restrictions:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiEntityMetadataRestriction"
+        applied_default_terms_template:
+          type: boolean
+        carrier_company_is_blocked:
+          type: boolean
+        order_price_was_changed_by_contract_update:
+          type: boolean
+      required:
+        - restrictions
+        - applied_default_terms_template
+        - carrier_company_is_blocked
+    OrderApiCooperation:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    OrdersReceivedEntityV1Dto:
+      type: object
+      properties:
+        id:
+          type: string
+        additional_terms:
+          type: string
+          nullable: true
+        archived_at:
+          type: string
+          nullable: true
+        can_archive:
+          type: boolean
+        created_at:
+          type: string
+        freight:
+          $ref: "#/components/schemas/OrderApiEntityFreight"
+        invoice:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiInvoice"
+        is_archived_permanently:
+          type: boolean
+        legacy_freight_id:
+          type: number
+          nullable: true
+        monitoring:
+          $ref: "#/components/schemas/OrderApiMonitoring"
+        number:
+          type: string
+        payment:
+          $ref: "#/components/schemas/OrderApiPayment"
+        related:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: "#/components/schemas/OrderApiStatus"
+        vehicle:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveVehicle"
+        insurance:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiInsurance"
+        shipment_external_id:
+          type: string
+        additional_costs:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiEntityAdditionalCosts"
+        attachments_requirements:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiEntityAttachmentsRequirements"
+        _metadata:
+          $ref: "#/components/schemas/OrderApiEntityMetadata"
+        attachments:
+          type: array
+          items:
+            type: string
+        cooperation:
+          $ref: "#/components/schemas/OrderApiCooperation"
+        delivery_confirmation:
+          type: string
+          nullable: true
+        driver:
+          type: string
+          nullable: true
+        cancellation:
+          type: boolean
+          nullable: true
+        required_execution_data:
+          nullable: true
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - can_archive
+        - created_at
+        - freight
+        - is_archived_permanently
+        - number
+        - payment
+        - related
+        - status
+        - _metadata
+        - attachments
+        - cooperation
+    OrdersCreatedCollectionV1Driver:
+      type: object
+      properties:
+        account_id:
+          type: string
+          nullable: true
+        given_name:
+          type: string
+          nullable: true
+        family_name:
+          type: string
+          nullable: true
+        full_name:
+          type: string
+          nullable: true
+        contact_phone:
+          type: string
+          nullable: true
+      required:
+        - account_id
+        - given_name
+        - family_name
+        - full_name
+        - contact_phone
+    OrdersCreatedCollectionV1Dto:
+      type: object
+      properties:
+        _metadata:
+          $ref: "#/components/schemas/OrdersReceivedV1Metadata"
+        attachments:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+        driver:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersCreatedCollectionV1Driver"
+        ecmr_id:
+          type: string
+          nullable: true
+        freight:
+          $ref: "#/components/schemas/OrdersReceivedV1Freight"
+        id:
+          type: string
+        invoice:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiInvoice"
+        legacy_freight_id:
+          type: number
+          nullable: true
+        monitoring:
+          $ref: "#/components/schemas/OrdersReceivedV1Monitoring"
+        number:
+          type: string
+        payment:
+          $ref: "#/components/schemas/OrdersReceivedV1Payment"
+        settlement:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersReceivedV1Settlement"
+        status:
+          $ref: "#/components/schemas/OrdersReceivedV1Status"
+        vehicle:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveVehicle"
+      required:
+        - _metadata
+        - attachments
+        - created_at
+        - freight
+        - id
+        - monitoring
+        - number
+        - payment
+        - status
+    OrderApiCreatedEntityFreight:
+      type: object
+      properties:
+        carrier:
+          $ref: "#/components/schemas/OrderApiFreightCarrier"
+        id:
+          type: string
+        distance:
+          type: number
+          nullable: true
+        reference_number:
+          type: object
+          nullable: true
+        shipper:
+          $ref: "#/components/schemas/OrderApiFreightShipper"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiFreightSpot"
+        requirements:
+          $ref: "#/components/schemas/OrderApiFreightRequirements"
+        capacity:
+          $ref: "#/components/schemas/OrderApiFreightCapacity"
+        shipment_external_id:
+          type: string
+          nullable: true
+        transit_time:
+          type: number
+          nullable: true
+        is_roundtrip:
+          type: boolean
+          nullable: true
+          description: Intentional Transit extension vs Tyk schema — see
+            `tools/tyk-transit-orders-api-schema-diff-ignore.json`.
+        surcharges:
+          type: object
+          nullable: true
+          description: Freight surcharges
+        loads:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiFreightLoad"
+      required:
+        - carrier
+        - spots
+        - capacity
+    OrdersCreatedEntityV1Dto:
+      type: object
+      properties:
+        id:
+          type: string
+        additional_terms:
+          type: string
+          nullable: true
+        archived_at:
+          type: string
+          nullable: true
+        can_archive:
+          type: boolean
+        created_at:
+          type: string
+        freight:
+          $ref: "#/components/schemas/OrderApiCreatedEntityFreight"
+        invoice:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiInvoice"
+        is_archived_permanently:
+          type: boolean
+        legacy_freight_id:
+          type: number
+          nullable: true
+        monitoring:
+          $ref: "#/components/schemas/OrderApiMonitoring"
+        number:
+          type: string
+        payment:
+          $ref: "#/components/schemas/OrderApiPayment"
+        related:
+          type: array
+          items:
+            type: string
+        source:
+          $ref: "#/components/schemas/OrderApiSource"
+        status:
+          $ref: "#/components/schemas/OrderApiStatus"
+        vehicle:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveVehicle"
+        insurance:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiInsurance"
+        shipment_external_id:
+          type: string
+          nullable: true
+        additional_costs:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiEntityAdditionalCosts"
+        attachments_requirements:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiEntityAttachmentsRequirements"
+        _metadata:
+          $ref: "#/components/schemas/OrderApiEntityMetadata"
+        attachments:
+          type: array
+          items:
+            type: string
+        cooperation:
+          $ref: "#/components/schemas/OrderApiCooperation"
+        delivery_confirmation:
+          type: string
+          nullable: true
+        driver:
+          type: string
+          nullable: true
+        cancellation:
+          type: boolean
+          nullable: true
+        required_execution_data:
+          nullable: true
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - can_archive
+        - created_at
+        - freight
+        - is_archived_permanently
+        - number
+        - payment
+        - related
+        - status
+        - _metadata
+        - attachments
+        - cooperation
+    OrdersCreatedArchiveItemV1Dto:
+      type: object
+      properties:
+        acceptance:
+          type: object
+          properties:
+            accepted_at:
+              type: string
+            accepted_by:
+              type: object
+              properties:
+                account_id:
+                  type: number
+              selfRequired: true
+          required:
+            - accepted_at
+            - accepted_by
+        additional_costs:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiEntityAdditionalCosts"
+        archived_at:
+          type: string
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiArchiveAttachment"
+        created_at:
+          type: string
+        driver:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveDriver"
+        ecmr_id:
+          type: string
+          nullable: true
+        freight:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveFreight"
+        id:
+          type: string
+        invoice:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiInvoice"
+        legacy_freight_id:
+          type: number
+          nullable: true
+        monitoring:
+          type: object
+        number:
+          type: string
+        payment:
+          $ref: "#/components/schemas/OrderApiPayment"
+        rating:
+          $ref: "#/components/schemas/OrdersArchiveRating"
+        settlement:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersReceivedV1Settlement"
+        source:
+          $ref: "#/components/schemas/OrderApiSource"
+        status:
+          type: object
+          properties:
+            comment:
+              type: string
+              nullable: true
+            value:
+              type: string
+          required:
+            - comment
+            - value
+        transports:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderApiArchiveTransport"
+        vehicle:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrderApiArchiveVehicle"
+      required:
+        - attachments
+        - created_at
+        - id
+        - monitoring
+        - number
+        - payment
+        - status
+    OrdersCreatedArchiveV1Dto:
+      type: object
+      properties:
+        orders-archive:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersCreatedArchiveItemV1Dto"
+        page:
+          type: number
+        page_count:
+          type: number
+      required:
+        - orders-archive
+        - page
+        - page_count
+    InvoiceResponseDto:
+      type: object
+      properties:
+        invoice_id:
+          type: string
+          nullable: true
+          description: Invoice ID
+          example: invoice-123
+        invoice_issuance_date:
+          type: string
+          description: Invoice issuance date (YYYY-MM-DD)
+          example: 2024-01-15
+        invoice_number:
+          type: string
+          description: Invoice number
+          example: INV-2024-001
+        media_id:
+          type: string
+          description: Media ID for invoice file
+          example: media-123
+        currency:
+          type: string
+          description: Currency code
+          example: PLN
+        gross_value:
+          type: number
+          description: Gross value
+          example: 1230
+        net_value:
+          type: number
+          description: Net value
+          example: 1000
+        payment_offset_days:
+          type: number
+          description: Payment offset days
+          example: 30
+        tax_value:
+          type: number
+          description: Tax value
+          example: 230
+        payment_due_date:
+          type: string
+          description: Payment due date (YYYY-MM-DD)
+          example: 2024-02-15
+        sales_date:
+          type: string
+          description: Sales date (YYYY-MM-DD)
+          example: 2024-01-15
+        file_link:
+          type: string
+          nullable: true
+          description: "URL to invoice file in media storage (via TYK): GET
+            /ext/media-storage-api/v1/assets/:media_id"
+          example: https://tyk.dev.trans/ext/media-storage-api/v1/assets/abc-123
+      required:
+        - invoice_issuance_date
+        - invoice_number
+    InvoiceDataDto:
+      type: object
+      properties:
+        invoice_number:
+          type: string
+          description: Invoice number
+          example: INV-2024-001
+        invoice_issuance_date:
+          type: string
+          pattern: DATE_PATTERN
+          description: Invoice issuance date (YYYY-MM-DD)
+          example: 2024-01-15
+        sales_date:
+          type: string
+          pattern: DATE_PATTERN
+          description: Sales date (YYYY-MM-DD)
+          example: 2024-01-15
+        payment_due_date:
+          type: string
+          pattern: DATE_PATTERN
+          description: Payment due date (YYYY-MM-DD)
+          example: 2024-02-15
+        payment_offset_days:
+          type: number
+          description: Payment offset days
+          example: 30
+        net_value:
+          type: number
+          description: Net value
+          example: 1000
+        tax_value:
+          type: number
+          nullable: true
+          description: Tax value
+          example: 230
+        gross_value:
+          type: number
+          nullable: true
+          description: Gross value
+          example: 1230
+        currency:
+          type: string
+          description: Currency code
+          example: PLN
+      required:
+        - invoice_number
+        - invoice_issuance_date
+        - sales_date
+        - payment_due_date
+        - payment_offset_days
+        - net_value
+        - currency
+    PostInvoiceDto:
+      type: object
+      properties:
+        media_name:
+          type: string
+          description: Media name
+          example: invoice.pdf
+        media_id:
+          type: string
+          description: Media ID
+          example: media-123
+        description:
+          type: string
+          description: Description
+          example: Invoice for transport
+        visible_to_contractor:
+          type: boolean
+          description: Visible to contractor
+          example: true
+        invoice_data:
+          description: Invoice data
+          allOf:
+            - $ref: "#/components/schemas/InvoiceDataDto"
+        transport_ids:
+          description: Transport IDs
+          example:
+            - transport-1
+            - transport-2
+          type: array
+          items:
+            type: string
+      required:
+        - media_name
+        - media_id
+        - visible_to_contractor
+        - invoice_data
+        - transport_ids
+    OrdersV2VehicleMeasurement:
+      type: object
+      properties:
+        value:
+          type: number
+          nullable: true
+        unit_code:
+          type: string
+          nullable: true
+    OrdersV2VehicleUnit:
+      type: object
+      properties:
+        id:
+          type: number
+          nullable: true
+        fleet_id:
+          type: string
+          nullable: true
+        revision:
+          type: number
+          nullable: true
+        registration_plate_number:
+          type: string
+          nullable: true
+        dispatcher_id:
+          type: number
+          nullable: true
+        kind:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+        capacity:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2VehicleMeasurement"
+        loading_meters:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2VehicleMeasurement"
+        combustion_norm:
+          type: string
+          nullable: true
+    OrdersV2Vehicle:
+      type: object
+      properties:
+        truck:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2VehicleUnit"
+        semi_trailer:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2VehicleUnit"
+    OrdersV2Cooperation:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    OrdersV2Driver:
+      type: object
+      properties:
+        account_id:
+          type: number
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        employee_id:
+          type: number
+          nullable: true
+        family_name:
+          type: string
+          nullable: true
+        full_name:
+          type: string
+          nullable: true
+        given_name:
+          type: string
+          nullable: true
+        contact_phone:
+          type: string
+          nullable: true
+        identity_document_number:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+      required:
+        - account_id
+        - email
+        - family_name
+        - full_name
+        - given_name
+    OrdersV2FreightPartner:
+      type: object
+      properties:
+        vat_id:
+          type: string
+        legal_name:
+          type: string
+        company_id:
+          type: number
+        assignee:
+          type: object
+          nullable: true
+          description: Assignee information
+      required:
+        - vat_id
+        - legal_name
+        - company_id
+    OrdersV2Timespan:
+      type: object
+      properties:
+        begin:
+          type: string
+        end:
+          type: string
+      required:
+        - begin
+        - end
+    OrdersV2FirstLastPlace:
+      type: object
+      properties:
+        country:
+          type: string
+        date:
+          type: string
+        locality:
+          type: string
+        name:
+          type: string
+          nullable: true
+        number:
+          type: string
+          nullable: true
+        postal_code:
+          type: string
+        street:
+          type: string
+        time_window:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2Timespan"
+        time_window_reason:
+          type: string
+          nullable: true
+        timespans:
+          $ref: "#/components/schemas/OrdersV2Timespan"
+        timezone:
+          type: string
+          nullable: true
+      required:
+        - country
+        - date
+        - locality
+        - number
+        - postal_code
+        - street
+        - timespans
+    OrdersV2FreightLoad:
+      type: object
+      properties:
+        name:
+          type: string
+        load_id:
+          type: string
+          nullable: true
+        type_of_load:
+          type: string
+        weight:
+          type: number
+          nullable: true
+          description: Entity/detail responses expose plain numbers (flattened from `{
+            value, unit_code }`).
+        height:
+          type: number
+          nullable: true
+        width:
+          type: number
+          nullable: true
+        length:
+          type: number
+          nullable: true
+        volume:
+          type: number
+          nullable: true
+        loading_meters:
+          type: number
+          nullable: true
+        spot_operation_loads:
+          type: object
+          description: Empty object when none; key always present for stable schema.
+        amount:
+          type: number
+        description:
+          type: string
+          nullable: true
+        is_stackable:
+          type: boolean
+        is_exchangeable:
+          type: boolean
+      required:
+        - name
+        - type_of_load
+        - amount
+        - is_stackable
+        - is_exchangeable
+    OrdersV2SpotOperationLoad:
+      type: object
+      properties:
+        load:
+          $ref: "#/components/schemas/OrdersV2FreightLoad"
+      required:
+        - load
+    OrdersV2Operation:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        loads:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersV2SpotOperationLoad"
+        operation_order:
+          type: number
+        slot:
+          type: number
+          nullable: true
+          description: "Collection list payloads: loading/unloading slot index from the
+            Orders API."
+        operation_time:
+          type: number
+          nullable: true
+          description: "Entity/detail payloads: same source as `slot`, exposed under this
+            name for legacy clients."
+        time_window:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2Timespan"
+        time_window_reason:
+          type: string
+          nullable: true
+        timespans:
+          $ref: "#/components/schemas/OrdersV2Timespan"
+        type:
+          type: string
+      required:
+        - loads
+        - operation_order
+        - timespans
+        - type
+    OrdersV2Address:
+      type: object
+      properties:
+        locality:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+        tracking:
+          type: string
+          nullable: true
+        street:
+          type: string
+          nullable: true
+        number:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+      required:
+        - locality
+        - postal_code
+        - country
+    OrdersV2Coordinates:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - latitude
+        - longitude
+    OrdersV2Place:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/OrdersV2Address"
+        coordinates:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2Coordinates"
+        detailed_location_id:
+          type: number
+          nullable: true
+        foreign_id:
+          type: number
+          nullable: true
+        location_id:
+          type: number
+          nullable: true
+        radius:
+          type: number
+          nullable: true
+        timezone:
+          type: string
+          nullable: true
+      required:
+        - address
+    OrdersV2Spot:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersV2Operation"
+        place:
+          $ref: "#/components/schemas/OrdersV2Place"
+        spot_order:
+          type: number
+      required:
+        - operations
+        - place
+        - spot_order
+    OrdersV2FreightRequirementsTransport:
+      type: object
+      properties:
+        type:
+          type: string
+        count:
+          type: number
+          nullable: true
+        schedule_type:
+          type: string
+          nullable: true
+        settlement_basis:
+          type: string
+          nullable: true
+        total_weight:
+          type: object
+          properties:
+            value:
+              type: number
+            unit_code:
+              type: string
+          required:
+            - value
+            - unit_code
+    OrdersV2FreightRequirementsTemperature:
+      type: object
+      properties:
+        min:
+          type: number
+          nullable: true
+        max:
+          type: number
+          nullable: true
+    OrdersV2FreightRequirements:
+      type: object
+      properties:
+        vehicle_size_id:
+          type: string
+        shipping_remarks:
+          type: string
+          nullable: true
+        other_requirements:
+          type: array
+          items:
+            type: string
+        required_ways_of_loading:
+          type: array
+          items:
+            type: string
+        required_adr_classes:
+          type: array
+          items:
+            type: string
+        required_truck_bodies:
+          type: array
+          items:
+            type: string
+        is_ftl:
+          type: boolean
+        monitoring:
+          type: string
+        transport:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2FreightRequirementsTransport"
+        temperature:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2FreightRequirementsTemperature"
+    OrdersV2Capacity:
+      type: object
+      properties:
+        value:
+          type: number
+        unit_code:
+          type: string
+      required:
+        - value
+        - unit_code
+    OrdersV2Freight:
+      type: object
+      properties:
+        shipper:
+          $ref: "#/components/schemas/OrdersV2FreightPartner"
+        carrier:
+          $ref: "#/components/schemas/OrdersV2FreightPartner"
+        contract_id:
+          type: string
+          nullable: true
+        first_loading_place:
+          $ref: "#/components/schemas/OrdersV2FirstLastPlace"
+        id:
+          type: string
+          nullable: true
+        is_roundtrip:
+          type: boolean
+          nullable: true
+        last_unloading_place:
+          $ref: "#/components/schemas/OrdersV2FirstLastPlace"
+        publication_id:
+          type: string
+          nullable: true
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersV2Spot"
+        reference_number:
+          type: string
+          nullable: true
+        shipment_external_id:
+          type: string
+          nullable: true
+        requirements:
+          $ref: "#/components/schemas/OrdersV2FreightRequirements"
+        transit_time:
+          type: number
+          nullable: true
+        surcharges:
+          type: object
+          nullable: true
+          description: Freight surcharges
+        distance:
+          type: number
+          nullable: true
+        loads:
+          nullable: true
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersV2FreightLoad"
+        capacity:
+          $ref: "#/components/schemas/OrdersV2Capacity"
+      required:
+        - shipper
+        - carrier
+        - first_loading_place
+        - is_roundtrip
+        - last_unloading_place
+        - spots
+        - requirements
+    OrdersV2Invoice:
+      type: object
+      properties:
+        invoice_id:
+          type: string
+          nullable: true
+        invoice_issuance_date:
+          type: string
+        invoice_number:
+          type: string
+        media_id:
+          type: string
+        currency:
+          type: string
+        gross_value:
+          type: number
+        net_value:
+          type: number
+        payment_offset_days:
+          type: number
+        tax_value:
+          type: number
+        payment_due_date:
+          type: string
+        sales_date:
+          type: string
+      required:
+        - invoice_issuance_date
+        - invoice_number
+    OrdersV2Monitoring:
+      type: object
+      properties:
+        required:
+          type: boolean
+        providers:
+          type: array
+          items:
+            type: string
+        expected_monitoring_id:
+          type: string
+          nullable: true
+      required:
+        - required
+    OrdersV2PaymentPrice:
+      type: object
+      properties:
+        protected:
+          type: boolean
+        currency:
+          type: string
+        value:
+          type: number
+        type:
+          type: string
+      required:
+        - protected
+        - currency
+        - value
+        - type
+    OrdersV2PaymentTotalEstimatedPrice:
+      type: object
+      properties:
+        currency:
+          type: string
+        type:
+          type: string
+        value:
+          type: number
+      required:
+        - currency
+        - type
+        - value
+    OrdersV2Payment:
+      type: object
+      properties:
+        days:
+          type: number
+        period:
+          type: string
+          nullable: true
+        price:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2PaymentPrice"
+        total_estimated_price:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2PaymentTotalEstimatedPrice"
+      required:
+        - days
+    OrdersV2Status:
+      type: object
+      properties:
+        value:
+          type: string
+        comment:
+          type: string
+      required:
+        - value
+        - comment
+    OrdersV2TransportRoutesEntity:
+      type: object
+      properties:
+        distance:
+          type: number
+      required:
+        - distance
+    OrdersV2TransportRoutes:
+      type: object
+      properties:
+        historical:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2TransportRoutesEntity"
+        declared:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2TransportRoutesEntity"
+        suggested:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2TransportRoutesEntity"
+        estimated:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2TransportRoutesEntity"
+        contracted:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2TransportRoutesEntity"
+    OrdersV2TransportSpotTimespans:
+      type: object
+      properties:
+        begin:
+          type: string
+        end:
+          type: string
+      required:
+        - begin
+        - end
+    OrdersV2TransportSpot:
+      type: object
+      properties:
+        id:
+          type: string
+        operation_id:
+          type: string
+        timespans:
+          $ref: "#/components/schemas/OrdersV2TransportSpotTimespans"
+        index:
+          type: number
+        place:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2Place"
+        weight:
+          type: number
+          nullable: true
+        warehouse:
+          type: object
+          nullable: true
+      required:
+        - id
+        - operation_id
+        - timespans
+        - index
+    OrdersV2TransportTruckCapacity:
+      type: object
+      properties:
+        unit_code:
+          type: string
+        value:
+          type: number
+      required:
+        - unit_code
+        - value
+    OrdersV2TransportSemiTrailer:
+      type: object
+      properties:
+        capacity:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2TransportTruckCapacity"
+        id:
+          type: number
+        kind:
+          type: string
+        registration_plate_number:
+          type: string
+        type:
+          type: string
+      required:
+        - id
+        - kind
+        - registration_plate_number
+        - type
+    OrdersV2TransportTruck:
+      type: object
+      properties:
+        capacity:
+          $ref: "#/components/schemas/OrdersV2TransportTruckCapacity"
+        combustion_norm:
+          type: string
+        id:
+          type: number
+        loading_meters:
+          $ref: "#/components/schemas/OrdersV2TransportTruckCapacity"
+        registration_plate_number:
+          type: string
+        type:
+          type: string
+      required:
+        - capacity
+        - combustion_norm
+        - id
+        - loading_meters
+        - registration_plate_number
+        - type
+    OrdersV2TransportDriver:
+      type: object
+      properties:
+        account_id:
+          type: number
+        full_name:
+          type: string
+        identity_document_number:
+          type: string
+          nullable: true
+      required:
+        - account_id
+        - full_name
+    OrdersV2Transport:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        transport_number:
+          type: string
+        routes:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2TransportRoutes"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersV2TransportSpot"
+        semi_trailer:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2TransportSemiTrailer"
+        truck:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2TransportTruck"
+        driver:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2TransportDriver"
+        monitorable:
+          type: boolean
+          nullable: true
+      required:
+        - id
+        - status
+        - transport_number
+        - spots
+    OrdersV2SettlementQuantity:
+      type: object
+      properties:
+        unit_code:
+          type: string
+        value:
+          type: number
+      required:
+        - unit_code
+        - value
+    OrdersV2SettlementTotalPrice:
+      type: object
+      properties:
+        currency:
+          type: string
+          nullable: true
+        type:
+          type: string
+        value:
+          type: number
+      required:
+        - currency
+        - type
+        - value
+    OrdersV2Settlement:
+      type: object
+      properties:
+        quantity:
+          $ref: "#/components/schemas/OrdersV2SettlementQuantity"
+        total_price:
+          $ref: "#/components/schemas/OrdersV2SettlementTotalPrice"
+      required:
+        - quantity
+        - total_price
+    OrdersCollectionItemV2Dto:
+      type: object
+      properties:
+        attachments:
+          type: array
+          items:
+            type: string
+        cooperation:
+          $ref: "#/components/schemas/OrdersV2Cooperation"
+        created_at:
+          type: string
+        driver:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2Driver"
+        freight:
+          $ref: "#/components/schemas/OrdersV2Freight"
+        id:
+          type: string
+        invoice:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2Invoice"
+        legacy_freight_id:
+          type: number
+          nullable: true
+        monitoring:
+          $ref: "#/components/schemas/OrdersV2Monitoring"
+        number:
+          type: string
+        payment:
+          $ref: "#/components/schemas/OrdersV2Payment"
+        status:
+          $ref: "#/components/schemas/OrdersV2Status"
+        transports:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersV2Transport"
+        vehicle:
+          nullable: true
+          description: Structured vehicle object or legacy registration plate string
+          oneOf:
+            - type: string
+            - $ref: "#/components/schemas/OrdersV2Vehicle"
+        settlement:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2Settlement"
+      required:
+        - attachments
+        - cooperation
+        - created_at
+        - freight
+        - id
+        - monitoring
+        - number
+        - payment
+        - status
+        - transports
+    OrdersV2Source:
+      type: object
+      properties:
+        author_account_id:
+          type: number
+        source_date:
+          type: string
+        source_id:
+          type: string
+        type:
+          type: string
+      required:
+        - author_account_id
+        - source_date
+        - source_id
+        - type
+    OrdersV2InsuranceValue:
+      type: object
+      properties:
+        currency:
+          type: string
+        value:
+          type: number
+      required:
+        - currency
+        - value
+    OrdersV2Insurance:
+      type: object
+      properties:
+        load:
+          $ref: "#/components/schemas/OrdersV2InsuranceValue"
+        third_party:
+          $ref: "#/components/schemas/OrdersV2InsuranceValue"
+      required:
+        - load
+        - third_party
+    OrdersV2EntityAdditionalCostPrice:
+      type: object
+      properties:
+        type:
+          type: string
+        value:
+          type: number
+        percentage:
+          type: number
+          nullable: true
+      required:
+        - type
+        - value
+    OrdersV2EntityAdditionalCostItem:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          type: string
+        name:
+          type: string
+        price:
+          $ref: "#/components/schemas/OrdersV2EntityAdditionalCostPrice"
+        settlement_method:
+          type: string
+        description:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+        updated_at:
+          type: string
+      required:
+        - id
+        - category
+        - name
+        - price
+        - settlement_method
+        - created_at
+        - updated_at
+    OrdersV2EntityAdditionalCostSection:
+      type: object
+      properties:
+        sum:
+          type: number
+        currency:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersV2EntityAdditionalCostItem"
+      required:
+        - sum
+        - currency
+        - items
+    OrdersV2EntityAdditionalCosts:
+      type: object
+      properties:
+        for_carrier:
+          $ref: "#/components/schemas/OrdersV2EntityAdditionalCostSection"
+        for_shipper:
+          $ref: "#/components/schemas/OrdersV2EntityAdditionalCostSection"
+      required:
+        - for_carrier
+        - for_shipper
+    OrdersV2AttachmentsRequirements:
+      type: object
+      properties:
+        other_attachment_type_description:
+          type: string
+          nullable: true
+        required_types:
+          type: array
+          items:
+            type: string
+      required:
+        - required_types
+    OrdersV2EntityMetadataRestriction:
+      type: object
+      properties:
+        applied_restrictions:
+          type: array
+          items:
+            type: string
+        reason:
+          type: string
+          nullable: true
+      required:
+        - applied_restrictions
+    OrdersV2EntityMetadata:
+      type: object
+      properties:
+        restrictions:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersV2EntityMetadataRestriction"
+        applied_default_terms_template:
+          type: boolean
+        carrier_company_is_blocked:
+          type: boolean
+        order_price_was_changed_by_contract_update:
+          type: boolean
+      required:
+        - restrictions
+        - applied_default_terms_template
+        - carrier_company_is_blocked
+    OrdersEntityV2Dto:
+      type: object
+      properties:
+        id:
+          type: string
+        additional_terms:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+        freight:
+          $ref: "#/components/schemas/OrdersV2Freight"
+        invoice:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2Invoice"
+        legacy_freight_id:
+          type: number
+          nullable: true
+        monitoring:
+          $ref: "#/components/schemas/OrdersV2Monitoring"
+        number:
+          type: string
+        payment:
+          $ref: "#/components/schemas/OrdersV2Payment"
+        related:
+          type: array
+          items:
+            type: string
+        source:
+          $ref: "#/components/schemas/OrdersV2Source"
+        status:
+          $ref: "#/components/schemas/OrdersV2Status"
+        insurance:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2Insurance"
+        shipment_external_id:
+          type: string
+          nullable: true
+        additional_costs:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2EntityAdditionalCosts"
+        attachments_requirements:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrdersV2AttachmentsRequirements"
+        _metadata:
+          $ref: "#/components/schemas/OrdersV2EntityMetadata"
+        vehicle:
+          nullable: true
+          description: Structured vehicle object or legacy registration plate string
+          oneOf:
+            - type: string
+            - $ref: "#/components/schemas/OrdersV2Vehicle"
+        can_archive:
+          type: boolean
+        is_archived_permanently:
+          type: boolean
+        archived_at:
+          type: string
+          nullable: true
+        delivery_confirmation:
+          type: string
+          nullable: true
+        cooperation:
+          $ref: "#/components/schemas/OrdersV2Cooperation"
+        driver:
+          type: string
+          nullable: true
+        attachments:
+          type: array
+          items:
+            type: string
+        cancellation:
+          type: boolean
+          nullable: true
+        transports:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrdersV2Transport"
+        required_execution_data:
+          nullable: true
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - created_at
+        - freight
+        - number
+        - payment
+        - related
+        - source
+        - status
+        - _metadata
+        - can_archive
+        - is_archived_permanently
+        - cooperation
+        - attachments
+        - transports

@@ -1,0 +1,24 @@
+name: against-mock-timocom
+description: Hit local TIMOCOM mock-server (yarn timocom:sim mock-server)
+target:
+  baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:4100}
+  passthrough: true
+  headers:
+    Authorization: Basic dGVzdDp0ZXN0
+    Content-Type: application/vnd.freight-exchange.v3+json
+    Accept: application/vnd.freight-exchange.v3+json
+defaults:
+  concurrency: 10
+  rps: 20
+  timeoutMs: 5000
+batches:
+  - id: search
+    count: 5
+    template: freight.offer.search
+  - id: publish
+    count: 20
+    template: freight.offer.publish
+  - id: vehicles
+    count: 10
+    template: vehicle.space.publish
+reportPath: tools/timocom-api-simulator/.reports/against-mock-timocom.ndjson

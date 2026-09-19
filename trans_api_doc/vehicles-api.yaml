@@ -1,0 +1,466 @@
+openapi: 3.0.0
+info:
+  title: vehicles-api
+  description: ""
+  version: 1.113.4
+  contact: {}
+servers:
+  - url: https://api.platform.trans.eu
+    description: PROD
+tags: []
+paths:
+  /ext/vehicles-api/v1/vehicles:
+    post:
+      description: Creates a vehicle offer with loading/unloading places, cargo
+        metrics and availability window. Coordinates are enriched via geocoder
+        when missing and contact persons are resolved to account ids.
+      operationId: VehiclesManageV1Controller_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VehicleRequestV1Dto"
+      responses:
+        "202":
+          description: Vehicle offer accepted for processing (entity-shaped response; see
+            internal mapping layer for fields).
+        "400":
+          description: Bad request - validation failed
+        "401":
+          description: Unauthorized - authentication required
+        "422":
+          description: Validation error - input data validation failed
+      security:
+        - bearer: []
+      summary: Create vehicle offer
+      tags:
+        - vehicles-api
+    get:
+      operationId: VehiclesReadV1Controller_getVehiclesCollection
+      parameters:
+        - name: limit
+          required: false
+          in: query
+          description: Maximum number of items to return
+          schema:
+            minimum: 1
+            default: 20
+            type: number
+        - name: offset
+          required: false
+          in: query
+          description: Number of items to skip
+          schema:
+            minimum: 0
+            default: 0
+            type: number
+        - name: filter
+          required: false
+          in: query
+          description: JSON-encoded filter object
+          schema:
+            example: '{"offer_id":{"$in":["uuid-1","uuid-2"]},"archive":{"$eq":false}}'
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VehicleOfferEntityV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - vehicles-api
+  /ext/vehicles-api/v1/vehicles/{id}:
+    put:
+      description: Updates an existing vehicle offer identified by its offer id.
+      operationId: VehiclesManageV1Controller_update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Vehicle offer id
+          schema:
+            example: 01ECJ0XV7TDE78D1G5AY3XJ804
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VehicleRequestV1Dto"
+      responses:
+        "202":
+          description: Vehicle offer accepted for processing (entity-shaped response; see
+            internal mapping layer for fields).
+        "400":
+          description: Bad request - validation failed
+        "401":
+          description: Unauthorized - authentication required
+        "422":
+          description: Validation error - input data validation failed
+      security:
+        - bearer: []
+      summary: Update vehicle offer
+      tags:
+        - vehicles-api
+    delete:
+      description: Deletes a vehicle offer by its offer id.
+      operationId: VehiclesManageV1Controller_delete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Vehicle offer id (UUID or ULID)
+          schema:
+            example: 01ECJ0XV7TDE78D1G5AY3XJ804
+            type: string
+      responses:
+        "204":
+          description: Vehicle offer deleted successfully
+        "401":
+          description: Unauthorized - authentication required
+        "404":
+          description: Vehicle offer not found
+      security:
+        - bearer: []
+      summary: Delete vehicle offer
+      tags:
+        - vehicles-api
+    get:
+      operationId: VehiclesReadV1Controller_getVehicleEntity
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Vehicle offer UUID
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehicleOfferEntityV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - vehicles-api
+  /ext/vehicles-api/v1/vehicles/{id}/refresh:
+    put:
+      description: Refreshes the publication of a vehicle offer. Returns 422 with
+        refresh_from when offer is already being refreshed.
+      operationId: VehiclesManageV1Controller_refresh
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Vehicle offer id (UUID or ULID)
+          schema:
+            example: 01ECJ0XV7TDE78D1G5AY3XJ804
+            type: string
+      responses:
+        "202":
+          description: Refresh accepted
+        "401":
+          description: Unauthorized - authentication required
+        "404":
+          description: Vehicle offer not found
+        "422":
+          description: Offer is being refreshed - contains refresh_from timestamp
+      security:
+        - bearer: []
+      summary: Refresh vehicle offer publication
+      tags:
+        - vehicles-api
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    VehicleAddressV1Dto:
+      type: object
+      properties:
+        locality:
+          type: string
+          example: Wroclaw
+        postal_code:
+          type: string
+          example: 56-111
+        country:
+          type: string
+          example: pl
+      required:
+        - locality
+        - country
+    VehicleCoordinatesV1Dto:
+      type: object
+      properties:
+        latitude:
+          type: number
+          example: 12
+        longitude:
+          type: number
+          example: 11
+      required:
+        - latitude
+        - longitude
+    VehiclePlaceV1Dto:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/VehicleAddressV1Dto"
+        coordinates:
+          $ref: "#/components/schemas/VehicleCoordinatesV1Dto"
+        range:
+          type: number
+          example: 50
+      required:
+        - address
+    VehicleCargoV1Dto:
+      type: object
+      properties:
+        height:
+          type: number
+          example: 3
+        width:
+          type: number
+          example: 2
+        length:
+          type: number
+          example: 2
+        volume:
+          type: number
+          example: 2
+        capacity:
+          type: number
+          example: 2
+      required:
+        - capacity
+    VehicleKmPriceV1Dto:
+      type: object
+      properties:
+        value:
+          type: number
+          example: 1.5
+        currency:
+          type: string
+          example: eur
+      required:
+        - value
+        - currency
+    VehicleAvailableOnV1Dto:
+      type: object
+      properties:
+        begin:
+          type: string
+          example: 2026-06-24T10:00:00Z
+        end:
+          type: string
+          example: 2026-06-26T10:00:00Z
+      required:
+        - begin
+        - end
+    VehicleRequestV1Dto:
+      type: object
+      properties:
+        external_source:
+          type: string
+          example: 3_api_trans
+        vehicle_size:
+          type: string
+          example: bus
+        truck_body:
+          type: string
+          example: standard-tent
+        adr_classes:
+          example:
+            - adr_1
+          type: array
+          items:
+            type: string
+        equipment:
+          example:
+            - hds
+          type: array
+          items:
+            type: string
+        available_ways_of_loading:
+          example:
+            - top
+          type: array
+          items:
+            type: string
+        loading_place:
+          $ref: "#/components/schemas/VehiclePlaceV1Dto"
+        unloading_place:
+          $ref: "#/components/schemas/VehiclePlaceV1Dto"
+        unloading_places:
+          type: array
+          items:
+            $ref: "#/components/schemas/VehiclePlaceV1Dto"
+        cargo:
+          $ref: "#/components/schemas/VehicleCargoV1Dto"
+        km_price:
+          $ref: "#/components/schemas/VehicleKmPriceV1Dto"
+        available_on:
+          $ref: "#/components/schemas/VehicleAvailableOnV1Dto"
+        contact_persons:
+          example:
+            - 1100675-1
+          type: array
+          items:
+            type: string
+      required:
+        - vehicle_size
+        - truck_body
+        - loading_place
+        - cargo
+        - available_on
+    VehicleContactPersonV1Dto:
+      type: object
+      properties:
+        trans_id:
+          type: string
+        given_name:
+          type: string
+        family_name:
+          type: string
+        telephone:
+          type: string
+          nullable: true
+      required:
+        - trans_id
+        - given_name
+        - family_name
+    VehicleOfferPlaceV1Dto:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/VehicleAddressV1Dto"
+        coordinates:
+          $ref: "#/components/schemas/VehicleCoordinatesV1Dto"
+        range:
+          type: number
+          nullable: true
+      required:
+        - address
+        - coordinates
+    VehicleDataV1Dto:
+      type: object
+      properties:
+        adr_classes:
+          type: array
+          items:
+            type: string
+        available_on:
+          type: object
+          properties:
+            begin:
+              type: string
+            end:
+              type: string
+          required:
+            - begin
+            - end
+        available_ways_of_loading:
+          type: array
+          items:
+            type: string
+        cargo:
+          $ref: "#/components/schemas/VehicleCargoV1Dto"
+        equipment:
+          type: array
+          items:
+            type: string
+        has_adr:
+          type: boolean
+        has_hds:
+          type: boolean
+        has_lift:
+          type: boolean
+        loading_place:
+          $ref: "#/components/schemas/VehicleOfferPlaceV1Dto"
+        size:
+          type: string
+        truck_body:
+          type: string
+        unloading_places:
+          type: array
+          items:
+            $ref: "#/components/schemas/VehicleOfferPlaceV1Dto"
+        km_price:
+          $ref: "#/components/schemas/VehicleKmPriceV1Dto"
+      required:
+        - adr_classes
+        - available_on
+        - available_ways_of_loading
+        - cargo
+        - equipment
+        - has_adr
+        - has_hds
+        - has_lift
+        - loading_place
+        - size
+        - truck_body
+        - unloading_places
+        - km_price
+    VehicleOfferEntityV1Dto:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+        type:
+          type: string
+          example: vehicle
+        deleted_at:
+          type: string
+          nullable: true
+        expiration_date:
+          type: string
+        offer_id:
+          type: number
+        contact_persons:
+          type: array
+          items:
+            $ref: "#/components/schemas/VehicleContactPersonV1Dto"
+        vehicle:
+          $ref: "#/components/schemas/VehicleDataV1Dto"
+      required:
+        - id
+        - created_at
+        - status
+        - type
+        - expiration_date
+        - offer_id
+        - contact_persons
+        - vehicle

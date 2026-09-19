@@ -1,0 +1,33 @@
+name: scheduled-mixed
+description: Every 30s fire a mixed batch (freights + orders + dock) — max 10 runs
+target:
+  baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:3000}
+  headers:
+    Authorization: Bearer ${TRANS_SIM_TOKEN:-dev-token}
+  pathMap:
+    "POST /ext/freights-api/v1/freights": /api/integrations/trans/webhooks/freight
+    "POST /ext/freights-api/v2/freights": /api/integrations/trans/webhooks/freight
+    "POST /ext/orders-api/v1/orders": /api/integrations/trans/webhooks/order
+    "POST /ext/dock-scheduler-api/v2/announcement": /api/integrations/trans/webhooks/dock
+defaults:
+  concurrency: 10
+  rps: 20
+  timeoutMs: 15000
+schedule:
+  mode: interval
+  every: 30s
+  maxRuns: 10
+batches:
+  - id: freights
+    count: 20
+    template: freight.event.created
+  - id: orders
+    count: 10
+    template: order.event.created
+  - id: docks
+    count: 5
+    template: dock.announcement
+    vars:
+      warehouseId: WH-DEMO-1
+parallelBatches: true
+reportPath: tools/trans-api-simulator/.reports/scheduled-mixed.ndjson

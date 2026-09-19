@@ -1,0 +1,29 @@
+name: smoke
+description: Hit OM Trans Inbox with TIMOCOM freight offers + vehicle spaces
+target:
+  baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:3001}
+  headers:
+    Authorization: Basic ${TIMOCOM_SIM_BASIC:-dGVzdDp0ZXN0}
+    Content-Type: application/vnd.freight-exchange.v3+json
+    Accept: application/vnd.freight-exchange.v3+json
+    X-Timocom-Sim: "1"
+    X-Om-Tenant-Id: ${TRANS_INBOX_TENANT_ID:-}
+  pathMap:
+    "POST /freight-exchange/3/my-freight-offers": /api/integrations/timocom/webhooks/freight-offer
+    "POST /freight-exchange/3/my-vehicle-space-offers": /api/integrations/timocom/webhooks/vehicle-space
+    "POST /freight-exchange/3/freight-offers/search": /api/integrations/timocom/webhooks/freight-search
+defaults:
+  concurrency: 5
+  timeoutMs: 15000
+  dryRun: false
+batches:
+  - id: publish-freights
+    count: 5
+    template: freight.offer.publish
+    vars:
+      currency: EUR
+      customerId: 123456
+  - id: publish-vehicle-spaces
+    count: 3
+    template: vehicle.space.publish
+reportPath: tools/timocom-api-simulator/.reports/smoke.ndjson

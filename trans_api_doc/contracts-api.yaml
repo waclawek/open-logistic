@@ -1,0 +1,5681 @@
+openapi: 3.0.0
+info:
+  title: contracts-api
+  description: ""
+  version: 1.113.4
+  contact: {}
+servers:
+  - url: https://api.platform.trans.eu
+    description: PROD
+tags: []
+paths:
+  /ext/contracts-api/v1/contracts:
+    get:
+      operationId: ContractsReadV1Controller_getList
+      parameters:
+        - name: context
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: limit
+          required: false
+          in: query
+          description: Number of items per page
+          schema:
+            example: 25
+            type: number
+        - name: offset
+          required: false
+          in: query
+          description: Number of items to skip
+          schema:
+            example: 0
+            type: number
+        - name: filter
+          required: false
+          in: query
+          description: Filter object (will be JSON stringified)
+          schema:
+            example:
+              route_id: a9288ec1-6e97-41e7-befb-e81e78125406
+            type: object
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContractsListResponseDto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      tags:
+        - contracts-api
+    post:
+      description: Create a new contract
+      operationId: ContractsManageV1Controller_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContractDto"
+      responses:
+        "201":
+          description: Contract created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractResponseDto"
+        "400":
+          description: Bad request - invalid input data
+        "401":
+          description: Unauthorized - authentication required
+        "422":
+          description: Validation error - input data validation failed
+      summary: Create contract
+      tags:
+        - contracts-api
+  /ext/contracts-api/v1/contracts/{uuid}:
+    get:
+      operationId: ContractsReadV1Controller_getById
+      parameters:
+        - name: uuid
+          required: true
+          in: path
+          description: Contract UUID
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractResponseDto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      tags:
+        - contracts-api
+    put:
+      description: Update existing contract or create amendment
+      operationId: ContractsManageV1Controller_update
+      parameters:
+        - name: uuid
+          required: true
+          in: path
+          description: Contract UUID
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateContractDto"
+      responses:
+        "200":
+          description: Contract updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractResponseDto"
+        "400":
+          description: Bad request - invalid input data
+        "401":
+          description: Unauthorized - authentication required
+        "404":
+          description: Contract not found
+        "422":
+          description: Validation error - input data validation failed
+      summary: Update contract
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/contracts/fixed:
+    post:
+      description: Create a fixed contract.
+      operationId: ContractsManageV2Controller_createFixed
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFixedContractV2Dto"
+      responses:
+        "201":
+          description: Fixed contract created successfully
+          content:
+            application/json:
+              schema:
+                example:
+                  id: cacf90b0-5f34-415f-99ae-2783946b17f5
+                  base_contract_id: cacf90b0-5f34-415f-99ae-2783946b17f5
+                  type: fixed
+                  position: null
+                  carrier:
+                    company:
+                      id: 1023106
+                      name: Forwarder Dev
+                    contact_persons: []
+                    cooperation_status: active
+                  deactivations: []
+                  order_terms:
+                    monitoring:
+                      required: false
+                    additional_terms: additional_terms
+                    insurance:
+                      load: null
+                      third_party: null
+                    automatic_order_sending: false
+                    payment_period:
+                      value: 5
+                    silent_confirmation:
+                      enabled: false
+                      time: null
+                    autoresponder:
+                      enabled: false
+                      time: null
+                  period:
+                    from: 2026-03-03T10:20:00+02:00
+                    to: 2026-04-04T10:45:00+02:00
+                  percentage_share: 0
+                  planned_shipments:
+                    periods: []
+                    type: null
+                    unit: null
+                    value: null
+                  pricing:
+                    negotiable: true
+                    type: route
+                    price:
+                      value: 55
+                      currency: eur
+                    fuel_base_price:
+                      value: null
+                      currency: eur
+                  reference_number: reference_number
+                  route:
+                    id: 94c9ec23-dbd5-496a-b839-b3c7bc22eddc
+                    unique_key: null
+                    name: 9.12.2025 walkingfloor 1
+                    publication_scenario:
+                      type: parallel
+                    spots:
+                      - id: 8e251e17-c900-40db-ae0c-acf86fd7ee9f
+                        name: lezajskie
+                        type: loading
+                        place:
+                          address:
+                            locality: Leżajsk
+                            postal_code: 37-300
+                            country: pl
+                            street: 11 Listopada
+                            number: "2"
+                            location_id: 1267629
+                            detailed_location_id: 428168490
+                            foreign_id: null
+                            radius: 200
+                          coordinates:
+                            latitude: 50.27007211
+                            longitude: 22.41241634
+                      - id: 8089d402-e609-45c3-bf69-30ca9fb68e22
+                        name: jaros
+                        type: unloading
+                        place:
+                          address:
+                            locality: Pawłosiów
+                            postal_code: 37-500
+                            country: pl
+                            street: 3 Maja
+                            number: "10"
+                            location_id: 1266842
+                            detailed_location_id: 315053297
+                            foreign_id: null
+                            radius: 2375
+                          coordinates:
+                            latitude: 49.9953594
+                            longitude: 22.6455138
+                    distance:
+                      declared: null
+                      calculated:
+                        value: 45
+                        unit_code: km
+                    suggested_calculated_route_id: 71ae1034-ae82-4e65-8963-cf434bc42273
+                    distance_match:
+                      min: null
+                      max: null
+                    is_roundtrip: false
+                    requirements:
+                      required_truck_bodies:
+                        - walkingfloor
+                      required_adr_classes: []
+                      required_ways_of_loading: []
+                      additional_requirements: []
+                      shipping_remarks: ""
+                      freight_type: null
+                      vehicle_size: solo
+                      width: null
+                      height: null
+                      length: null
+                      volume: null
+                      capacity:
+                        min: null
+                        max: null
+                      exemption_from_adr: false
+                    loads:
+                      - name: null
+                        type_of_load: null
+                        amount: null
+                        width: null
+                        height: null
+                        length: null
+                        volume: null
+                        weight:
+                          min: null
+                          max: null
+                        pallets:
+                          is_stackable: false
+                          is_exchangeable: false
+                    balancing:
+                      type: manual
+                      allowed_types:
+                        - manual
+                        - freight_limit
+                        - percentage_share
+                      freight_limit:
+                        min: null
+                        max: null
+                    status: active
+                    shipments_summary:
+                      amount: 0
+                      weight:
+                        value: 0
+                        unit_code: t
+                      distance:
+                        value: 0
+                        unit_code: km
+                      price:
+                        - amount: null
+                          currency: null
+                    position: 15248
+                  shipper:
+                    company:
+                      id: 1023107
+                      name: Shipper Dev
+                    contact_persons:
+                      - id: 328af01d-0e6b-4746-a7f1-eef2ebe54dd0
+                        employee:
+                          id: 842741
+                          account_id: 170545
+                          given_name: Łukasz
+                          family_name: Dziewa
+                          trans_id: 1023107-5
+                          email: ldziewa@trans.eu
+                          telephone: (0048) 5150868
+                        channels:
+                          - email
+                          - push
+                          - web-push
+                          - messenger
+                        reported_by:
+                          company:
+                            id: 1023107
+                  status: waiting_for_carrier_offer
+                  _stats:
+                    transports:
+                      realized: null
+                      average_per_month: null
+                      awaiting: null
+                    offers:
+                      accepted: null
+                      total: null
+                      acceptance_rate: null
+                  _meta:
+                    is_copy: false
+                    is_parent: false
+                    has_been_sent_to_carrier: true
+                  surcharges: []
+        "400":
+          description: Bad request - invalid input data
+        "401":
+          description: Unauthorized - authentication required
+        "422":
+          description: Validation error
+      security:
+        - bearer: []
+      summary: Create fixed contract (v2)
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/contracts/fixed/{id}:
+    put:
+      description: Updates an existing fixed contract. Proxies to PUT
+        /api/rest/v3/contracts/fixed/:id on contracts-bulk.
+      operationId: ContractsManageV2Controller_updateFixed
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Fixed contract UUID
+          schema:
+            format: uuid
+            example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFixedContractV2Dto"
+      responses:
+        "200":
+          description: Fixed contract updated successfully
+          content:
+            application/json:
+              schema:
+                example:
+                  id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                  base_contract_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                  type: fixed
+                  pricing:
+                    negotiable: true
+                    type: route
+                    price:
+                      value: 55
+                      currency: eur
+                    fuel_base_price:
+                      value: null
+                      currency: eur
+                  period:
+                    from: 2026-03-03T10:20:00+02:00
+                    to: 2026-04-04T10:45:00+02:00
+                  status: REGISTERED
+                  negotiable: true
+                  carrier:
+                    company:
+                      id: 1023106
+                      name: Forwarder Dev
+                    contact_persons: []
+                    cooperation_status: active
+                  shipper:
+                    company:
+                      id: 1023107
+                      name: Shipper Dev
+                    contact_persons:
+                      - id: 328af01d-0e6b-4746-a7f1-eef2ebe54dd0
+                        employee:
+                          id: 842741
+                          account_id: 170545
+                          given_name: Łukasz
+                          family_name: Dziewa
+                          trans_id: 1023107-5
+                          email: ldziewa@trans.eu
+                          telephone: (0048) 5150868
+                        channels:
+                          - email
+                          - push
+                          - web-push
+                          - messenger
+                        reported_by:
+                          company:
+                            id: 1023107
+                  reference_number: reference_number
+                  created_by: {}
+                  updated_by: {}
+                  plan: {}
+                  plans:
+                    - {}
+                  created_at: {}
+                  updated_at: {}
+                  deactivations: []
+                  refusal_reason: null
+                  parent: {}
+                  order_terms:
+                    monitoring:
+                      required: false
+                    additional_terms: additional_terms
+                    insurance:
+                      load: null
+                      third_party: null
+                    automatic_order_sending: false
+                    payment_period:
+                      value: 5
+                    silent_confirmation:
+                      enabled: false
+                      time: null
+                    autoresponder:
+                      enabled: false
+                      time: null
+                  position: 0
+                  percentage_share: 0
+                  shipments_summary: {}
+                  spots:
+                    - id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                      name: Spot name
+                      type: loading
+                      place:
+                        address:
+                          country: pl
+                          foreign_id: null
+                          location_id: 1267629
+                          detailed_location_id: 428168490
+                          locality: Leżajsk
+                          postal_code: 37-300
+                          street: 11 Listopada
+                          number: "2"
+                          radius: 200
+                        coordinates:
+                          latitude: 50.27007211
+                          longitude: 22.41241634
+                  distances:
+                    - {}
+                  load: {}
+                  auto_responder: {}
+                  surcharges: []
+                  planned_shipments:
+                    - {}
+                  route:
+                    id: 94c9ec23-dbd5-496a-b839-b3c7bc22eddc
+                    unique_key: null
+                    name: Route name
+                    publication_scenario:
+                      type: parallel
+                    spots: []
+                    distance:
+                      declared: null
+                      calculated:
+                        value: 45
+                        unit_code: km
+                    suggested_calculated_route_id: null
+                    distance_match:
+                      min: null
+                      max: null
+                    is_roundtrip: false
+                    requirements:
+                      required_truck_bodies: []
+                      required_adr_classes: []
+                      required_ways_of_loading: []
+                      additional_requirements: []
+                      shipping_remarks: ""
+                      freight_type: null
+                      vehicle_size: null
+                      width: null
+                      height: null
+                      length: null
+                      volume: null
+                      capacity:
+                        min: null
+                        max: null
+                      exemption_from_adr: false
+                    loads: []
+                    balancing:
+                      type: manual
+                      allowed_types:
+                        - manual
+                        - freight_limit
+                        - percentage_share
+                      freight_limit:
+                        min: null
+                        max: null
+                    status: active
+                    shipments_summary:
+                      amount: 0
+                      weight:
+                        value: 0
+                        unit_code: t
+                      distance:
+                        value: 0
+                        unit_code: km
+                      price:
+                        - amount: null
+                          currency: null
+                    position: 0
+                  _stats:
+                    transports:
+                      realized: null
+                      average_per_month: null
+                      awaiting: null
+                    offers:
+                      accepted: null
+                      total: null
+                      acceptance_rate: null
+                  _meta:
+                    is_copy: false
+                    is_parent: false
+                    has_been_sent_to_carrier: true
+        "400":
+          description: Bad request - invalid input data
+        "401":
+          description: Unauthorized - authentication required
+        "404":
+          description: Contract not found
+        "422":
+          description: Validation error
+      security:
+        - bearer: []
+      summary: Update fixed contract (v2)
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/contracts/flexible:
+    post:
+      description: Create a flexible contract.
+      operationId: ContractsManageV2Controller_createFlexible
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleContractBodyV2Dto"
+      responses:
+        "201":
+          description: Flexible contract created successfully
+          content:
+            application/json:
+              schema:
+                example:
+                  id: 0de07664-37ea-4eb3-96c2-17023aca39d3
+                  base_contract_id: 0de07664-37ea-4eb3-96c2-17023aca39d3
+                  type: flexible
+                  position: null
+                  percentage_share: 0
+                  route:
+                    id: a66690da-55c4-4802-8bbc-556abb3f490b
+                    unique_key: null
+                    name: Trasa Szklarska-Rutka
+                    publication_scenario: null
+                    spots:
+                      - id: ada763fc-9c1f-4de1-806a-5cba445710d7
+                        name: null
+                        type: loading
+                        place:
+                          address:
+                            locality: Szklarska Poręba
+                            postal_code: 58-580
+                            country: pl
+                            street: null
+                            number: null
+                            location_id: 1179127
+                            detailed_location_id: null
+                            foreign_id: null
+                            radius: 6545
+                          coordinates:
+                            latitude: 50.8268011
+                            longitude: 15.5221261
+                      - id: 4450c894-85f4-4149-ad62-cfee10df888e
+                        name: null
+                        type: unloading
+                        place:
+                          address:
+                            locality: Rutka-Tartak
+                            postal_code: 16-406
+                            country: pl
+                            street: null
+                            number: null
+                            location_id: 34520012
+                            detailed_location_id: null
+                            foreign_id: null
+                            radius: 1415
+                          coordinates:
+                            latitude: 54.3227012
+                            longitude: 22.9724159
+                    distance:
+                      declared: null
+                      calculated:
+                        value: 812
+                        unit_code: km
+                    suggested_calculated_route_id: 0ae1eadc-030a-4b0c-a2b2-0a27eea0621a
+                    distance_match:
+                      min: null
+                      max: null
+                    is_roundtrip: false
+                    requirements:
+                      required_truck_bodies:
+                        - coilmulde
+                        - bde
+                        - curtainsider
+                      required_adr_classes: []
+                      required_ways_of_loading: []
+                      additional_requirements: []
+                      shipping_remarks: ""
+                      freight_type: null
+                      vehicle_size: lorry
+                      width: null
+                      height: null
+                      length: null
+                      volume: null
+                      capacity:
+                        min: null
+                        max:
+                          value: 21
+                          unit_code: t
+                      exemption_from_adr: false
+                    loads:
+                      - name: null
+                        type_of_load: null
+                        amount: null
+                        width: null
+                        height: null
+                        length: null
+                        volume: null
+                        weight:
+                          min: null
+                          max: null
+                        pallets:
+                          is_stackable: false
+                          is_exchangeable: false
+                    balancing:
+                      type: manual
+                      allowed_types:
+                        - manual
+                        - freight_limit
+                        - percentage_share
+                      freight_limit:
+                        min: null
+                        max: null
+                    status: active
+                    shipments_summary:
+                      amount: 0
+                      weight:
+                        value: 0
+                        unit_code: t
+                      distance:
+                        value: 0
+                        unit_code: km
+                      price:
+                        - amount: null
+                          currency: null
+                    position: 85821
+                    _stats:
+                      contracts:
+                        fixed: 0
+                        flexible: 1
+                      transports:
+                        realized:
+                          average_price: null
+                          count: 0
+                        awaiting:
+                          median_price: null
+                          count: null
+                        cheapest_carrier_offer: null
+                  period:
+                    from: null
+                    to: null
+                  pricing:
+                    type: no_rate
+                    price:
+                      currency: pln
+                  status: waiting_for_acceptance
+                  carrier:
+                    company:
+                      id: 1100679
+                      name: TFS External Integration Tests
+                    contact_persons:
+                      - id: c5fed33c-4124-4ec1-9071-d6a8b27e053c
+                        employee:
+                          id: 10027312
+                          account_id: 10212027
+                          given_name: TFS External Integration Tests
+                          family_name: Playwright
+                          trans_id: 1100679-1
+                          email: kziolkowski+externalintegration@trans.eu
+                          telephone: null
+                        channels:
+                          - email
+                          - push
+                          - web-push
+                          - messenger
+                        reported_by:
+                          company:
+                            id: 105
+                    cooperation_status: active
+                  shipper:
+                    company:
+                      id: 105
+                      name: Testy Dr change v3
+                    contact_persons:
+                      - id: e7cf487e-0c3c-4f2d-81d5-419197fa14c2
+                        employee:
+                          id: 23479
+                          account_id: 25157
+                          given_name: Joanna
+                          family_name: Slesińska
+                          trans_id: 105-1
+                          email: testy_netins@trans.eu
+                          telephone: (0048) 792081691
+                        channels:
+                          - email
+                          - push
+                          - web-push
+                          - messenger
+                        reported_by:
+                          company:
+                            id: 105
+                    cooperation_status: active
+                  deactivations: []
+        "400":
+          description: Bad request - invalid input data
+        "401":
+          description: Unauthorized - authentication required
+        "422":
+          description: Validation error
+      security:
+        - bearer: []
+      summary: Create flexible contract (v2)
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/contracts:
+    get:
+      description: Proxy to GET /api/rest/v3/contracts. Context (SHIPPER/CARRIER) is
+        resolved automatically from the JWT company roles. Returns downstream
+        response with dictionary translations (DICT→ISO) applied.
+      operationId: getContractsV2
+      parameters:
+        - name: limit
+          required: false
+          in: query
+          description: Number of items per page
+          schema:
+            example: 10
+            type: number
+        - name: offset
+          required: false
+          in: query
+          description: Number of items to skip
+          schema:
+            example: 0
+            type: number
+      responses:
+        "200":
+          description: Contracts list retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractListV2ResponseDto"
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+      security:
+        - bearer: []
+      summary: Get contracts list (v2)
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/contracts/{id}:
+    get:
+      description: Proxy to GET /api/rest/v3/contracts/:id. Returns downstream
+        response with dictionary translations (DICT→ISO) applied.
+      operationId: getContractByIdV2
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Contract UUID
+          schema:
+            format: uuid
+            example: 76c14a90-b63b-4483-9cbf-6ffcc648a048
+            type: string
+      responses:
+        "200":
+          description: Contract retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractV2Dto"
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+      security:
+        - bearer: []
+      summary: Get contract by ID (v2)
+      tags:
+        - contracts-api
+  /ext/contracts-api/v1/routes:
+    post:
+      description: Create a new contracted route for the company
+      operationId: RoutesManageV1Controller_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRouteDto"
+      responses:
+        "201":
+          description: Contracted route created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RouteReadV1Dto"
+        "400":
+          description: Bad request - invalid input data
+        "401":
+          description: Unauthorized - authentication required
+        "422":
+          description: Validation error - input data validation failed
+      summary: Create contracted route
+      tags:
+        - contracts-api
+    get:
+      description: Retrieve list of contracted routes with optional pagination and filtering
+      operationId: getContractedRoutes
+      parameters:
+        - name: limit
+          required: false
+          in: query
+          description: Number of items per page
+          schema:
+            example: 25
+            type: number
+        - name: offset
+          required: false
+          in: query
+          description: Number of items to skip
+          schema:
+            example: 0
+            type: number
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContractedRoutesListV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      summary: Get contracted routes list
+      tags:
+        - contracts-api
+  /ext/contracts-api/v1/routes/{uuid}:
+    put:
+      description: Update existing route
+      operationId: RoutesManageV1Controller_update
+      parameters:
+        - name: uuid
+          required: true
+          in: path
+          description: Route UUID
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRouteDto"
+      responses:
+        "200":
+          description: Route updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RouteReadV1Dto"
+        "400":
+          description: Bad request - invalid input data
+        "401":
+          description: Unauthorized - authentication required
+        "404":
+          description: Contract not found
+        "422":
+          description: Validation error - input data validation failed
+      summary: Update route
+      tags:
+        - contracts-api
+  /ext/contracts-api/v1/routes/{id}/balance:
+    put:
+      description: Balance a contracted route with specified balancing strategy
+      operationId: RoutesManageV1Controller_balance
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BalanceRouteDto"
+      responses:
+        "204":
+          description: Contracted route balanced successfully
+        "400":
+          description: Bad request - invalid input data
+        "401":
+          description: Unauthorized - authentication required
+        "404":
+          description: Contracted route not found
+        "422":
+          description: Validation error - input data validation failed
+      summary: Balance contracted route
+      tags:
+        - contracts-api
+  /ext/contracts-api/v1/routes/{routeUUID}:
+    get:
+      description: Retrieve detailed information about a specific contracted route
+        including loads, requirements, and spots
+      operationId: getContractedRoute
+      parameters:
+        - name: routeUUID
+          required: true
+          in: path
+          description: UUID of the contracted route to retrieve
+          schema:
+            format: uuid
+            example: dea410d9-7938-4aff-b60f-f54dab8a96d2
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RouteReadV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      summary: Get contracted route details
+      tags:
+        - contracts-api
+  /ext/contracts-api/v1/routes/{routeUUID}/contracts:
+    get:
+      description: Retrieve contracts filtered by contracted route UUID with optional
+        pagination
+      operationId: getContractsForRoute
+      parameters:
+        - name: routeUUID
+          required: true
+          in: path
+          description: UUID of the contracted route to get contracts for
+          schema:
+            format: uuid
+            example: 129cd472-621d-47c6-af9d-591c3980a1ec
+            type: string
+        - name: limit
+          required: false
+          in: query
+          description: Number of items per page
+          schema:
+            example: 25
+            type: number
+        - name: offset
+          required: false
+          in: query
+          description: Number of items to skip
+          schema:
+            example: 0
+            type: number
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContractsListResponseDto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      summary: Get contracts for specific contracted route
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/routes:
+    post:
+      description: Create a contracted route with internal payload as-is. Request and
+        response are passed through without mapping.
+      operationId: RoutesManageV2Controller_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoutePayloadV2Dto"
+      responses:
+        "201":
+          description: Downstream response (status and body passed through as-is)
+      summary: Create contracted route (v2)
+      tags:
+        - contracts-api
+    get:
+      description: Get routes in v2 format with dictionary translations applied
+      operationId: getRoutesV2
+      parameters:
+        - name: limit
+          required: false
+          in: query
+          description: Number of items per page
+          schema:
+            example: 10
+            type: number
+        - name: offset
+          required: false
+          in: query
+          description: Number of items to skip
+          schema:
+            example: 0
+            type: number
+      responses:
+        "200":
+          description: Routes in v2 format with dictionary translations applied
+      security:
+        - bearer: []
+      summary: Get routes (v2)
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/routes/{id}/balance:
+    put:
+      description: Balance a contracted route with internal payload as-is. Request and
+        response are passed through without mapping.
+      operationId: RoutesManageV2Controller_balance
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Route ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BalanceContractedRoutePayloadV2Dto"
+      responses:
+        "200":
+          description: Downstream response (status and body passed through as-is)
+        "204":
+          description: Contracted route balanced successfully (no content)
+        "400":
+          description: Bad request - invalid input data
+        "401":
+          description: Unauthorized - authentication required
+        "404":
+          description: Contracted route not found
+        "422":
+          description: Validation error - input data validation failed
+      summary: Balance contracted route (v2)
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/routes/{uuid}/publication-scenario:
+    put:
+      description: Update publication scenario on route
+      operationId: RoutesManageV2Controller_updatePublicationScenario
+      parameters:
+        - name: uuid
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          description: Route ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePublicationScenarioBodyDto"
+      responses:
+        "200":
+          description: Route updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractRouteResponseDto"
+        "400":
+          description: Bad request - invalid input data
+        "401":
+          description: Unauthorized - authentication required
+        "404":
+          description: Contracted route not found
+        "422":
+          description: Validation error - input data validation failed
+      summary: Update publication scenario
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/routes/{id}:
+    get:
+      description: Proxy to GET /api/rest/v3/routes/:id. Returns downstream response
+        as-is with dictionary translations (DICT→ISO) applied. No
+        request/response mapping — only dictionary values are translated.
+      operationId: getRouteV2
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: UUID of the route to retrieve
+          schema:
+            format: uuid
+            example: dea410d9-7938-4aff-b60f-f54dab8a96d2
+            type: string
+      responses:
+        "200":
+          description: Route entity with dictionary translations applied (spots,
+            requirements, loads)
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Route not found
+      security:
+        - bearer: []
+      summary: Get route by ID (v2)
+      tags:
+        - contracts-api
+  /ext/contracts-api/v1/companies/{companyId}/settings/surcharges:
+    get:
+      operationId: SurchargesReadV1Controller_getCompanySurcharges
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SurchargesEntityV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - contracts-api
+    post:
+      operationId: SurchargesManageV1Controller_createCompanySurcharge
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - baf
+                    - week_day
+                    - pallets_exchange
+                    - additional_stop
+                  example: additional_stop
+                kind:
+                  type: string
+                  enum:
+                    - value
+                    - grid
+                    - linear
+                  example: value
+                currency:
+                  type: string
+                  example: bam
+                description:
+                  type: string
+                  example: example description 1234567890
+                schedules:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          matrix:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                unit:
+                                  type: string
+                                  enum:
+                                    - percentage
+                                    - value
+                                  example: value
+                                value:
+                                  type: number
+                                  example: 100
+                              required:
+                                - unit
+                                - value
+                        required:
+                          - matrix
+                      timespan:
+                        type: object
+                        properties:
+                          from:
+                            type: string
+                            format: date-time
+                            example: 2032-08-11T00:00:00+02:00
+                          to:
+                            type: string
+                            format: date-time
+                            example: 2042-09-26T23:59:59+02:00
+                        required:
+                          - from
+                          - to
+                    required:
+                      - data
+                      - timespan
+              required:
+                - type
+                - kind
+                - currency
+                - description
+                - schedules
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurchargesEntityV1Dto"
+        "201":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - contracts-api
+  /ext/contracts-api/v1/companies/{companyId}/settings/surcharges/{id}:
+    get:
+      operationId: SurchargesReadV1Controller_getCompanySurcharge
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SurchargesEntityV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - contracts-api
+    patch:
+      operationId: SurchargesManageV1Controller_updateCompanySurchargeActivity
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_active:
+                  type: boolean
+              required:
+                - is_active
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SurchargesEntityV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - contracts-api
+    delete:
+      operationId: SurchargesManageV1Controller_deleteCompanySurcharge
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "204":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - contracts-api
+  /ext/contracts-api/v1/companies/{companyId}/settings/surcharges/{id}/history:
+    get:
+      operationId: SurchargesReadV1Controller_getCompanySurchargeHistory
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: limit
+          required: false
+          in: query
+          description: Max items to return
+          schema:
+            type: number
+        - name: offset
+          required: false
+          in: query
+          description: Items to skip
+          schema:
+            type: number
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SurchargesEntityV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - contracts-api
+  /ext/contracts-api/v1/companies/{companyId}/settings/surcharges/{surchargeId}:
+    put:
+      operationId: SurchargesManageV1Controller_updateCompanySurcharge
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: surchargeId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - baf
+                    - week_day
+                    - pallets_exchange
+                    - additional_stop
+                  example: additional_stop
+                kind:
+                  type: string
+                  enum:
+                    - value
+                    - grid
+                    - linear
+                  example: value
+                currency:
+                  type: string
+                  example: bam
+                description:
+                  type: string
+                  example: example description 1234567890
+                schedules:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          matrix:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                unit:
+                                  type: string
+                                  enum:
+                                    - percentage
+                                    - value
+                                  example: value
+                                value:
+                                  type: number
+                                  example: 100
+                              required:
+                                - unit
+                                - value
+                        required:
+                          - matrix
+                      timespan:
+                        type: object
+                        properties:
+                          from:
+                            type: string
+                            format: date-time
+                            example: 2032-08-11T00:00:00+02:00
+                          to:
+                            type: string
+                            format: date-time
+                            example: 2042-09-26T23:59:59+02:00
+                        required:
+                          - from
+                          - to
+                    required:
+                      - data
+                      - timespan
+              required:
+                - type
+                - kind
+                - currency
+                - description
+                - schedules
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurchargesEntityV1Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/companies/{companyId}/settings/surcharges/{id}/history:
+    get:
+      operationId: SurchargesReadV2Controller_getCompanySurchargeHistory
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: limit
+          required: false
+          in: query
+          description: Max items to return
+          schema:
+            type: number
+        - name: offset
+          required: false
+          in: query
+          description: Items to skip
+          schema:
+            type: number
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SurchargeHistoryV2Dto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/companies/{companyId}/settings/surcharges:
+    get:
+      description: Returns all surcharge settings for a company.
+      operationId: SurchargesSettingsReadV2Controller_getCompanySurcharges
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          description: Company identifier
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Surcharge settings list
+          content:
+            application/json:
+              schema:
+                example:
+                  - id: a3b1c2d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+                    type: additional_stop
+                    kind: value
+                    currency: eur
+                    description: Additional stop flat fee
+                    schedules:
+                      - data:
+                          matrix:
+                            - unit: value
+                              value: 150
+                        timespan:
+                          from: 2032-08-11T00:00:00+02:00
+                          to: 2042-09-26T23:59:59+02:00
+                    is_global: false
+                    is_active: true
+                  - id: b4c2d5e6-7f8a-9b0c-1d2e-3f4a5b6c7d8e
+                    type: baf
+                    kind: grid
+                    currency: eur
+                    description: Fuel surcharge tiered percentage
+                    schedules:
+                      - data:
+                          matrix:
+                            - ratio:
+                                from: 1
+                                to: 2
+                              unit: percentage
+                              value: 5
+                            - ratio:
+                                from: 2
+                                to: 4
+                              unit: percentage
+                              value: 5.5
+                          value: 5
+                        timespan:
+                          from: 2032-08-11T00:00:00+02:00
+                          to: 2042-09-26T23:59:59+02:00
+                    is_global: false
+                    is_active: true
+        "401":
+          description: Unauthorized
+        "403":
+          description: ""
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      summary: List company surcharge settings
+      tags:
+        - contracts-api
+    post:
+      description: Create a new surcharge setting for a company.
+      operationId: SurchargesSettingsManageV2Controller_createCompanySurcharge
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          description: Company identifier
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSurchargeV2Dto"
+            examples:
+              additional_stop_value:
+                summary: Additional stop - Value
+                value:
+                  type: additional_stop
+                  kind: value
+                  currency: eur
+                  description: Additional stop flat fee
+                  schedules:
+                    - data:
+                        matrix:
+                          - unit: value
+                            value: 150
+                      timespan:
+                        from: 2032-08-11T00:00:00+02:00
+                        to: 2042-09-26T23:59:59+02:00
+              baf_value:
+                summary: BAF - Value
+                value:
+                  type: baf
+                  kind: value
+                  currency: eur
+                  description: Fuel surcharge flat fee
+                  schedules:
+                    - data:
+                        matrix:
+                          - unit: value
+                            value: 200
+                      timespan:
+                        from: 2032-08-11T00:00:00+02:00
+                        to: 2042-09-26T23:59:59+02:00
+              week_day_grid:
+                summary: Week day - Grid
+                value:
+                  type: week_day
+                  kind: grid
+                  currency: eur
+                  description: Weekday-based surcharges
+                  schedules:
+                    - data:
+                        unit: value
+                        week_days:
+                          - id: monday
+                            operations:
+                              - type: loading
+                                value: 10
+                              - type: unloading
+                                value: 15
+                          - id: tuesday
+                            operations:
+                              - type: loading
+                                value: 20
+                              - type: unloading
+                                value: 25
+                          - id: wednesday
+                            operations:
+                              - type: loading
+                                value: 30
+                              - type: unloading
+                                value: 35
+                          - id: thursday
+                            operations:
+                              - type: loading
+                                value: 40
+                              - type: unloading
+                                value: 45
+                          - id: friday
+                            operations:
+                              - type: loading
+                                value: 50
+                              - type: unloading
+                                value: 55
+                          - id: saturday
+                            operations:
+                              - type: loading
+                                value: 60
+                              - type: unloading
+                                value: 65
+                          - id: sunday
+                            operations:
+                              - type: loading
+                                value: 70
+                              - type: unloading
+                                value: 75
+                          - id: holiday
+                            operations:
+                              - type: loading
+                                value: 100
+                              - type: unloading
+                                value: 150
+                      timespan:
+                        from: 2032-08-11T00:00:00+02:00
+                        to: 2042-09-26T23:59:59+02:00
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurchargeEntityV2Dto"
+        "201":
+          description: Surcharge setting created successfully
+          content:
+            application/json:
+              schema:
+                example:
+                  id: a3b1c2d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+                  type: additional_stop
+                  kind: value
+                  currency: eur
+                  description: Additional stop flat fee
+                  schedules:
+                    - data:
+                        matrix:
+                          - unit: value
+                            value: 150
+                      timespan:
+                        from: 2032-08-11T00:00:00+02:00
+                        to: 2042-09-26T23:59:59+02:00
+                  is_global: false
+                  is_active: true
+        "400":
+          description: Invalid input data
+        "401":
+          description: Unauthorized
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "422":
+          description: Validation error
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      summary: Create company surcharge setting
+      tags:
+        - contracts-api
+  /ext/contracts-api/v2/companies/{companyId}/settings/surcharges/{id}:
+    get:
+      description: Returns a single surcharge setting by ID.
+      operationId: SurchargesSettingsReadV2Controller_getCompanySurcharge
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          description: Company identifier
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          description: Surcharge identifier
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Surcharge setting details
+          content:
+            application/json:
+              schema:
+                example:
+                  id: a3b1c2d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+                  type: additional_stop
+                  kind: value
+                  currency: eur
+                  description: Additional stop flat fee
+                  schedules:
+                    - data:
+                        matrix:
+                          - unit: value
+                            value: 150
+                      timespan:
+                        from: 2032-08-11T00:00:00+02:00
+                        to: 2042-09-26T23:59:59+02:00
+                  is_global: false
+                  is_active: true
+        "401":
+          description: Unauthorized
+        "403":
+          description: ""
+        "404":
+          description: Surcharge not found
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      summary: Get company surcharge setting
+      tags:
+        - contracts-api
+    put:
+      description: Fully replace a surcharge setting.
+      operationId: SurchargesSettingsManageV2Controller_updateCompanySurcharge
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          description: Company identifier
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          description: Surcharge identifier
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSurchargeV2Dto"
+            examples:
+              additional_stop_linear:
+                summary: Additional stop - Linear
+                value:
+                  type: additional_stop
+                  kind: linear
+                  currency: eur
+                  description: Additional stop per-unit rate
+                  schedules:
+                    - data:
+                        matrix:
+                          - unit: value
+                            value: 50
+                      timespan:
+                        from: 2032-08-11T00:00:00+02:00
+                        to: 2042-09-26T23:59:59+02:00
+              baf_grid:
+                summary: BAF - Grid
+                value:
+                  type: baf
+                  kind: grid
+                  currency: eur
+                  description: Fuel surcharge tiered percentage
+                  schedules:
+                    - data:
+                        matrix:
+                          - ratio:
+                              from: 1
+                              to: 2
+                            unit: percentage
+                            value: 5
+                          - ratio:
+                              from: 2
+                              to: 4
+                            unit: percentage
+                            value: 5.5
+                        value: 5
+                      timespan:
+                        from: 2032-08-11T00:00:00+02:00
+                        to: 2042-09-26T23:59:59+02:00
+              pallets_exchange_value:
+                summary: Pallets exchange - Value
+                value:
+                  type: pallets_exchange
+                  kind: value
+                  currency: eur
+                  description: Pallet exchange percentage fee
+                  schedules:
+                    - data:
+                        matrix:
+                          - unit: percentage
+                            value: 5
+                      timespan:
+                        from: 2032-08-11T00:00:00+02:00
+                        to: 2042-09-26T23:59:59+02:00
+      responses:
+        "200":
+          description: Surcharge setting replaced successfully
+          content:
+            application/json:
+              schema:
+                example:
+                  id: a3b1c2d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+                  type: additional_stop
+                  kind: value
+                  currency: eur
+                  description: Additional stop flat fee
+                  schedules:
+                    - data:
+                        matrix:
+                          - unit: value
+                            value: 150
+                      timespan:
+                        from: 2032-08-11T00:00:00+02:00
+                        to: 2042-09-26T23:59:59+02:00
+                  is_global: false
+                  is_active: true
+        "400":
+          description: Invalid input data
+        "401":
+          description: Unauthorized
+        "403":
+          description: ""
+        "404":
+          description: Surcharge not found
+        "422":
+          description: Validation error
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      summary: Replace company surcharge setting
+      tags:
+        - contracts-api
+    patch:
+      description: Update specific fields of a surcharge setting.
+      operationId: SurchargesSettingsManageV2Controller_patchCompanySurcharge
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          description: Company identifier
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          description: Surcharge identifier
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchSurchargeV2Dto"
+            examples:
+              update_description:
+                summary: Update description only
+                value:
+                  description: Updated surcharge description
+              update_schedules:
+                summary: Update schedules
+                value:
+                  schedules:
+                    - data:
+                        matrix:
+                          - unit: value
+                            value: 250
+                      timespan:
+                        from: 2033-01-01T00:00:00+02:00
+                        to: 2043-12-31T23:59:59+02:00
+              update_currency_and_description:
+                summary: Update currency and description
+                value:
+                  currency: pln
+                  description: Updated to PLN
+      responses:
+        "200":
+          description: Surcharge setting partially updated
+          content:
+            application/json:
+              schema:
+                example:
+                  id: a3b1c2d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+                  type: additional_stop
+                  kind: value
+                  currency: eur
+                  description: Additional stop flat fee
+                  schedules:
+                    - data:
+                        matrix:
+                          - unit: value
+                            value: 150
+                      timespan:
+                        from: 2032-08-11T00:00:00+02:00
+                        to: 2042-09-26T23:59:59+02:00
+                  is_global: false
+                  is_active: true
+        "400":
+          description: Invalid input data
+        "401":
+          description: Unauthorized
+        "403":
+          description: ""
+        "404":
+          description: Surcharge not found
+        "422":
+          description: Validation error
+        "424":
+          description: ""
+      security:
+        - bearer: []
+      summary: Partially update company surcharge setting
+      tags:
+        - contracts-api
+    delete:
+      description: Remove a surcharge setting.
+      operationId: SurchargesSettingsManageV2Controller_deleteCompanySurcharge
+      parameters:
+        - name: companyId
+          required: true
+          in: path
+          description: Company identifier
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          description: Surcharge identifier
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Surcharge setting deleted
+        "401":
+          description: Unauthorized
+        "404":
+          description: Surcharge not found
+      security:
+        - bearer: []
+      summary: Delete company surcharge setting
+      tags:
+        - contracts-api
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    CommonPriceDto:
+      type: object
+      properties:
+        currency:
+          type: string
+          example: bam
+          description: Currency code (e.g., bam, eur, pln)
+        value:
+          type: number
+          nullable: true
+          example: 1000.5
+        amount:
+          type: number
+          nullable: true
+          example: 10
+    PriceDto:
+      type: object
+      properties:
+        value:
+          type: number
+          example: 100
+        currency:
+          type: string
+          enum:
+            - eur
+            - all
+            - bam
+            - bgn
+            - czk
+            - gbp
+            - huf
+            - isk
+            - kzt
+            - kgs
+            - mkd
+            - mdl
+            - pln
+            - ron
+            - rub
+            - rsd
+            - sek
+            - chf
+            - try
+            - uah
+            - byn
+            - usd
+            - hrk
+            - dkk
+            - nok
+          example: USD
+      required:
+        - value
+        - currency
+    PeriodDto:
+      type: object
+      properties:
+        payment:
+          type: string
+          enum:
+            - deferred
+            - payment_in_advance
+            - payment_on_unloading
+          example: deferred
+        days:
+          type: number
+          nullable: true
+          example: 5
+      required:
+        - payment
+    RouteDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 0eeaa993-e35e-4155-ae16-cd904719768b
+      required:
+        - id
+    TimespanDto:
+      type: object
+      properties:
+        from:
+          type: string
+          example: 2032-08-11T00:00:00+02:00
+        to:
+          type: string
+          example: 2042-09-26T23:59:59+02:00
+      required:
+        - from
+        - to
+    ScheduleDto:
+      type: object
+      properties:
+        data:
+          type: object
+        timespan:
+          $ref: "#/components/schemas/TimespanDto"
+      required:
+        - data
+        - timespan
+    SurchargeDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 9dd634fa-393b-4ad1-96c3-d61ee84f5e8e
+        currency:
+          type: string
+          example: 4_bam
+        description:
+          type: string
+          example: example description 1234567890
+        kind:
+          type: string
+          example: 1_value
+        type:
+          type: string
+          example: 1_baf
+        is_global:
+          type: boolean
+          example: true
+        is_active:
+          type: boolean
+          example: true
+        schedules:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScheduleDto"
+      required:
+        - id
+        - currency
+        - description
+        - kind
+        - type
+        - is_global
+        - is_active
+        - schedules
+    CarrierCompanyDto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1023108
+        name:
+          type: string
+          example: Carrier Company
+      required:
+        - id
+        - name
+    EmployeeDto:
+      type: object
+      properties:
+        account_id:
+          type: number
+          example: 170546
+        given_name:
+          type: string
+          example: Name
+        family_name:
+          type: string
+          example: Surname
+        trans_id:
+          type: string
+          example: 123-1
+      required:
+        - account_id
+        - given_name
+        - family_name
+        - trans_id
+    ContactPersonDto:
+      type: object
+      properties:
+        employee:
+          $ref: "#/components/schemas/EmployeeDto"
+      required:
+        - employee
+    CarrierDto:
+      type: object
+      properties:
+        company:
+          $ref: "#/components/schemas/CarrierCompanyDto"
+        contact_persons:
+          example:
+            - employee:
+                account_id: 170546
+          type: array
+          items:
+            $ref: "#/components/schemas/ContactPersonDto"
+      required:
+        - company
+        - contact_persons
+    PaymentPeriodDto:
+      type: object
+      properties:
+        value:
+          type: number
+          example: 10
+      required:
+        - value
+    InsuranceItemDto:
+      type: object
+      properties:
+        currency:
+          type: string
+          nullable: true
+          example: pln
+        value:
+          type: number
+          nullable: true
+          example: 1
+      required:
+        - currency
+        - value
+    InsuranceDto:
+      type: object
+      properties:
+        load:
+          $ref: "#/components/schemas/InsuranceItemDto"
+        third_party:
+          $ref: "#/components/schemas/InsuranceItemDto"
+      required:
+        - load
+        - third_party
+    MonitoringDto:
+      type: object
+      properties:
+        required:
+          type: boolean
+          example: false
+      required:
+        - required
+    SilentConfirmationTimeDto:
+      type: object
+      properties:
+        unit_code:
+          type: string
+          nullable: true
+          example: s
+        user_unit_code:
+          type: string
+          nullable: true
+          example: min
+        value:
+          type: number
+          nullable: true
+          example: 3600
+      required:
+        - unit_code
+        - user_unit_code
+        - value
+    SilentConfirmationDto:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          example: true
+        time:
+          $ref: "#/components/schemas/SilentConfirmationTimeDto"
+      required:
+        - enabled
+        - time
+    OrderTermsDto:
+      type: object
+      properties:
+        automatic_order_sending:
+          type: boolean
+          example: false
+        payment_period:
+          $ref: "#/components/schemas/PaymentPeriodDto"
+        additional_terms:
+          type: string
+          nullable: true
+          example: additional_terms
+        insurance:
+          $ref: "#/components/schemas/InsuranceDto"
+        monitoring:
+          $ref: "#/components/schemas/MonitoringDto"
+        silent_confirmation:
+          $ref: "#/components/schemas/SilentConfirmationDto"
+      required:
+        - automatic_order_sending
+        - payment_period
+        - additional_terms
+        - insurance
+        - monitoring
+        - silent_confirmation
+    PlannedShipmentPeriodDto:
+      type: object
+      properties:
+        from:
+          type: string
+          example: 2025-08-15T02:00:00+02:00
+        to:
+          type: string
+          example: 2025-08-23T01:59:59+02:00
+        value:
+          type: number
+          example: 5
+      required:
+        - from
+        - to
+        - value
+    PlannedShipmentsDto:
+      type: object
+      properties:
+        periods:
+          example:
+            - from: 2025-08-15T02:00:00+02:00
+              to: 2025-08-23T01:59:59+02:00
+              value: 5
+          type: array
+          items:
+            $ref: "#/components/schemas/PlannedShipmentPeriodDto"
+        type:
+          type: string
+          nullable: true
+          example: required
+        unit:
+          type: string
+          nullable: true
+          example: shipment
+        value:
+          type: number
+          nullable: true
+          example: 1
+      required:
+        - periods
+        - type
+        - unit
+        - value
+    RangeDto:
+      type: object
+      properties:
+        from:
+          type: number
+          example: 1
+        to:
+          type: number
+          example: 10
+      required:
+        - from
+        - to
+    PriceListItemDto:
+      type: object
+      properties:
+        price:
+          $ref: "#/components/schemas/PriceDto"
+        range:
+          $ref: "#/components/schemas/RangeDto"
+      required:
+        - price
+        - range
+    PricingDto:
+      type: object
+      properties:
+        negotiable:
+          type: boolean
+          example: false
+        type:
+          type: string
+          example: km
+          description: "Pricing type: route, km, no_rate, ton, linear, pallets"
+        price:
+          example:
+            value: 100
+            currency: 14_pln
+          allOf:
+            - $ref: "#/components/schemas/PriceDto"
+        price_list:
+          example:
+            - price:
+                value: 100
+                currency: 14_pln
+              range:
+                from: 1
+                to: 5
+          type: array
+          items:
+            $ref: "#/components/schemas/PriceListItemDto"
+        settlement_basis:
+          type: string
+          example: 4_distance_declared_in_order_terms
+          description: Required for km and ton pricing types
+      required:
+        - negotiable
+        - type
+    ContractResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: a5eb2429-0531-4ffd-824a-9d617272ad90
+        route:
+          example:
+            id: aafa9935-8baf-4580-be1f-a3d06e5f8ee6
+          allOf:
+            - $ref: "#/components/schemas/RouteDto"
+        surcharges:
+          example:
+            - id: 9dd634fa-393b-4ad1-96c3-d61ee84f5e8e
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeDto"
+        period:
+          $ref: "#/components/schemas/PeriodDto"
+        carrier:
+          $ref: "#/components/schemas/CarrierDto"
+        order_terms:
+          $ref: "#/components/schemas/OrderTermsDto"
+        planned_shipments:
+          $ref: "#/components/schemas/PlannedShipmentsDto"
+        pricing:
+          $ref: "#/components/schemas/PricingDto"
+        reference_number:
+          type: string
+          example: reference_number
+      required:
+        - id
+        - route
+        - surcharges
+        - period
+        - carrier
+        - order_terms
+        - planned_shipments
+        - pricing
+        - reference_number
+    ContractsListResponseDto:
+      type: object
+      properties:
+        contracts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContractResponseDto"
+        total_items:
+          type: number
+      required:
+        - contracts
+        - total_items
+    RoutePricingDto:
+      type: object
+      properties:
+        negotiable:
+          type: boolean
+          example: true
+        type:
+          enum:
+            - route
+          type: string
+          example: route
+        price:
+          $ref: "#/components/schemas/CommonPriceDto"
+      required:
+        - negotiable
+        - type
+        - price
+    KmPricingDto:
+      type: object
+      properties:
+        negotiable:
+          type: boolean
+          example: true
+        type:
+          enum:
+            - km
+          type: string
+          example: route
+        price:
+          $ref: "#/components/schemas/CommonPriceDto"
+        settlement_basis:
+          type: string
+          example: distance
+          description: Settlement basis (e.g., distance, weight)
+      required:
+        - negotiable
+        - type
+        - price
+        - settlement_basis
+    CurrencyOnlyDto:
+      type: object
+      properties:
+        currency:
+          type: string
+          example: bam
+          description: Currency code (e.g., bam, eur, pln)
+      required:
+        - currency
+    NoRatePricingDto:
+      type: object
+      properties:
+        negotiable:
+          type: boolean
+          example: true
+        type:
+          enum:
+            - no_rate
+          type: string
+          example: route
+        price:
+          $ref: "#/components/schemas/CurrencyOnlyDto"
+      required:
+        - negotiable
+        - type
+        - price
+    TonPricingDto:
+      type: object
+      properties:
+        negotiable:
+          type: boolean
+          example: true
+        type:
+          enum:
+            - ton
+          type: string
+          example: route
+        price:
+          $ref: "#/components/schemas/CommonPriceDto"
+        settlement_basis:
+          type: string
+          example: weight
+          description: Settlement basis (e.g., distance, weight)
+      required:
+        - negotiable
+        - type
+        - price
+        - settlement_basis
+    PalletsPricingDto:
+      type: object
+      properties:
+        negotiable:
+          type: boolean
+          example: true
+        type:
+          enum:
+            - pallets
+          type: string
+          example: route
+        price:
+          type: object
+        price_list:
+          type: array
+          items:
+            $ref: "#/components/schemas/PriceListItemDto"
+      required:
+        - negotiable
+        - type
+        - price
+        - price_list
+    LinearPricingDto:
+      type: object
+      properties:
+        negotiable:
+          type: boolean
+          example: true
+        type:
+          enum:
+            - linear
+          type: string
+          example: route
+        price:
+          $ref: "#/components/schemas/CommonPriceDto"
+      required:
+        - negotiable
+        - type
+        - price
+    ConfigDto:
+      type: object
+      properties:
+        send_to_carrier:
+          type: boolean
+      required:
+        - send_to_carrier
+    CreateContractDto:
+      type: object
+      properties:
+        base_contract_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        route:
+          $ref: "#/components/schemas/RouteDto"
+        surcharges:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeDto"
+        period:
+          $ref: "#/components/schemas/PeriodDto"
+        carrier:
+          $ref: "#/components/schemas/CarrierDto"
+        order_terms:
+          $ref: "#/components/schemas/OrderTermsDto"
+        planned_shipments:
+          $ref: "#/components/schemas/PlannedShipmentsDto"
+        pricing:
+          oneOf:
+            - $ref: "#/components/schemas/RoutePricingDto"
+            - $ref: "#/components/schemas/KmPricingDto"
+            - $ref: "#/components/schemas/NoRatePricingDto"
+            - $ref: "#/components/schemas/TonPricingDto"
+            - $ref: "#/components/schemas/PalletsPricingDto"
+            - $ref: "#/components/schemas/LinearPricingDto"
+          discriminator:
+            propertyName: type
+        reference_number:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: CONTRACT-2024-001
+        config:
+          $ref: "#/components/schemas/ConfigDto"
+      required:
+        - route
+        - period
+        - carrier
+        - order_terms
+        - pricing
+        - reference_number
+        - config
+    UpdateContractDto:
+      type: object
+      properties:
+        route:
+          $ref: "#/components/schemas/RouteDto"
+        surcharges:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeDto"
+        period:
+          $ref: "#/components/schemas/PeriodDto"
+        carrier:
+          $ref: "#/components/schemas/CarrierDto"
+        order_terms:
+          $ref: "#/components/schemas/OrderTermsDto"
+        planned_shipments:
+          $ref: "#/components/schemas/PlannedShipmentsDto"
+        pricing:
+          oneOf:
+            - $ref: "#/components/schemas/RoutePricingDto"
+            - $ref: "#/components/schemas/KmPricingDto"
+            - $ref: "#/components/schemas/NoRatePricingDto"
+            - $ref: "#/components/schemas/TonPricingDto"
+            - $ref: "#/components/schemas/PalletsPricingDto"
+            - $ref: "#/components/schemas/LinearPricingDto"
+          discriminator:
+            propertyName: type
+        reference_number:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: CONTRACT-2024-001
+        config:
+          $ref: "#/components/schemas/ConfigDto"
+      required:
+        - route
+        - period
+        - carrier
+        - order_terms
+        - pricing
+        - reference_number
+        - config
+    CarrierCompanyV2Dto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 12345
+      required:
+        - id
+    ContactPersonEmployeeV2Dto:
+      type: object
+      properties:
+        account_id:
+          type: number
+          example: 67890
+      required:
+        - account_id
+    ContactPersonV2Dto:
+      type: object
+      properties:
+        employee:
+          $ref: "#/components/schemas/ContactPersonEmployeeV2Dto"
+      required:
+        - employee
+    CarrierV2Dto:
+      type: object
+      properties:
+        company:
+          $ref: "#/components/schemas/CarrierCompanyV2Dto"
+        contact_persons:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContactPersonV2Dto"
+    PeriodV2Dto:
+      type: object
+      properties:
+        from:
+          type: string
+          example: 2027-01-01T00:00:00.000Z
+        to:
+          type: string
+          example: 2027-12-31T23:59:59.000Z
+        timezone:
+          type: string
+          example: Europe/Warsaw
+      required:
+        - from
+    MonitoringV2Dto:
+      type: object
+      properties:
+        required:
+          type: boolean
+    InsurancePropertyV2Dto:
+      type: object
+      properties:
+        value:
+          type: number
+          nullable: true
+          minimum: 0
+          maximum: 999999999
+          example: 5000
+        currency:
+          type: string
+          nullable: true
+          example: EUR
+          description: Currency code (e.g., EUR, PLN)
+    InsuranceV2Dto:
+      type: object
+      properties:
+        load:
+          $ref: "#/components/schemas/InsurancePropertyV2Dto"
+        third_party:
+          $ref: "#/components/schemas/InsurancePropertyV2Dto"
+    PaymentPeriodV2Dto:
+      type: object
+      properties:
+        interval_of_days:
+          type: number
+          minimum: 1
+          maximum: 999
+          example: 30
+        days_type:
+          enum:
+            - WORK
+            - CALENDAR
+          type: string
+        value:
+          type: number
+          minimum: 0
+          maximum: 999
+          example: 30
+    SilentConfirmationTimeV2Dto:
+      type: object
+      properties:
+        begin:
+          type: string
+          example: 2027-01-01T00:00:00.000Z
+        end:
+          type: string
+          example: 2027-12-31T23:59:59.000Z
+        value:
+          type: number
+          minimum: 300
+          maximum: 86400
+          example: 300
+        unit_code:
+          type: string
+          enum:
+            - s
+        user_unit_code:
+          enum:
+            - min
+            - h
+          type: string
+    SilentConfirmationV2Dto:
+      type: object
+      properties:
+        is_enabled:
+          type: boolean
+        enabled:
+          type: boolean
+        time:
+          $ref: "#/components/schemas/SilentConfirmationTimeV2Dto"
+    OrderTermsV2Dto:
+      type: object
+      properties:
+        monitoring:
+          $ref: "#/components/schemas/MonitoringV2Dto"
+        additional_terms:
+          type: string
+          maxLength: 2000
+          example: Additional terms text
+        insurance:
+          $ref: "#/components/schemas/InsuranceV2Dto"
+        automatic_order_sending:
+          type: boolean
+        payment_period:
+          $ref: "#/components/schemas/PaymentPeriodV2Dto"
+        silent_confirmation:
+          $ref: "#/components/schemas/SilentConfirmationV2Dto"
+    PlannedShipmentsPeriodV2Dto:
+      type: object
+      properties:
+        from:
+          type: string
+          example: 2027-01-01T00:00:00.000Z
+        to:
+          type: string
+          example: 2027-12-31T23:59:59.000Z
+        value:
+          type: number
+          example: 100
+      required:
+        - from
+        - to
+        - value
+    PlannedShipmentsV2Dto:
+      type: object
+      properties:
+        periods:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlannedShipmentsPeriodV2Dto"
+        type:
+          type: string
+          example: required
+          description: Planned shipments type from dictionary (e.g. required, expected,
+            no_more_than)
+        unit:
+          type: string
+          example: shipment
+          description: Planned shipments unit from dictionary (e.g. shipment, ton, km)
+        value:
+          type: number
+          minimum: 0
+          maximum: 9999999
+          example: 100
+    PriceV2Dto:
+      type: object
+      properties:
+        value:
+          type: number
+          example: 1500
+        currency:
+          type: string
+          example: EUR
+          description: Currency code (e.g., EUR, PLN)
+        amount:
+          type: number
+          example: 1500
+    PriceRangeV2Dto:
+      type: object
+      properties:
+        from:
+          type: number
+          minimum: 1
+          maximum: 66
+          example: 1
+        to:
+          type: number
+          minimum: 1
+          maximum: 66
+          example: 66
+      required:
+        - from
+        - to
+    PriceListV2Dto:
+      type: object
+      properties:
+        price:
+          $ref: "#/components/schemas/PriceV2Dto"
+        range:
+          $ref: "#/components/schemas/PriceRangeV2Dto"
+      required:
+        - range
+    PricingV2Dto:
+      type: object
+      properties:
+        type:
+          enum:
+            - route
+            - km
+            - linear
+            - pallets
+            - no_rate
+            - ton
+          type: string
+          example: route
+        negotiable:
+          type: boolean
+        price:
+          $ref: "#/components/schemas/PriceV2Dto"
+        price_list:
+          $ref: "#/components/schemas/PriceListV2Dto"
+        settlement_basis:
+          type: string
+          example: net_net
+          description: Settlement basis from dictionary
+      required:
+        - type
+        - negotiable
+    RouteV2Dto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+      required:
+        - id
+    SurchargeRangeDto:
+      type: object
+      properties:
+        from:
+          type: number
+          example: 1
+        to:
+          type: number
+          example: 2
+      required:
+        - from
+        - to
+    SurchargeRatioDto:
+      type: object
+      properties:
+        from:
+          type: number
+          example: 1
+        to:
+          type: number
+          example: 2
+      required:
+        - from
+        - to
+    SurchargeMatrixItemDto:
+      type: object
+      properties:
+        unit:
+          type: string
+          enum:
+            - percentage
+            - value
+          example: value
+        value:
+          type: number
+          example: 100
+        basis:
+          type: string
+          enum:
+            - range
+        range:
+          $ref: "#/components/schemas/SurchargeRangeDto"
+        ratio:
+          $ref: "#/components/schemas/SurchargeRatioDto"
+      required:
+        - unit
+        - value
+    WeekDayOperationDto:
+      type: object
+      properties:
+        type:
+          type: string
+          example: loading
+        value:
+          type: number
+          example: 10
+      required:
+        - type
+        - value
+    WeekDayDto:
+      type: object
+      properties:
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeekDayOperationDto"
+        id:
+          type: string
+      required:
+        - operations
+        - id
+    SurchargeDataDto:
+      type: object
+      properties:
+        matrix:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeMatrixItemDto"
+        value:
+          type: number
+          example: 5
+        unit:
+          type: string
+          enum:
+            - percentage
+            - value
+        week_days:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeekDayDto"
+    SurchargeTimespanDto:
+      type: object
+      properties:
+        from:
+          type: string
+          example: 2032-08-11T00:00:00+02:00
+        to:
+          type: string
+          example: 2042-09-26T23:59:59+02:00
+      required:
+        - from
+        - to
+    SurchargeScheduleDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/SurchargeDataDto"
+        timespan:
+          $ref: "#/components/schemas/SurchargeTimespanDto"
+      required:
+        - data
+        - timespan
+    SurchargesV2Dto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        description:
+          type: string
+          minLength: 1
+          maxLength: 30
+          example: BAF
+        type:
+          type: string
+          example: baf
+          description: Surcharge type from dictionary
+        kind:
+          type: string
+          example: value
+          description: Surcharge kind from dictionary
+        currency:
+          type: string
+          example: EUR
+          description: Currency code (e.g., EUR, PLN)
+        data:
+          $ref: "#/components/schemas/SurchargeDataDto"
+        schedules:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeScheduleDto"
+    ConfigV2Dto:
+      type: object
+      properties:
+        send_to_carrier:
+          type: boolean
+      required:
+        - send_to_carrier
+    CreateFixedContractV2Dto:
+      type: object
+      properties:
+        carrier:
+          $ref: "#/components/schemas/CarrierV2Dto"
+        period:
+          $ref: "#/components/schemas/PeriodV2Dto"
+        order_terms:
+          $ref: "#/components/schemas/OrderTermsV2Dto"
+        planned_shipments:
+          $ref: "#/components/schemas/PlannedShipmentsV2Dto"
+        pricing:
+          $ref: "#/components/schemas/PricingV2Dto"
+        reference_number:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: CONTRACT-2024-001
+        route:
+          $ref: "#/components/schemas/RouteV2Dto"
+        surcharges:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargesV2Dto"
+        base_contract_id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        config:
+          $ref: "#/components/schemas/ConfigV2Dto"
+      required:
+        - period
+        - pricing
+        - route
+        - config
+    UpdateFixedCarrierCompanyV2Dto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 12345
+          description: Internal identifier of the carrier company.
+      required:
+        - id
+    UpdateFixedContactEmployeeV2Dto:
+      type: object
+      properties:
+        account_id:
+          type: number
+          example: 67890
+          description: Account identifier of the employee acting as contact person.
+      required:
+        - account_id
+    UpdateFixedContactPersonsWrapperV2Dto:
+      type: object
+      properties:
+        employee:
+          description: Employee data for the primary contact person.
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedContactEmployeeV2Dto"
+      required:
+        - employee
+    UpdateFixedCarrierV2Dto:
+      type: object
+      properties:
+        company:
+          description: Carrier company to associate with the contract.
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedCarrierCompanyV2Dto"
+        contact_persons:
+          description: Contact person for the carrier (single object in update API).
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedContactPersonsWrapperV2Dto"
+    UpdateFixedPeriodV2Dto:
+      type: object
+      properties:
+        from:
+          type: string
+          example: 2027-01-01T00:00:00.000Z
+          description: Contract validity interval start (ISO-8601).
+        to:
+          type: string
+          example: 2027-12-31T23:59:59.000Z
+          description: Contract validity interval end (ISO-8601), if applicable.
+        timezone:
+          type: string
+          example: Europe/Warsaw
+          description: IANA timezone name for interpreting period boundaries.
+      required:
+        - from
+    UpdateFixedMonitoringV2Dto:
+      type: object
+      properties:
+        required:
+          type: boolean
+          description: Whether shipment monitoring is mandatory under this contract.
+    UpdateFixedInsurancePropertyV2Dto:
+      type: object
+      properties:
+        value:
+          type: number
+          nullable: true
+          minimum: 0
+          maximum: 999999999
+          example: 5000
+          description: Monetary value for the insured limit.
+        currency:
+          type: string
+          nullable: true
+          example: EUR
+          description: ISO currency code (dictionary value on wire to upstream).
+    UpdateFixedInsuranceV2Dto:
+      type: object
+      properties:
+        load:
+          $ref: "#/components/schemas/UpdateFixedInsurancePropertyV2Dto"
+        third_party:
+          $ref: "#/components/schemas/UpdateFixedInsurancePropertyV2Dto"
+    UpdateFixedPaymentPeriodV2Dto:
+      type: object
+      properties:
+        interval_of_days:
+          type: number
+          minimum: 1
+          maximum: 999
+          example: 30
+          description: Payment term length in days.
+        days_type:
+          enum:
+            - WORK
+            - CALENDAR
+          type: string
+          description: Whether payment interval counts working or calendar days.
+        value:
+          type: number
+          minimum: 0
+          maximum: 999
+          example: 30
+          description: Alternative numeric payment term descriptor.
+    UpdateFixedSilentConfirmationTimeV2Dto:
+      type: object
+      properties:
+        begin:
+          type: string
+          example: 2027-01-01T00:00:00.000Z
+          description: Silent confirmation window start.
+        end:
+          type: string
+          example: 2027-12-31T23:59:59.000Z
+          description: Silent confirmation window end.
+        value:
+          type: number
+          minimum: 300
+          maximum: 86400
+          example: 300
+          description: Duration value in base unit (see unit_code).
+        unit_code:
+          type: string
+          enum:
+            - s
+          description: Base time unit for silent confirmation duration.
+        user_unit_code:
+          enum:
+            - min
+            - h
+          type: string
+          description: User-facing time unit for silent confirmation.
+    UpdateFixedSilentConfirmationV2Dto:
+      type: object
+      properties:
+        is_enabled:
+          type: boolean
+          description: "Legacy flag: silent confirmation feature enabled."
+        enabled:
+          type: boolean
+          description: Silent confirmation feature enabled.
+        time:
+          $ref: "#/components/schemas/UpdateFixedSilentConfirmationTimeV2Dto"
+    UpdateFixedOrderTermsV2Dto:
+      type: object
+      properties:
+        monitoring:
+          $ref: "#/components/schemas/UpdateFixedMonitoringV2Dto"
+        additional_terms:
+          type: string
+          maxLength: 2000
+          example: Additional commercial terms
+          description: Free-text additional order / contract terms.
+        insurance:
+          $ref: "#/components/schemas/UpdateFixedInsuranceV2Dto"
+        automatic_order_sending:
+          type: boolean
+          description: When true, orders are sent to the carrier automatically.
+        payment_period:
+          $ref: "#/components/schemas/UpdateFixedPaymentPeriodV2Dto"
+        silent_confirmation:
+          $ref: "#/components/schemas/UpdateFixedSilentConfirmationV2Dto"
+    UpdateFixedPlannedShipmentsSinglePeriodV2Dto:
+      type: object
+      properties:
+        from:
+          type: string
+          example: 2027-01-01T00:00:00.000Z
+          description: Planned shipments counting period start.
+        to:
+          type: string
+          example: 2027-12-31T23:59:59.000Z
+          description: Planned shipments counting period end.
+        value:
+          type: number
+          example: 100
+          description: Planned amount or quota for the period.
+      required:
+        - from
+        - to
+        - value
+    UpdateFixedPlannedShipmentsV2Dto:
+      type: object
+      properties:
+        periods:
+          description: Single planning window (update API may send one block instead of an
+            array).
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedPlannedShipmentsSinglePeriodV2Dto"
+        type:
+          type: string
+          example: required
+          description: Planned shipments type from dictionary (e.g. required, expected,
+            no_more_than).
+        unit:
+          type: string
+          example: shipment
+          description: Unit for planned quantity (dictionary, e.g. shipment, ton, km).
+        value:
+          type: number
+          minimum: 0
+          maximum: 9999999
+          example: 100
+          description: Total planned shipments value in the given unit.
+    UpdateFixedPriceV2Dto:
+      type: object
+      properties:
+        value:
+          type: number
+          example: 1500
+          description: Price amount (semantic depends on pricing type).
+        currency:
+          type: string
+          example: EUR
+          description: Currency code (ISO / dictionary on wire).
+        amount:
+          type: number
+          example: 1500
+          description: Alternative amount field used by some pricing models.
+    UpdateFixedPriceRangeV2Dto:
+      type: object
+      properties:
+        from:
+          type: number
+          minimum: 1
+          maximum: 66
+          example: 1
+          description: Range lower bound (e.g. pallet index).
+        to:
+          type: number
+          minimum: 1
+          maximum: 66
+          example: 66
+          description: Range upper bound (e.g. pallet index).
+      required:
+        - from
+        - to
+    UpdateFixedPriceListV2Dto:
+      type: object
+      properties:
+        price:
+          $ref: "#/components/schemas/UpdateFixedPriceV2Dto"
+        range:
+          description: Inclusive range this list price applies to.
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedPriceRangeV2Dto"
+      required:
+        - range
+    UpdateFixedPricingV2Dto:
+      type: object
+      properties:
+        type:
+          enum:
+            - route
+            - km
+            - linear
+            - pallets
+            - no_rate
+            - ton
+          type: string
+          example: route
+          description: Pricing model discriminator (route, km, ton, pallets, etc.).
+        negotiable:
+          type: boolean
+          description: Whether the price is open to negotiation.
+        price:
+          $ref: "#/components/schemas/UpdateFixedPriceV2Dto"
+        price_list:
+          description: Tiered price list (e.g. pallets pricing).
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedPriceListV2Dto"
+        settlement_basis:
+          type: string
+          example: net_net
+          description: Settlement basis dictionary code (e.g. net_net).
+      required:
+        - type
+        - negotiable
+    UpdateFixedRouteV2Dto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          description: Identifier of the contracted route this fixed contract applies to.
+      required:
+        - id
+    UpdateFixedSurchargesV2Dto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          description: Existing surcharge entity id when updating a surcharge line.
+        description:
+          type: string
+          minLength: 1
+          maxLength: 30
+          example: BAF
+          description: Human-readable surcharge description.
+        type:
+          type: string
+          example: baf
+          description: Surcharge type from dictionary.
+        kind:
+          type: string
+          example: value
+          description: Surcharge kind from dictionary.
+        currency:
+          type: string
+          example: EUR
+          description: Currency for surcharge amounts.
+        data:
+          description: Structured surcharge payload (matrix, week_days, etc.) depending on
+            kind/type.
+          allOf:
+            - $ref: "#/components/schemas/SurchargeDataDto"
+        schedules:
+          description: Time-bounded schedules for variable surcharges.
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeScheduleDto"
+    UpdateFixedConfigV2Dto:
+      type: object
+      properties:
+        send_to_carrier:
+          type: boolean
+          description: When true, the updated contract is pushed to the carrier.
+      required:
+        - send_to_carrier
+    UpdateFixedContractV2Dto:
+      type: object
+      properties:
+        carrier:
+          description: Carrier party and contacts for the contract.
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedCarrierV2Dto"
+        period:
+          description: Contract validity window.
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedPeriodV2Dto"
+        order_terms:
+          description: Commercial and operational order terms.
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedOrderTermsV2Dto"
+        planned_shipments:
+          description: Planned shipment volumes and periods.
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedPlannedShipmentsV2Dto"
+        pricing:
+          description: Pricing configuration for the fixed contract.
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedPricingV2Dto"
+        reference_number:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: CONTRACT-2024-001
+          description: Client reference number for the contract.
+        route:
+          description: Route this contract is bound to.
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedRouteV2Dto"
+        surcharges:
+          description: Surcharge lines (array form matches dictionary translation paths).
+          type: array
+          items:
+            $ref: "#/components/schemas/UpdateFixedSurchargesV2Dto"
+        base_contract_id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          description: Parent base contract id when this row is an amendment or child.
+        config:
+          description: Behaviour flags (e.g. notify carrier).
+          allOf:
+            - $ref: "#/components/schemas/UpdateFixedConfigV2Dto"
+      required:
+        - period
+        - pricing
+        - route
+        - config
+    RouteBodyDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Route identifier
+      required:
+        - id
+    FlexiblePriceBodyDto:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: Property must be a valid currency from dictionary
+    FlexiblePricingBodyDto:
+      type: object
+      properties:
+        price:
+          $ref: "#/components/schemas/FlexiblePriceBodyDto"
+        negotiable:
+          type: boolean
+    CarrierCompanyBodyDto:
+      type: object
+      properties:
+        id:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+    ContactPersonBodyDto:
+      type: object
+      properties:
+        account_id:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+      required:
+        - account_id
+    EmployeeBodyDto:
+      type: object
+      properties:
+        employee:
+          $ref: "#/components/schemas/ContactPersonBodyDto"
+      required:
+        - employee
+    CarrierBodyDto:
+      type: object
+      properties:
+        company:
+          $ref: "#/components/schemas/CarrierCompanyBodyDto"
+        contact_persons:
+          $ref: "#/components/schemas/EmployeeBodyDto"
+    CommonBodyDto:
+      type: object
+      properties:
+        send_to_carrier:
+          type: boolean
+      required:
+        - send_to_carrier
+    FlexibleContractBodyV2Dto:
+      type: object
+      properties:
+        route:
+          $ref: "#/components/schemas/RouteBodyDto"
+        pricing:
+          $ref: "#/components/schemas/FlexiblePricingBodyDto"
+        carrier:
+          $ref: "#/components/schemas/CarrierBodyDto"
+        config:
+          $ref: "#/components/schemas/CommonBodyDto"
+      required:
+        - route
+        - config
+    CompanyV2Dto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1100689
+        name:
+          type: string
+          example: TFC External Integration Tests
+      required:
+        - id
+        - name
+    ShipperV2Dto:
+      type: object
+      properties:
+        company:
+          $ref: "#/components/schemas/CompanyV2Dto"
+        contact_persons:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContactPersonV2Dto"
+      required:
+        - company
+        - contact_persons
+    ContractTransportsStatsV2Dto:
+      type: object
+      properties:
+        realized:
+          type: number
+          nullable: true
+          example: 4
+        average_per_month:
+          type: number
+          nullable: true
+          example: 0.5
+        awaiting:
+          type: number
+          nullable: true
+          example: 0
+      required:
+        - realized
+        - average_per_month
+        - awaiting
+    ContractOffersStatsV2Dto:
+      type: object
+      properties:
+        accepted:
+          type: number
+          nullable: true
+          example: 4
+        total:
+          type: number
+          nullable: true
+          example: 28
+        acceptance_rate:
+          type: number
+          nullable: true
+          example: 0.142857
+      required:
+        - accepted
+        - total
+        - acceptance_rate
+    ContractBaseContractStatsV2Dto:
+      type: object
+      properties:
+        registered:
+          type: number
+          example: 0
+        waiting_for_acceptance:
+          type: number
+          example: 1
+        waiting_for_initial_carrier_offer:
+          type: number
+          example: 0
+        waiting_for_shipper_offer:
+          type: number
+          example: 0
+        waiting_for_carrier_offer:
+          type: number
+          example: 0
+        refused:
+          type: number
+          example: 0
+        accepted:
+          type: number
+          example: 0
+        active:
+          type: number
+          example: 1
+        finished:
+          type: number
+          example: 0
+      required:
+        - registered
+        - waiting_for_acceptance
+        - waiting_for_initial_carrier_offer
+        - waiting_for_shipper_offer
+        - waiting_for_carrier_offer
+        - refused
+        - accepted
+        - active
+        - finished
+    ContractStatsV2Dto:
+      type: object
+      properties:
+        transports:
+          $ref: "#/components/schemas/ContractTransportsStatsV2Dto"
+        offers:
+          $ref: "#/components/schemas/ContractOffersStatsV2Dto"
+        base_contract:
+          $ref: "#/components/schemas/ContractBaseContractStatsV2Dto"
+      required:
+        - transports
+        - offers
+        - base_contract
+    ContractMetaV2Dto:
+      type: object
+      properties:
+        is_copy:
+          type: boolean
+          example: false
+        is_parent:
+          type: boolean
+          example: false
+        has_been_sent_to_carrier:
+          type: boolean
+          example: true
+      required:
+        - is_copy
+        - is_parent
+        - has_been_sent_to_carrier
+    ContractV2Dto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 76c14a90-b63b-4483-9cbf-6ffcc648a048
+        base_contract_id:
+          type: string
+          format: uuid
+          example: 76c14a90-b63b-4483-9cbf-6ffcc648a048
+        type:
+          type: string
+          example: fixed
+        position:
+          type: number
+          example: 1
+        carrier:
+          $ref: "#/components/schemas/CarrierV2Dto"
+        deactivations:
+          example: []
+          type: array
+          items:
+            type: object
+        order_terms:
+          $ref: "#/components/schemas/OrderTermsV2Dto"
+        period:
+          $ref: "#/components/schemas/PeriodV2Dto"
+        percentage_share:
+          type: number
+          example: 100
+        planned_shipments:
+          $ref: "#/components/schemas/PlannedShipmentsV2Dto"
+        pricing:
+          $ref: "#/components/schemas/PricingV2Dto"
+        reference_number:
+          type: string
+          nullable: true
+          example: "123"
+        route:
+          $ref: "#/components/schemas/RouteV2Dto"
+        shipper:
+          $ref: "#/components/schemas/ShipperV2Dto"
+        status:
+          type: string
+          example: active
+        _stats:
+          $ref: "#/components/schemas/ContractStatsV2Dto"
+        _meta:
+          $ref: "#/components/schemas/ContractMetaV2Dto"
+        updated_at:
+          type: string
+          example: 2026-03-04T07:00:31+00:00
+        last_modification_date:
+          type: string
+          example: 2026-03-04T07:00:31+00:00
+        surcharges:
+          example: []
+          type: array
+          items:
+            type: object
+      required:
+        - id
+        - base_contract_id
+        - type
+        - position
+        - carrier
+        - deactivations
+        - order_terms
+        - period
+        - percentage_share
+        - planned_shipments
+        - pricing
+        - reference_number
+        - route
+        - shipper
+        - status
+        - _stats
+        - _meta
+        - updated_at
+        - last_modification_date
+        - surcharges
+    EmbeddedContractsV2Dto:
+      type: object
+      properties:
+        contracts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContractV2Dto"
+      required:
+        - contracts
+    ContractListV2ResponseDto:
+      type: object
+      properties:
+        _embedded:
+          $ref: "#/components/schemas/EmbeddedContractsV2Dto"
+        has_more:
+          type: boolean
+          example: true
+      required:
+        - _embedded
+        - has_more
+    AddressDto:
+      type: object
+      properties:
+        country:
+          type: string
+          example: PL
+          description: Country code (ISO 3166-1 alpha-2)
+        foreign_id:
+          type: string
+          minLength: 40
+          maxLength: 40
+          example: "1234567890123456789012345678901234567890"
+        location_id:
+          type: number
+          example: 12345
+        detailed_location_id:
+          type: number
+          example: 67890
+        locality:
+          type: string
+          minLength: 1
+          maxLength: 41
+          example: Warsaw
+        postal_code:
+          type: string
+          minLength: 1
+          maxLength: 10
+          example: 00-001
+        street:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Main Street
+        number:
+          type: string
+          minLength: 1
+          maxLength: 15
+          example: "123"
+        radius:
+          type: number
+          minimum: 10
+          maximum: 10000
+          example: 1000
+      required:
+        - country
+    CoordinatesDto:
+      type: object
+      properties:
+        latitude:
+          type: number
+          example: 52.2297
+        longitude:
+          type: number
+          example: 21.0122
+      required:
+        - latitude
+        - longitude
+    PlaceDto:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/AddressDto"
+        coordinates:
+          $ref: "#/components/schemas/CoordinatesDto"
+      required:
+        - address
+    SpotDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Warsaw Warehouse
+        type:
+          type: string
+          example: loading
+          description: Operation type (e.g., loading, unloading)
+        place:
+          $ref: "#/components/schemas/PlaceDto"
+      required:
+        - type
+        - place
+    WeightRangeDto:
+      type: object
+      properties:
+        value:
+          type: number
+          example: 1000
+        unit_code:
+          type: string
+          enum:
+            - t
+          example: t
+      required:
+        - value
+        - unit_code
+    WeightDto:
+      type: object
+      properties:
+        max:
+          $ref: "#/components/schemas/WeightRangeDto"
+      required:
+        - max
+    DimensionDto:
+      type: object
+      properties:
+        value:
+          type: number
+          example: 2.5
+        unit_code:
+          type: string
+          enum:
+            - m
+          example: m
+      required:
+        - value
+        - unit_code
+    VolumeDto:
+      type: object
+      properties:
+        value:
+          type: number
+          example: 10.5
+        unit_code:
+          type: string
+          enum:
+            - m3
+          example: m3
+      required:
+        - value
+        - unit_code
+    PalletsDto:
+      type: object
+      properties:
+        is_stackable:
+          type: boolean
+        is_exchangeable:
+          type: boolean
+      required:
+        - is_stackable
+        - is_exchangeable
+    LoadItemDto:
+      type: object
+      properties:
+        type_of_load:
+          type: string
+          example: general
+          description: Type of load (e.g., general, bulk, liquid)
+        amount:
+          type: number
+          minimum: 0
+          example: 10
+        weight:
+          $ref: "#/components/schemas/WeightDto"
+        width:
+          $ref: "#/components/schemas/DimensionDto"
+        height:
+          $ref: "#/components/schemas/DimensionDto"
+        length:
+          $ref: "#/components/schemas/DimensionDto"
+        volume:
+          $ref: "#/components/schemas/VolumeDto"
+        pallets:
+          $ref: "#/components/schemas/PalletsDto"
+      required:
+        - type_of_load
+    RequirementsDto:
+      type: object
+      properties:
+        required_truck_bodies:
+          example:
+            - truck
+            - trailer
+          description: Required truck body types
+          type: array
+          items:
+            type: string
+        required_adr_classes:
+          example:
+            - class_1
+            - class_2
+          description: Required ADR classes
+          type: array
+          items:
+            type: string
+        required_ways_of_loading:
+          example:
+            - side
+            - rear
+          description: Required ways of loading
+          type: array
+          items:
+            type: string
+        additional_requirements:
+          example:
+            - gps
+            - hds
+          description: Additional requirements
+          type: array
+          items:
+            type: string
+        freight_type:
+          type: string
+          example: full_load
+          description: Freight type
+        vehicle_size:
+          type: string
+          example: large
+          description: Vehicle size
+    CreateRouteDto:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: Route Warsaw - Berlin
+        spots:
+          minItems: 2
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotDto"
+        loads:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoadItemDto"
+        requirements:
+          $ref: "#/components/schemas/RequirementsDto"
+      required:
+        - name
+        - spots
+    ValueUnitV1Dto:
+      type: object
+      properties:
+        value:
+          type: number
+        unit_code:
+          type: string
+    MaxValueV1Dto:
+      type: object
+      properties:
+        max:
+          $ref: "#/components/schemas/ValueUnitV1Dto"
+    PalletsV1Dto:
+      type: object
+      properties:
+        is_stackable:
+          type: boolean
+        is_exchangeable:
+          type: boolean
+      required:
+        - is_stackable
+        - is_exchangeable
+    LoadItemV1Dto:
+      type: object
+      properties:
+        type_of_load:
+          type: string
+        amount:
+          type: number
+        weight:
+          $ref: "#/components/schemas/MaxValueV1Dto"
+        width:
+          $ref: "#/components/schemas/ValueUnitV1Dto"
+        height:
+          $ref: "#/components/schemas/ValueUnitV1Dto"
+        length:
+          $ref: "#/components/schemas/ValueUnitV1Dto"
+        volume:
+          $ref: "#/components/schemas/ValueUnitV1Dto"
+        pallets:
+          $ref: "#/components/schemas/PalletsV1Dto"
+    RequirementsV1Dto:
+      type: object
+      properties:
+        required_truck_bodies:
+          type: array
+          items:
+            type: string
+        required_ways_of_loading:
+          type: array
+          items:
+            type: string
+        required_adr_classes:
+          type: array
+          items:
+            type: string
+        additional_requirements:
+          type: array
+          items:
+            type: string
+        vehicle_size:
+          type: string
+        freight_type:
+          type: string
+        shipping_remarks:
+          type: string
+        width:
+          $ref: "#/components/schemas/ValueUnitV1Dto"
+        height:
+          $ref: "#/components/schemas/ValueUnitV1Dto"
+        length:
+          $ref: "#/components/schemas/ValueUnitV1Dto"
+        volume:
+          $ref: "#/components/schemas/ValueUnitV1Dto"
+        capacity:
+          $ref: "#/components/schemas/MaxValueV1Dto"
+    AddressV1Dto:
+      type: object
+      properties:
+        locality:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+        street:
+          type: string
+        number:
+          type: string
+        location_id:
+          type: number
+    CoordinatesV1Dto:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - latitude
+        - longitude
+    PlaceV1Dto:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/AddressV1Dto"
+        coordinates:
+          $ref: "#/components/schemas/CoordinatesV1Dto"
+      required:
+        - address
+        - coordinates
+    SpotV1Dto:
+      type: object
+      properties:
+        name:
+          type: string
+        place:
+          $ref: "#/components/schemas/PlaceV1Dto"
+        type:
+          type: string
+      required:
+        - name
+        - place
+        - type
+    RouteReadV1Dto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        loads:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoadItemV1Dto"
+        requirements:
+          $ref: "#/components/schemas/RequirementsV1Dto"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotV1Dto"
+      required:
+        - id
+        - name
+        - loads
+        - requirements
+        - spots
+    UpdateRouteDto:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: Route Warsaw - Berlin
+        spots:
+          minItems: 2
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotDto"
+        loads:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoadItemDto"
+        requirements:
+          $ref: "#/components/schemas/RequirementsDto"
+        if_send_to_carrier:
+          type: boolean
+          description: Whether to send update notification to carrier
+      required:
+        - name
+        - spots
+        - if_send_to_carrier
+    ContractPercentageShareDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Contract ID
+          example: contract_123
+        percentage_share:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Percentage share for the contract
+          example: 80
+      required:
+        - id
+        - percentage_share
+    FreightLimitDto:
+      type: object
+      properties:
+        min:
+          type: number
+          minimum: 0
+          description: Minimum freight limit
+          example: 30
+        max:
+          type: number
+          minimum: 0
+          description: Maximum freight limit
+          example: 70
+      required:
+        - min
+        - max
+    BalanceDataDto:
+      type: object
+      properties:
+        contracts:
+          description: Contract percentage shares - required only for percentage_share type
+          type: array
+          items:
+            $ref: "#/components/schemas/ContractPercentageShareDto"
+        freight_limit:
+          description: Freight limit configuration - required only for freight_limit type
+          allOf:
+            - $ref: "#/components/schemas/FreightLimitDto"
+    BalanceRouteDto:
+      type: object
+      properties:
+        type:
+          enum:
+            - manual
+            - contract_condition
+            - percentage_share
+            - price_ascending
+            - freight_limit
+          type: string
+          description: Type of balancing to apply
+          example: percentage_share
+        data:
+          description: Additional data required for specific balancing types
+          allOf:
+            - $ref: "#/components/schemas/BalanceDataDto"
+      required:
+        - type
+    ContractedRoutesListV1Dto:
+      type: object
+      properties:
+        routes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RouteReadV1Dto"
+        total_items:
+          type: number
+      required:
+        - routes
+        - total_items
+    UnitValueV2Dto:
+      type: object
+      properties:
+        value:
+          type: number
+          example: 1200
+        unit_code:
+          type: string
+          example: kg
+      required:
+        - value
+        - unit_code
+    DistanceV2Dto:
+      type: object
+      properties:
+        declared:
+          $ref: "#/components/schemas/UnitValueV2Dto"
+      required:
+        - declared
+    MinMaxUnitValueV2Dto:
+      type: object
+      properties:
+        min:
+          $ref: "#/components/schemas/UnitValueV2Dto"
+        max:
+          $ref: "#/components/schemas/UnitValueV2Dto"
+      required:
+        - min
+        - max
+    PalletsV2Dto:
+      type: object
+      properties:
+        is_exchangeable:
+          type: boolean
+          example: true
+        is_stackable:
+          type: boolean
+          example: false
+      required:
+        - is_exchangeable
+        - is_stackable
+    LoadV2Dto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Electronics
+        amount:
+          type: number
+          example: 42
+        type_of_load:
+          type: string
+          example: pallets
+        height:
+          $ref: "#/components/schemas/UnitValueV2Dto"
+        length:
+          $ref: "#/components/schemas/UnitValueV2Dto"
+        width:
+          $ref: "#/components/schemas/UnitValueV2Dto"
+        volume:
+          $ref: "#/components/schemas/UnitValueV2Dto"
+        weight:
+          $ref: "#/components/schemas/MinMaxUnitValueV2Dto"
+        pallets:
+          $ref: "#/components/schemas/PalletsV2Dto"
+      required:
+        - name
+        - amount
+        - type_of_load
+        - weight
+    RequirementsV2Dto:
+      type: object
+      properties:
+        capacity:
+          $ref: "#/components/schemas/MinMaxUnitValueV2Dto"
+        height:
+          $ref: "#/components/schemas/UnitValueV2Dto"
+        length:
+          $ref: "#/components/schemas/UnitValueV2Dto"
+        width:
+          $ref: "#/components/schemas/UnitValueV2Dto"
+        volume:
+          $ref: "#/components/schemas/UnitValueV2Dto"
+        exemption_from_adr:
+          type: boolean
+          example: true
+        required_adr_classes:
+          example:
+            - Class 1
+            - Class 2
+          type: array
+          items:
+            type: string
+        required_truck_bodies:
+          example:
+            - Refrigerated
+            - Flatbed
+          type: array
+          items:
+            type: string
+        required_ways_of_loading:
+          example:
+            - Side
+            - Back
+          type: array
+          items:
+            type: string
+        vehicle_size:
+          type: string
+          nullable: true
+          example: Large
+        freight_type:
+          type: string
+          nullable: true
+          example: FTL
+        additional_requirements:
+          example:
+            - Requires liftgate
+          type: array
+          items:
+            type: string
+    AddressV2Dto:
+      type: object
+      properties:
+        country:
+          type: string
+          example: Poland
+        locality:
+          type: string
+          nullable: true
+          example: Warsaw
+        postal_code:
+          type: string
+          nullable: true
+          example: 00-001
+        street:
+          type: string
+          nullable: true
+          example: Aleje Jerozolimskie
+        number:
+          type: string
+          nullable: true
+          example: 123A
+        detailed_location_id:
+          type: number
+          nullable: true
+        foreign_id:
+          type: string
+          nullable: true
+        location_id:
+          type: number
+          nullable: true
+        radius:
+          type: number
+          nullable: true
+          example: 50
+      required:
+        - country
+    CoordinatesV2Dto:
+      type: object
+      properties:
+        latitude:
+          type: number
+          nullable: true
+          example: 52.2297
+        longitude:
+          type: number
+          nullable: true
+          example: 21.0122
+    PlaceV2Dto:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/AddressV2Dto"
+        coordinates:
+          $ref: "#/components/schemas/CoordinatesV2Dto"
+      required:
+        - address
+    SpotV2Dto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Warehouse A
+        type:
+          type: string
+          example: loading
+          enum:
+            - loading
+            - unloading
+        place:
+          $ref: "#/components/schemas/PlaceV2Dto"
+      required:
+        - type
+        - place
+    PublicationTimeBodyDto:
+      type: object
+      properties:
+        value:
+          type: number
+          minimum: 300
+          maximum: 432000
+          description: Time value in seconds
+        unit_code:
+          type: string
+          enum:
+            - s
+          description: Base unit code
+        user_unit_code:
+          enum:
+            - min
+            - h
+          type: string
+          description: User preferred unit code
+      required:
+        - value
+        - unit_code
+        - user_unit_code
+    PublicationScenarioDataBodyDto:
+      type: object
+      properties:
+        publication_time:
+          $ref: "#/components/schemas/PublicationTimeBodyDto"
+        order:
+          enum:
+            - next_recipient
+            - gradually
+          type: string
+          description: Order of publication
+      required:
+        - publication_time
+        - order
+    UpdatePublicationScenarioBodyDto:
+      type: object
+      properties:
+        type:
+          enum:
+            - parallel
+            - in_order
+          type: string
+          description: Scenario type
+        data:
+          $ref: "#/components/schemas/PublicationScenarioDataBodyDto"
+      required:
+        - type
+    CreateRoutePayloadV2Dto:
+      type: object
+      properties:
+        unique_key:
+          type: string
+          nullable: true
+          example: route-123
+        name:
+          type: string
+          example: Warsaw - Berlin route
+        is_roundtrip:
+          type: boolean
+          example: false
+        distance:
+          $ref: "#/components/schemas/DistanceV2Dto"
+        loads:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoadV2Dto"
+        requirements:
+          $ref: "#/components/schemas/RequirementsV2Dto"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotV2Dto"
+        publication_scenario:
+          $ref: "#/components/schemas/UpdatePublicationScenarioBodyDto"
+      required:
+        - name
+        - spots
+    ContractPercentageShareV2Dto:
+      type: object
+      properties:
+        contract_id:
+          type: string
+          description: Contract ID
+          example: contract_123
+        percentage_share:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Percentage share for the contract
+          example: 80
+      required:
+        - contract_id
+        - percentage_share
+    FreightLimitV2Dto:
+      type: object
+      properties:
+        min:
+          type: number
+          minimum: 0
+          description: Minimum freight limit
+          example: 30
+        max:
+          type: number
+          minimum: 0
+          description: Maximum freight limit
+          example: 70
+      required:
+        - min
+        - max
+    BalanceContractedRoutePayloadV2Dto:
+      type: object
+      properties:
+        balancing_type:
+          enum:
+            - MANUAL
+            - CONTRACT_CONDITION
+            - PERCENTAGE_SHARE
+            - PRICE_ASCENDING
+            - FREIGHT_LIMIT
+          type: string
+          description: Type of balancing to apply
+          example: PERCENTAGE_SHARE
+        contracts:
+          description: Contract percentage shares - required only for percentage_share type
+          type: array
+          items:
+            $ref: "#/components/schemas/ContractPercentageShareV2Dto"
+        freight_limit:
+          description: Freight limit configuration - required only for freight_limit type
+          allOf:
+            - $ref: "#/components/schemas/FreightLimitV2Dto"
+      required:
+        - balancing_type
+    PublicationScenarioResponseDto:
+      type: object
+      properties:
+        type:
+          type: string
+      required:
+        - type
+    RouteAddressDto:
+      type: object
+      properties:
+        locality:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+        street:
+          type: object
+          nullable: true
+        number:
+          type: object
+          nullable: true
+        location_id:
+          type: number
+        detailed_location_id:
+          type: object
+          nullable: true
+        foreign_id:
+          type: object
+          nullable: true
+        radius:
+          type: number
+      required:
+        - locality
+        - postal_code
+        - country
+        - location_id
+        - radius
+    RouteCoordinatesDto:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - latitude
+        - longitude
+    RoutePlaceDto:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/RouteAddressDto"
+        coordinates:
+          $ref: "#/components/schemas/RouteCoordinatesDto"
+      required:
+        - address
+        - coordinates
+    RouteSpotDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: object
+          nullable: true
+        type:
+          type: string
+        place:
+          $ref: "#/components/schemas/RoutePlaceDto"
+      required:
+        - id
+        - type
+        - place
+    UnitValueDto:
+      type: object
+      properties:
+        value:
+          type: number
+        unit_code:
+          type: string
+      required:
+        - value
+        - unit_code
+    RouteDistanceDto:
+      type: object
+      properties:
+        declared:
+          type: object
+          nullable: true
+        calculated:
+          $ref: "#/components/schemas/UnitValueDto"
+      required:
+        - calculated
+    RouteRequirementsDto:
+      type: object
+      properties:
+        required_truck_bodies:
+          type: array
+          items:
+            type: string
+        required_adr_classes:
+          type: array
+          items:
+            type: string
+        required_ways_of_loading:
+          type: array
+          items:
+            type: string
+        additional_requirements:
+          type: array
+          items:
+            type: string
+        shipping_remarks:
+          type: string
+        freight_type:
+          type: object
+          nullable: true
+        vehicle_size:
+          type: object
+          nullable: true
+        width:
+          type: object
+          nullable: true
+        height:
+          type: object
+          nullable: true
+        length:
+          type: object
+          nullable: true
+        volume:
+          type: object
+          nullable: true
+        capacity:
+          $ref: "#/components/schemas/RangeDto"
+        exemption_from_adr:
+          type: boolean
+      required:
+        - required_truck_bodies
+        - required_adr_classes
+        - required_ways_of_loading
+        - additional_requirements
+        - shipping_remarks
+        - capacity
+        - exemption_from_adr
+    RouteLoadDto:
+      type: object
+      properties:
+        name:
+          type: object
+          nullable: true
+        type_of_load:
+          type: object
+          nullable: true
+        amount:
+          type: object
+          nullable: true
+        width:
+          type: object
+          nullable: true
+        height:
+          type: object
+          nullable: true
+        length:
+          type: object
+          nullable: true
+        volume:
+          type: object
+          nullable: true
+        weight:
+          $ref: "#/components/schemas/RangeDto"
+        pallets:
+          type: object
+      required:
+        - weight
+        - pallets
+    RouteBalancingDataDto:
+      type: object
+      properties:
+        freight_limit:
+          $ref: "#/components/schemas/RangeDto"
+      required:
+        - freight_limit
+    RouteBalancingDto:
+      type: object
+      properties:
+        type:
+          type: string
+        allowed_types:
+          type: array
+          items:
+            type: string
+        data:
+          $ref: "#/components/schemas/RouteBalancingDataDto"
+      required:
+        - type
+        - allowed_types
+    RouteShipmentsSummaryDto:
+      type: object
+      properties:
+        amount:
+          type: number
+        weight:
+          $ref: "#/components/schemas/UnitValueDto"
+        distance:
+          $ref: "#/components/schemas/UnitValueDto"
+        price:
+          type: array
+          items:
+            type: string
+      required:
+        - amount
+        - weight
+        - distance
+        - price
+    RouteStatsDto:
+      type: object
+      properties:
+        contracts:
+          type: object
+        transports:
+          type: object
+      required:
+        - contracts
+        - transports
+    ContractRouteResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        unique_key:
+          type: object
+          nullable: true
+        name:
+          type: object
+          nullable: true
+        publication_scenario:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PublicationScenarioResponseDto"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/RouteSpotDto"
+        distance:
+          $ref: "#/components/schemas/RouteDistanceDto"
+        suggested_calculated_route_id:
+          type: object
+          format: uuid
+          nullable: true
+        distance_match:
+          $ref: "#/components/schemas/RangeDto"
+        is_roundtrip:
+          type: boolean
+        requirements:
+          $ref: "#/components/schemas/RouteRequirementsDto"
+        loads:
+          type: array
+          items:
+            $ref: "#/components/schemas/RouteLoadDto"
+        balancing:
+          $ref: "#/components/schemas/RouteBalancingDto"
+        status:
+          type: string
+        shipments_summary:
+          $ref: "#/components/schemas/RouteShipmentsSummaryDto"
+        position:
+          type: number
+        _stats:
+          $ref: "#/components/schemas/RouteStatsDto"
+        _links:
+          type: object
+      required:
+        - id
+        - spots
+        - distance
+        - distance_match
+        - is_roundtrip
+        - requirements
+        - loads
+        - balancing
+        - status
+        - shipments_summary
+        - position
+        - _stats
+    SurchargesEntityV1Dto:
+      type: object
+      properties:
+        id:
+          type: string
+          example: string
+        type:
+          type: string
+          example: string
+        kind:
+          type: string
+          example: string
+        currency:
+          type: string
+          example: string
+        is_global:
+          type: boolean
+          example: true
+        is_active:
+          type: boolean
+          example: true
+        data:
+          type: object
+          additionalProperties: true
+          example: {}
+        schedules:
+          type: array
+          items:
+            type: object
+          example:
+            - {}
+      required:
+        - id
+        - type
+        - kind
+        - currency
+        - is_global
+        - is_active
+        - data
+        - schedules
+    SurchargeHistoryTimespanV2Dto:
+      type: object
+      properties:
+        from:
+          type: string
+          example: 2024-10-29T11:43:29+00:00
+        to:
+          type: string
+          example: 2024-10-30T22:59:59+00:00
+      required:
+        - from
+        - to
+    SurchargeHistoryMatrixItemV2Dto:
+      type: object
+      properties:
+        unit:
+          type: string
+          example: percentage
+        value:
+          type: number
+          example: 77
+      required:
+        - unit
+        - value
+    SurchargeHistoryDataV2Dto:
+      type: object
+      properties:
+        matrix:
+          example:
+            - unit: percentage
+              value: 77
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeHistoryMatrixItemV2Dto"
+        currency:
+          type: string
+          example: bam
+      required:
+        - matrix
+    SurchargeHistoryUpdatedByV2Dto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 897433
+        account_id:
+          type: number
+          example: 10152480
+        given_name:
+          type: string
+          example: Jerzy
+        family_name:
+          type: string
+          example: Nowak
+        trans_id:
+          type: string
+          example: 1023107-27
+        email:
+          type: string
+          example: jerzynowak@trans.eu
+        telephone:
+          type: string
+          example: (0048) 666386668
+      required:
+        - id
+        - account_id
+        - given_name
+        - family_name
+        - trans_id
+        - email
+        - telephone
+    SurchargeHistoryScheduleV2Dto:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 5005aefd-66b1-4255-aac7-50fcbd9e6840
+        description:
+          type: string
+          nullable: true
+          example: description
+        timespan:
+          example:
+            from: 2024-10-29T11:43:29+00:00
+            to: 2024-10-30T22:59:59+00:00
+          allOf:
+            - $ref: "#/components/schemas/SurchargeHistoryTimespanV2Dto"
+        data:
+          example:
+            matrix:
+              - unit: percentage
+                value: 77
+            currency: bam
+          allOf:
+            - $ref: "#/components/schemas/SurchargeHistoryDataV2Dto"
+        surcharge:
+          type: object
+          nullable: true
+          example: null
+        updated_by:
+          example:
+            id: 897433
+            account_id: 10152480
+            given_name: Jerzy
+            family_name: Nowak
+            trans_id: 1023107-27
+            email: jerzynowak@trans.eu
+            telephone: (0048) 666386668
+          allOf:
+            - $ref: "#/components/schemas/SurchargeHistoryUpdatedByV2Dto"
+        updated_at:
+          type: string
+          example: 2024-10-29T11:43:30+00:00
+      required:
+        - id
+        - description
+        - timespan
+        - data
+        - surcharge
+        - updated_by
+        - updated_at
+    SurchargeHistoryEmbeddedV2Dto:
+      type: object
+      properties:
+        schedules:
+          example:
+            - id: 5005aefd-66b1-4255-aac7-50fcbd9e6840
+              description: "888"
+              timespan:
+                from: 2024-10-29T11:43:29+00:00
+                to: 2024-10-30T22:59:59+00:00
+              data:
+                matrix:
+                  - unit: percentage
+                    value: 77
+                currency: bam
+              surcharge: null
+              updated_by:
+                id: 897433
+                account_id: 10152480
+                given_name: Jerzy
+                family_name: Nowak
+                trans_id: 1023107-27
+                email: jerzynowak@trans.eu
+                telephone: (0048) 666386668
+              updated_at: 2024-10-29T11:43:30+00:00
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeHistoryScheduleV2Dto"
+      required:
+        - schedules
+    SurchargeHistoryV2Dto:
+      type: object
+      properties:
+        _embedded:
+          example:
+            schedules:
+              - id: 5005aefd-66b1-4255-aac7-50fcbd9e6840
+                description: "888"
+                timespan:
+                  from: 2024-10-29T11:43:29+00:00
+                  to: 2024-10-30T22:59:59+00:00
+                data:
+                  matrix:
+                    - unit: percentage
+                      value: 77
+                  currency: bam
+                surcharge: null
+                updated_by:
+                  id: 897433
+                  account_id: 10152480
+                  given_name: Jerzy
+                  family_name: Nowak
+                  trans_id: 1023107-27
+                  email: jerzynowak@trans.eu
+                  telephone: (0048) 666386668
+                updated_at: 2024-10-29T11:43:30+00:00
+          allOf:
+            - $ref: "#/components/schemas/SurchargeHistoryEmbeddedV2Dto"
+        total_items:
+          type: number
+          example: 1
+      required:
+        - _embedded
+        - total_items
+    SurchargeRangeV2Dto:
+      type: object
+      properties:
+        from:
+          type: number
+          example: 1
+          description: Range start (inclusive)
+        to:
+          type: number
+          example: 10
+          description: Range end (inclusive)
+      required:
+        - from
+        - to
+    SurchargeRatioV2Dto:
+      type: object
+      properties:
+        from:
+          type: number
+          example: 1
+          description: Ratio start
+        to:
+          type: number
+          example: 2
+          description: Ratio end
+      required:
+        - from
+        - to
+    SurchargeMatrixItemV2Dto:
+      type: object
+      properties:
+        unit:
+          type: string
+          enum:
+            - percentage
+            - value
+          example: value
+          description: "Unit type: percentage or absolute value"
+        value:
+          type: number
+          example: 100
+          description: Surcharge amount
+        basis:
+          type: string
+          description: Basis type for grid surcharges
+        range:
+          description: Range definition for grid surcharges
+          allOf:
+            - $ref: "#/components/schemas/SurchargeRangeV2Dto"
+        ratio:
+          description: Ratio definition for BAF grid surcharges
+          allOf:
+            - $ref: "#/components/schemas/SurchargeRatioV2Dto"
+      required:
+        - unit
+        - value
+    WeekDayOperationV2Dto:
+      type: object
+      properties:
+        type:
+          type: string
+          example: loading
+          description: Operation type
+        value:
+          type: number
+          example: 10
+          description: Surcharge value for this operation
+      required:
+        - type
+        - value
+    WeekDayV2Dto:
+      type: object
+      properties:
+        id:
+          type: string
+          example: monday
+          description: Day of the week identifier
+        operations:
+          description: Operations with surcharge values for this day
+          type: array
+          items:
+            $ref: "#/components/schemas/WeekDayOperationV2Dto"
+      required:
+        - id
+        - operations
+    SurchargeDataV2Dto:
+      type: object
+      properties:
+        matrix:
+          description: Matrix of surcharge values
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeMatrixItemV2Dto"
+        value:
+          type: number
+          example: 5
+          description: Base value (used in BAF grid surcharges)
+        currency:
+          type: string
+          example: eur
+          description: Currency code for this schedule
+        unit:
+          type: string
+          enum:
+            - percentage
+            - value
+          description: Unit for week day surcharges
+        week_days:
+          description: Week day specific surcharge values
+          type: array
+          items:
+            $ref: "#/components/schemas/WeekDayV2Dto"
+    SurchargeTimespanV2Dto:
+      type: object
+      properties:
+        from:
+          type: string
+          example: 2032-08-11T00:00:00+02:00
+          description: Schedule validity start
+        to:
+          type: string
+          example: 2042-09-26T23:59:59+02:00
+          description: Schedule validity end
+      required:
+        - from
+        - to
+    SurchargeScheduleV2Dto:
+      type: object
+      properties:
+        data:
+          description: Surcharge data configuration
+          allOf:
+            - $ref: "#/components/schemas/SurchargeDataV2Dto"
+        timespan:
+          description: Time period when this schedule is active
+          allOf:
+            - $ref: "#/components/schemas/SurchargeTimespanV2Dto"
+      required:
+        - data
+        - timespan
+    CreateSurchargeV2Dto:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - baf
+            - week_day
+            - pallets_exchange
+            - additional_stop
+          example: additional_stop
+          description: Surcharge type
+        kind:
+          type: string
+          enum:
+            - value
+            - grid
+            - linear
+          example: value
+          description: Surcharge kind defining calculation method
+        currency:
+          type: string
+          example: eur
+          description: Currency code
+        description:
+          type: string
+          example: Additional stop flat fee
+          description: Surcharge description
+        schedules:
+          description: Surcharge schedules with time periods and data
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeScheduleV2Dto"
+      required:
+        - type
+        - kind
+        - currency
+        - description
+        - schedules
+    SurchargeEntityMatrixItemV2Dto:
+      type: object
+      properties:
+        unit:
+          type: string
+          example: value
+        value:
+          type: number
+          example: 100
+        basis:
+          type: string
+          example: range
+        range:
+          type: object
+          properties:
+            from:
+              type: number
+            to:
+              type: number
+          required:
+            - from
+            - to
+        ratio:
+          type: object
+          properties:
+            from:
+              type: number
+            to:
+              type: number
+          required:
+            - from
+            - to
+      required:
+        - unit
+        - value
+    SurchargeEntityWeekDayOperationV2Dto:
+      type: object
+      properties:
+        type:
+          type: string
+          example: loading
+        value:
+          type: number
+          example: 10
+      required:
+        - type
+        - value
+    SurchargeEntityWeekDayV2Dto:
+      type: object
+      properties:
+        id:
+          type: string
+          example: monday
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeEntityWeekDayOperationV2Dto"
+      required:
+        - id
+        - operations
+    SurchargeEntityDataV2Dto:
+      type: object
+      properties:
+        matrix:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeEntityMatrixItemV2Dto"
+        value:
+          type: number
+        unit:
+          type: string
+        week_days:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeEntityWeekDayV2Dto"
+    SurchargeEntityTimespanV2Dto:
+      type: object
+      properties:
+        from:
+          type: string
+          example: 2032-08-11T00:00:00+02:00
+        to:
+          type: string
+          example: 2042-09-26T23:59:59+02:00
+      required:
+        - from
+        - to
+    SurchargeEntityScheduleV2Dto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/SurchargeEntityDataV2Dto"
+        timespan:
+          $ref: "#/components/schemas/SurchargeEntityTimespanV2Dto"
+      required:
+        - data
+        - timespan
+    SurchargeEntityV2Dto:
+      type: object
+      properties:
+        id:
+          type: string
+          example: a3b1c2d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+        type:
+          type: string
+          example: additional_stop
+        kind:
+          type: string
+          example: value
+        currency:
+          type: string
+          example: eur
+        description:
+          type: string
+          nullable: true
+          example: Additional stop flat fee
+        is_global:
+          type: boolean
+          example: false
+        is_active:
+          type: boolean
+          example: true
+        schedules:
+          example:
+            - data:
+                matrix:
+                  - unit: value
+                    value: 150
+              timespan:
+                from: 2032-08-11T00:00:00+02:00
+                to: 2042-09-26T23:59:59+02:00
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeEntityScheduleV2Dto"
+      required:
+        - id
+        - type
+        - kind
+        - currency
+        - description
+        - is_global
+        - is_active
+        - schedules
+    UpdateSurchargeV2Dto:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - baf
+            - week_day
+            - pallets_exchange
+            - additional_stop
+          example: additional_stop
+          description: Surcharge type
+        kind:
+          type: string
+          enum:
+            - value
+            - grid
+            - linear
+          example: value
+          description: Surcharge kind defining calculation method
+        currency:
+          type: string
+          example: eur
+          description: Currency code
+        description:
+          type: string
+          example: Additional stop flat fee
+          description: Surcharge description
+        is_global:
+          type: boolean
+          description: Whether the surcharge is global
+        is_active:
+          type: boolean
+          description: Whether the surcharge setting is active
+        schedules:
+          description: Surcharge schedules with time periods and data
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeScheduleV2Dto"
+      required:
+        - type
+        - kind
+        - currency
+        - description
+        - schedules
+    PatchSurchargeV2Dto:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - baf
+            - week_day
+            - pallets_exchange
+            - additional_stop
+          example: additional_stop
+          description: Surcharge type
+        kind:
+          type: string
+          enum:
+            - value
+            - grid
+            - linear
+          example: value
+          description: Surcharge kind defining calculation method
+        is_active:
+          type: boolean
+          example: true
+          description: Whether the surcharge setting is active
+        currency:
+          type: string
+          example: eur
+          description: Currency code
+        description:
+          type: string
+          example: Updated description
+          description: Surcharge description
+        schedules:
+          description: Surcharge schedules with time periods and data
+          type: array
+          items:
+            $ref: "#/components/schemas/SurchargeScheduleV2Dto"

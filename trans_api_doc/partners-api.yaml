@@ -1,0 +1,373 @@
+openapi: 3.0.0
+info:
+  title: partners-api
+  description: ""
+  version: 1.113.4
+  contact: {}
+servers:
+  - url: https://api.platform.trans.eu
+    description: PROD
+tags: []
+paths:
+  /ext/partners-api/v1/partners:
+    post:
+      description: Adds the specified company to the authenticated company's partner list.
+      operationId: PartnersManageV1Controller_addPartner
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - office_id
+              properties:
+                office_id:
+                  type: integer
+                  example: 1028504
+      responses:
+        "201":
+          description: Partner added successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "409":
+          description: Partner already exists
+      security:
+        - bearer: []
+      summary: Add a company to partners
+      tags:
+        - partners-api
+    get:
+      operationId: PartnersReadV1Controller_getPartners
+      parameters:
+        - name: filter
+          required: false
+          in: query
+          description: JSON-encoded filter object (allowlist enforced)
+          schema:
+            example: '{"cooperation_status":{"$in":["active"]},"country":{"$in":["pl"]},"vat_id":{"$regex":"7350015520"},"company_id":{"$eq":"1234"}}'
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            example: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            example: 25
+            type: number
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - bearer: []
+      tags:
+        - partners-api
+  /ext/partners-api/v1/partners/{uuid}/block:
+    post:
+      description: Suspends cooperation with the specified partner.
+      operationId: PartnersManageV1Controller_blockPartner
+      parameters:
+        - name: uuid
+          required: true
+          in: path
+          description: Partner identifier (UUID)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reasons
+              properties:
+                reasons:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - lack_of_efficient_communication
+                remarks:
+                  type: string
+                  nullable: true
+                  example: Blocked due to repeated delays
+      responses:
+        "200":
+          description: Partner blocked successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Partner not found
+      security:
+        - bearer: []
+      summary: Block a partner
+      tags:
+        - partners-api
+  /ext/partners-api/v1/partners/{uuid}/active:
+    post:
+      description: Restores active cooperation with the specified partner.
+      operationId: PartnersManageV1Controller_activatePartner
+      parameters:
+        - name: uuid
+          required: true
+          in: path
+          description: Partner identifier (UUID)
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                remarks:
+                  type: string
+                  nullable: true
+                  example: Reactivated after review
+      responses:
+        "200":
+          description: Partner activated successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Partner not found
+      security:
+        - bearer: []
+      summary: Activate a partner
+      tags:
+        - partners-api
+  /ext/partners-api/v1/partners/{uuid}:
+    delete:
+      operationId: PartnersManageV1Controller_deletePartner
+      parameters:
+        - name: uuid
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - partners-api
+  /ext/partners-api/v1/contractors/{uuid}:
+    delete:
+      operationId: PartnersManageV1Controller_deleteContractor
+      parameters:
+        - name: uuid
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+      security:
+        - bearer: []
+      tags:
+        - partners-api
+  /ext/partners-api/v1/partners/{id}:
+    get:
+      operationId: PartnersReadV1Controller_getPartner
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - bearer: []
+      tags:
+        - partners-api
+  /ext/partners-api/v1/partners/{id}/employees:
+    get:
+      operationId: PartnersReadV1Controller_getPartnerEmployees
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: page
+          required: true
+          in: query
+          schema:
+            type: number
+        - name: size
+          required: true
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - bearer: []
+      tags:
+        - partners-api
+  /ext/partners-api/v1/partners/{id}/fleet:
+    get:
+      operationId: PartnersReadV1Controller_getPartnerFleet
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: page
+          required: true
+          in: query
+          schema:
+            type: number
+        - name: size
+          required: true
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - bearer: []
+      tags:
+        - partners-api
+  /ext/partners-api/v1/groups:
+    get:
+      description: Returns a paginated list of partner groups belonging to the
+        authenticated company.
+      operationId: PartnersReadV1Controller_getGroupsCollection
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            example: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            example: 25
+            type: number
+      responses:
+        "200":
+          description: List of partner groups
+          content:
+            application/json:
+              schema:
+                example:
+                  groups:
+                    - id: c82c35d7-779b-4aae-9f0d-95877ec781b6
+                      name: Certyfikaty
+                      description: null
+                      created: 2020-02-04T10:07:34+00:00
+                      members_count: 3
+                    - id: b538163c-2368-44eb-8c73-85ae7fb51f3a
+                      name: Moja grupa
+                      description: Opis grupy
+                      created: 2024-02-06T12:45:53+00:00
+                      members_count: 4
+                  page: 1
+                  page_size: 25
+                  has_next_page: false
+        "401":
+          description: Unauthorized - authentication required
+        "403":
+          description: Forbidden - insufficient permissions
+      security:
+        - bearer: []
+      summary: Get list of partner groups
+      tags:
+        - partners-api
+  /ext/partners-api/v1/groups/{id}:
+    get:
+      description: Returns a paginated list of partners belonging to the specified group.
+      operationId: PartnersReadV1Controller_getGroupMembers
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Group identifier (UUID)
+          schema:
+            example: c82c35d7-779b-4aae-9f0d-95877ec781b6
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            example: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            example: 25
+            type: number
+      responses:
+        "200":
+          description: List of group members
+          content:
+            application/json:
+              schema:
+                example:
+                  group_members:
+                    - cooperation: ACTIVE
+                      partner:
+                        id: 1028504
+                        name: Acme Transport Sp. z o.o.
+                        vat_id: PL9841458959
+                        contact_person: null
+                  page: 1
+                  page_size: 25
+                  has_next_page: false
+        "401":
+          description: Unauthorized - authentication required
+        "403":
+          description: Forbidden - insufficient permissions
+        "404":
+          description: Group not found
+      security:
+        - bearer: []
+      summary: Get members of a partner group
+      tags:
+        - partners-api
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http

@@ -1,0 +1,23 @@
+name: against-mock-trans
+description: Hit the local Trans mock-server (yarn trans:sim mock-server) with real Trans paths
+target:
+  baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:4099}
+  passthrough: true
+  headers:
+    Authorization: Bearer mock
+defaults:
+  concurrency: 15
+  rps: 30
+  timeoutMs: 5000
+batches:
+  - id: list-partners
+    count: 10
+    operation: GET /ext/partners-api/v1/partners
+    template: none
+  - id: create-freights
+    count: 40
+    template: freight.create.public
+  - id: create-partners
+    count: 10
+    template: partner.add
+reportPath: tools/trans-api-simulator/.reports/against-mock-trans.ndjson

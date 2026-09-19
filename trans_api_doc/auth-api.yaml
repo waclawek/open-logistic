@@ -1,0 +1,139 @@
+openapi: 3.0.0
+info:
+  title: auth-api
+  description: ""
+  version: 1.113.4
+  contact: {}
+servers:
+  - url: https://api.platform.trans.eu
+    description: PROD
+tags: []
+paths:
+  /ext/auth-api/accounts/token:
+    post:
+      operationId: AuthManageV1Controller_postToken
+      parameters:
+        - name: api-key
+          required: true
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponseDto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security: []
+      summary: ""
+      tags:
+        - auth-api
+  /ext/auth-api/accounts/token/exchange:
+    post:
+      operationId: AuthManageV1Controller_exchangeToken
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenExchangeRequestDto"
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenExchangeResponseDto"
+        "201":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenExchangeResponseDto"
+        "401":
+          description: ""
+        "403":
+          description: ""
+        "404":
+          description: ""
+        "424":
+          description: ""
+      security: []
+      summary: ""
+      tags:
+        - auth-api
+components:
+  schemas:
+    TokenResponseDto:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: Access token
+        expires_in:
+          type: number
+          description: Token expiration time in seconds
+        refresh_token:
+          type: string
+          description: Refresh token
+        token_type:
+          type: string
+          description: Token type
+      required:
+        - access_token
+        - token_type
+    TokenExchangeRequestDto:
+      type: object
+      properties:
+        subject_token:
+          type: string
+          description: JWT token to exchange
+        grant_type:
+          type: string
+          description: grant_type
+        state:
+          type: string
+          description: state
+        requested_token_type:
+          type: string
+          description: requested_token_type
+        subject_token_type:
+          type: string
+          description: subject_token_type
+        resource:
+          type: string
+          description: resource
+        audience:
+          type: string
+          description: audience
+        scope:
+          type: string
+          description: scope
+        client_id:
+          type: string
+          description: client_id
+        client_secret:
+          type: string
+          description: client_secret
+      required:
+        - subject_token
+        - grant_type
+        - state
+    TokenExchangeResponseDto:
+      type: object
+      properties:
+        redirect_uri:
+          type: string
+          description: Redirect URI for SSO authentication
+      required:
+        - redirect_uri

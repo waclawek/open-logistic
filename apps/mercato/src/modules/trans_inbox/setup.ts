@@ -1,0 +1,11 @@
+import type { ModuleSetupConfig } from '@open-mercato/shared/modules/setup'
+
+export const setup: ModuleSetupConfig = {
+  defaultRoleFeatures: {
+    superadmin: ['trans_inbox.*'],
+    admin: ['trans_inbox.*'],
+    employee: ['trans_inbox.view'],
+  },
+}
+
+export default setup

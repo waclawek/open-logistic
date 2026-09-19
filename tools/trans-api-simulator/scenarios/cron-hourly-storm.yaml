@@ -1,0 +1,21 @@
+name: cron-hourly-storm
+description: Cron example — at minute 0 of every hour, dump 100 webhook events
+target:
+  baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:3000}
+  headers:
+    Authorization: Bearer ${TRANS_SIM_TOKEN:-dev-token}
+  pathMap:
+    "POST /ext/freights-api/v1/freights": /api/integrations/trans/webhooks/freight
+defaults:
+  concurrency: 40
+  rps: 80
+schedule:
+  mode: cron
+  expression: "0 * * * *"
+  maxRuns: 3
+batches:
+  - id: storm
+    count: 100
+    template: freight.event.created
+    staggerMs: 0
+reportPath: tools/trans-api-simulator/.reports/cron-hourly.ndjson
