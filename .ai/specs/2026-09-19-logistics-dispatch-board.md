@@ -10,7 +10,7 @@ Source of truth: [user-confirmed operational App Spec](2026-09-19-app-spec-logis
 
 ## Confirmed design decisions
 
-The user approved the complete App Spec on 2026-09-19. Placement is the existing app-level logistics module; no platform rewrite. Capabilities are split into five feature specifications, as required by the approved handoff; all remain behind one complete operational release gate. No new critical business or placement question is open.
+The user approved the complete App Spec on 2026-09-19. Placement is the existing app-level logistics module; no platform rewrite. Capabilities are split into seven feature specifications, as required by the approved handoff; all remain behind one complete operational release gate. No new critical business or placement question is open.
 
 ## Overview / Problem Statement
 

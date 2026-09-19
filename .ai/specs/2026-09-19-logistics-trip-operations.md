@@ -4,13 +4,13 @@ Status: DESIGN CANDIDATE — 2026-09-19.
 
 ## TLDR
 
-Plan, reserve, execute and recover one whole-job transport journey with truthful custody and audited fact corrections.
+Plan, reserve, execute and recover one whole-job transport journey with truthful custody.
 
-Source of truth: [user-confirmed operational App Spec](2026-09-19-app-spec-logistics-operations.md). Trace: US03-US11; C06-C16; A04-A09/A16; LOG-OP-03-11/14.
+Source of truth: [user-confirmed operational App Spec](2026-09-19-app-spec-logistics-operations.md). Trace: US03-US10; C06-C15; A04-A08/A16; LOG-OP-03-11/14.
 
 ## Confirmed design decisions
 
-The user approved the complete App Spec on 2026-09-19. Placement is the existing app-level logistics module; no platform rewrite. Capabilities are split into five feature specifications, as required by the approved handoff; all remain behind one complete operational release gate. No new critical business or placement question is open.
+The user approved the complete App Spec on 2026-09-19. Placement is the existing app-level logistics module; no platform rewrite. Capabilities are split into seven feature specifications, as required by the approved handoff; all remain behind one complete operational release gate. No new critical business or placement question is open.
 
 ## Overview / Problem Statement
 
@@ -28,13 +28,13 @@ Common scope/version, encryption, exact decimals, indexing and immutable history
 
 ## API Contracts
 
-A04 draft CRUD; A05 confirmation/replan/unassign/cancel/release-job; A06 execution; A07 handover/interruption/releases; A08 disruptions including explicit source-change command; A09 facts/[id]/correct; A16 outcome GET. Typed action inputs carry expected trip version/revisions; handover additionally target/job versions, selected jobs, resources/time/place/readings/evidence. App Spec per-action feature combinations remain mandatory.
+A04 draft CRUD; A05 confirmation/replan/unassign/cancel/release-job; A06 execution; A07 handover/interruption/releases; A08 disruptions including explicit source-change command; A09 is owned by the report-correction specification; A16 outcome GET. Typed action inputs carry expected trip version/revisions; handover additionally target/job versions, selected jobs, resources/time/place/readings/evidence. App Spec per-action feature combinations remain mandatory.
 
 Shared contract defines responses/errors, guard protocol, versions, receipts, custom fields and authorization.
 
 ## File Manifest / UI / Frontend Architecture
 
-commands/trips.ts, execution.ts, recovery.ts, corrections.ts, disruptions.ts; services/operations.ts; lib/planning.ts, custody.ts; typed A04-A09/A16 routes; components/trips/TripList.tsx (table), TripPlanForm.tsx (ordered inputs), TripDetail.tsx (actions/history), StopActionDialog.tsx, RecoveryDialog.tsx, CorrectionDialog.tsx (typed dialogs); disruptions list client leaf.
+commands/trips.ts, execution.ts, recovery.ts, disruptions.ts; services/operations.ts; lib/planning.ts, custody.ts; typed A04-A09/A16 routes; components/trips/TripList.tsx (table), TripPlanForm.tsx (ordered inputs), TripDetail.tsx (actions/history), StopActionDialog.tsx, RecoveryDialog.tsx (typed dialogs); disruptions list client leaf.
 
 Each named client leaf owns the stated browser state, remains <=300 lines and uses shared forms/tables/dialog primitives. No client page roots/global providers/heavy root imports. Stable entity and extension handles, five locales, keyboard submission/cancel, conflict UI and hydration evidence are required.
 
@@ -44,7 +44,7 @@ Registered commands and shared transaction/receipt protocol cover every write. G
 
 ## Implementation Plan
 
-Draft plan/revision model and load UI → transactional reservations/receipts/replan → execution/retry/recovery/corrections → authorized history/actions and full race/failure integrations.
+Draft plan/revision model and load UI → transactional reservations/receipts/replan → execution/retry/recovery → authorized history/actions and full race/failure integrations.
 
 ## Integration Coverage
 
@@ -74,3 +74,7 @@ Not started.
 
 ### 2026-09-19
 - Expanded skeleton from approved decisions into capability-specific design and shared contract.
+
+## Correction capability boundary
+
+[Report correction](2026-09-19-logistics-report-correction.md) owns C16/A09/US11, its manager UI and successor commands. This spec supplies immutable facts, stream revisions and consequence-validation seam; it does not implement correction commands. Shared physical invariants cited above constrain that consumer. Both capabilities remain required before the single pilot release.

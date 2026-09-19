@@ -10,7 +10,7 @@ Source of truth: [user-confirmed operational App Spec](2026-09-19-app-spec-logis
 
 ## Confirmed design decisions
 
-The user approved the complete App Spec on 2026-09-19. Placement is the existing app-level logistics module; no platform rewrite. Capabilities are split into five feature specifications, as required by the approved handoff; all remain behind one complete operational release gate. No new critical business or placement question is open.
+The user approved the complete App Spec on 2026-09-19. Placement is the existing app-level logistics module; no platform rewrite. Capabilities are split into seven feature specifications, as required by the approved handoff; all remain behind one complete operational release gate. No new critical business or placement question is open.
 
 ## Overview / Problem Statement
 
@@ -22,13 +22,15 @@ Apply the [shared implementation contract](app-spec-notes/logistics-implementati
 
 ## Data Models
 
-TransportJob uses exact approved fields, decimal weight, palletized flag and immutable accepted windows/customer/place snapshots. Later PromiseRevision is owned by trip planning. Complete draft remains unaccepted.
+TransportJob uses exact approved fields, decimal weight, palletized flag and immutable accepted windows/customer/place snapshots. PromiseRevision on an unassigned ready job belongs to commands/jobs.ts; assigned promise changes delegate to atomic trip replanning. Complete draft remains unaccepted.
 
 Common scope/version, encryption, exact decimals, indexing and immutable history follow the shared contract; no opaque payloads or cross-module ORM.
 
 ## API Contracts
 
-A02 jobs GET/POST/PUT; A03 jobs/[id]/accept and cancel POST. Writes require logistics.jobs.manage; reads logistics.view. Writable fields are customerId/reference, cargo, weight/pallet data, pickup/delivery Places/windows and notes. Accept/cancel uses requestId/version and reason. Assigned cancel delegates to trip logic with its additional grants/versions.
+A02 jobs GET/POST/PUT; A03 jobs/[id]/accept, cancel and promise POST. Writes require logistics.jobs.manage; reads logistics.view. Writable fields are customerId/reference, cargo, weight/pallet data, pickup/delivery Places/windows and notes. Accept/cancel uses requestId/version and reason. Assigned cancel delegates to trip logic with its additional grants/versions.
+
+POST jobs/[id]/promise accepts the full replacement pickup/delivery windows, reason, agreedWith/agreedAt, requestId and expected job version. Ready job without a trip requires only jobs.manage plus view; assigned job additionally requires dispatch.manage and expected trip/job/plan versions and delegates to the trip transaction. JobDetail owns the agreement action; original accepted windows remain unchanged. Test both unassigned-only and assigned permission/version cases.
 
 Shared contract defines responses/errors, guard protocol, versions, receipts, custom fields and authorization.
 
@@ -74,3 +76,5 @@ Not started.
 
 ### 2026-09-19
 - Expanded skeleton from approved decisions into capability-specific design and shared contract.
+
+- F4 resolved: unassigned promise route/command/UI explicitly owned here; assigned revisions delegate to trip replan. Initial validator/decimal foundation implemented, 31 new tests passed; persistence/API/UI not started.

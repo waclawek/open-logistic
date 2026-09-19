@@ -10,7 +10,7 @@ Source of truth: [user-confirmed operational App Spec](2026-09-19-app-spec-logis
 
 ## Confirmed design decisions
 
-The user approved the complete App Spec on 2026-09-19. Placement is the existing app-level logistics module; no platform rewrite. Capabilities are split into five feature specifications, as required by the approved handoff; all remain behind one complete operational release gate. No new critical business or placement question is open.
+The user approved the complete App Spec on 2026-09-19. Placement is the existing app-level logistics module; no platform rewrite. Capabilities are split into seven feature specifications, as required by the approved handoff; all remain behind one complete operational release gate. No new critical business or placement question is open.
 
 ## Overview / Problem Statement
 
@@ -22,7 +22,7 @@ Apply the [shared implementation contract](app-spec-notes/logistics-implementati
 
 ## Data Models
 
-VehicleProfile, DriverProfile and SourceObservation retain exact App Spec fields. Registration normalization/hash is unique per scope; profile rows are lock anchors. Source observations include complete rule membership and versions.
+VehicleProfile and DriverProfile retain exact App Spec fields. EligibilityResult is transient: result, checkedAt, rangeStart/End, source versions, complete selected rules and fingerprint, without stored id or required tripId. A15 performs zero writes even when no trip exists. Only the owning trip command attaches its real tripId and persists a SourceObservation inside its transaction, using the App Spec record fields. Registration normalization/hash is unique per scope; profile rows are lock anchors. Source observations include complete rule membership and versions.
 
 Common scope/version, encryption, exact decimals, indexing and immutable history follow the shared contract; no opaque payloads or cross-module ORM.
 
@@ -74,3 +74,5 @@ Not started.
 
 ### 2026-09-19
 - Expanded skeleton from approved decisions into capability-specific design and shared contract.
+
+- F3 resolved: transient trip-free eligibility is distinct from a persisted trip-bound SourceObservation; A15 no-trip/zero-write test is required.

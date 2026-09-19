@@ -4,13 +4,13 @@ Status: DESIGN CANDIDATE — 2026-09-19.
 
 ## TLDR
 
-Reconcile every vehicle-day and compare fixed-cohort empty-kilometre shares, including non-trip movement.
+Reconcile every vehicle-day, including non-trip movement.
 
-Source of truth: [user-confirmed operational App Spec](2026-09-19-app-spec-logistics-operations.md). Trace: US12-US14; C17-C20; A10-A13; LOG-OP-12-14.
+Source of truth: [user-confirmed operational App Spec](2026-09-19-app-spec-logistics-operations.md). Trace: US12-US13; C17-C18 and C19 ledger settings; A10/A11/A12 settings; LOG-OP-12-14.
 
 ## Confirmed design decisions
 
-The user approved the complete App Spec on 2026-09-19. Placement is the existing app-level logistics module; no platform rewrite. Capabilities are split into five feature specifications, as required by the approved handoff; all remain behind one complete operational release gate. No new critical business or placement question is open.
+The user approved the complete App Spec on 2026-09-19. Placement is the existing app-level logistics module; no platform rewrite. Capabilities are split into seven feature specifications, as required by the approved handoff; all remain behind one complete operational release gate. No new critical business or placement question is open.
 
 ## Overview / Problem Statement
 
@@ -22,21 +22,15 @@ Apply the [shared implementation contract](app-spec-notes/logistics-implementati
 
 ## Data Models
 
-MileageLeg, VehicleDay, MileageLedgerSettings and MeasurementCohort use exact approved definitions. Per-vehicle ledger revision guards writes/reconciliation. Frozen cohort and timezone cannot be silently edited; all days remain accounted for.
-
-Common scope/version, encryption, exact decimals, indexing and immutable history follow the shared contract; no opaque payloads or cross-module ORM.
+MileageLeg, VehicleDay and MileageLedgerSettings use exact approved definitions. VehicleProfile.ledgerRevision serializes ledger/review changes. Reporting timezone is immutable after first ledger entry. Every day needs evidence; missing is not zero. Comparison consumes effective totals/revision; correction consumes the guarded replacement seam.
 
 ## API Contracts
 
-A10 legs GET/POST and A09 mileage leg correct; A11 days GET/POST/PUT/reconcile; A12 cohorts/settings/freeze; A13 statistics GET. Use approved mileage/measurement/correction grants, requestId and appropriate ledger/day/cohort version. Stats exposes decimal E/L/U/T, coverage/missing days, valid shares/N-A reasons, relative result and frozen cohort/revision time.
-
-Shared contract defines responses/errors, guard protocol, versions, receipts, custom fields and authorization.
+A10 mileage/legs GET/POST; A11 mileage/days GET/POST/PUT and /[id]/reconcile POST; A12 measurement/settings GET/PUT. Approved mileage/measurement grants apply to each action, with requestId and ledger/day versions. Typed rows include evidence, decimal readings/loadState and completeness; no client-created derived trip cargo. A09 correction and A12 cohort/A13 comparison are owned by linked specs.
 
 ## File Manifest / UI / Frontend Architecture
 
-lib/mileage.ts; commands/mileage.ts, measurement.ts; services/mileageLedger.ts; A09-A13 routes; components/mileage/MileageList.tsx (table), LegForm.tsx, DayReview.tsx, CohortForm.tsx (forms), StatisticsView.tsx (filters); statistics/mileage server wrappers.
-
-Each named client leaf owns the stated browser state, remains <=300 lines and uses shared forms/tables/dialog primitives. No client page roots/global providers/heavy root imports. Stable entity and extension handles, five locales, keyboard submission/cancel, conflict UI and hydration evidence are required.
+lib/mileage.ts; commands/mileage.ts; services/mileageLedger.ts; A10/A11/settings routes; components/mileage/MileageList.tsx (table), LegForm.tsx and DayReview.tsx (forms), LedgerSettingsForm.tsx (timezone setup), route-local server wrappers. Shared <=300-line client budget, forms/guards, five locales and hydration evidence apply.
 
 ## Commands / Undo / Events / Cache
 
@@ -44,13 +38,11 @@ Registered commands and shared transaction/receipt protocol cover every write. G
 
 ## Implementation Plan
 
-Exact rules and non-trip ledger → synchronous trip boundaries/corrections/day review → immutable cohort/comparison → manager UI and integrations.
+Exact rules/non-trip ledger with profile revision → synchronous trip boundaries and replacement consequence seam → day review/settings UI → LOG-OP-12/14 with correction/comparison integration contracts. No cohort command or report-correction route owned here.
 
 ## Integration Coverage
 
-LOG-OP-12..14: workshop/positioning/no-job/no-motion, unknown load, gaps/overlap/reset/midnight/DST, corrections, disabled frozen vehicles, 25%→22.5%=10%relative, worsening, zero-distance and zero-baseline N-A, scope/conflicts.
-
-Create/clean own fixtures; cover each method/path and changed interactive route. Full ordered repository gate remains required.
+LOG-OP-12/14 and DA09: workshop/positioning/no-job/no-motion, unknown load, gaps/overlap/reset/midnight/DST, mandatory versions/scope/permissions, immutable reporting timezone, stale reconciliation invalidation. Cross-capability tests prove corrections invalidate effective day revisions and comparisons observe them; exact comparison formulas belong to cohort-comparison tests.
 
 ## Migration & Backward Compatibility
 
@@ -74,3 +66,7 @@ Not started.
 
 ### 2026-09-19
 - Expanded skeleton from approved decisions into capability-specific design and shared contract.
+
+## Capability ownership refinement
+
+This spec owns C17/C18, A10/A11 and A12 ledger settings. [Cohort comparison](2026-09-19-logistics-cohort-comparison.md) owns MeasurementCohort/freeze, A13 statistics and comparison UI (remaining C19/C20). [Report correction](2026-09-19-logistics-report-correction.md) owns A09 leg replacements/voids. Ledger provides effective rows, revision and invalidation/consequence seams; no duplicate correction/cohort commands are implemented here. Earlier references describe integration requirements, not extra feature ownership.

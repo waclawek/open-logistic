@@ -1,6 +1,6 @@
 # Logistics implementation contract
 
-Status: design candidate after user confirmation on 2026-09-19. This shared contract refines the [App Spec](../2026-09-19-app-spec-logistics-operations.md) for five feature specifications. It is not another independently releasable capability. App Spec invariants and DA01–DA12 remain normative.
+Status: design candidate after user confirmation on 2026-09-19. This shared contract refines the [App Spec](../2026-09-19-app-spec-logistics-operations.md) for seven feature specifications. It is not another independently releasable capability. App Spec invariants and DA01–DA12 remain normative.
 
 ## Placement, identity and compatibility
 
@@ -40,7 +40,7 @@ Each feature spec lists client leaves and their browser-state purpose. Every lea
 
 ## Delivery and tests
 
-Five capabilities: fleet readiness, job intake, trip operations (one coupled custody lifecycle), mileage reconciliation, board projection. Additive capabilities can be built/tested independently against contracts; expose the pilot only when the complete loop passes. Follow approved C01–C25 dependencies with tests in owning increments; retain the33 provisional estimate without dropping failure paths.
+Seven capabilities: fleet readiness, job intake, trip operations (one coupled custody lifecycle), report correction, mileage reconciliation, cohort comparison and board projection. Additive capabilities can be built/tested independently against contracts; expose the pilot only when the complete loop passes. Follow approved C01–C25 dependencies with tests in owning increments; retain the33 provisional estimate without dropping failure paths.
 
 Self-contained module Playwright fixtures create and clean their scoped records. Pure units prove arithmetic/predicates; real concurrent requests prove DB locks/receipts. LOG-OP-01..16, DA01..12 and the ordered root validation gate remain required. Generate discovery and scoped migration/snapshot; no developer/production migration without separate authorization. Use the standard isolated integration harness. Preserve foundation tests and in-flight completion/recovery on rollback.
 
@@ -67,3 +67,7 @@ R5: A16 GET /commands/[requestId] requires validated action query parameter to d
 R6: update only placeholder assertions for operational pages, retain all seven navigation/access/scope/session/locale regressions and planned map/proposals states. Append-only integration fixtures run in isolated disposable test databases owned by the existing ephemeral harness; destroy only that harness-owned environment. No production delete endpoints or local developer DB reset. API-created ordinary fixtures use existing cleanup helpers; retained fact fixtures are removed with isolated database teardown.
 
 The installed shared code-review reference is absent. Apply the available .ai/review-checklist.md and current root/module rules, as recorded by the readiness audit; do not claim execution of the missing file. Current backward compatibility document has fourteen categories, including AI identities: those are also unchanged (AI excluded).
+
+## Feature-review resolution
+
+F1/F2: a maintainer organization question was presented asynchronously. With no reply and the approved handoff already requiring one independently deployable capability per spec, proceed with the recommended seven focused documents; no scope, architecture, release gate or implementation requirement is reduced. F3: transient trip-free eligibility distinguished from persisted trip observation. F4: unassigned promises explicitly owned by intake, assigned revisions delegate to trip replanning.
