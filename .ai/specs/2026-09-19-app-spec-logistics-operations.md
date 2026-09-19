@@ -1,6 +1,6 @@
 # App Spec: Logistics — first operational release
 
-Date: 2026-09-19. Status: COMPLETE AND INDEPENDENTLY REVIEWED — awaiting user confirmation before feature specifications or implementation.
+Date: 2026-09-19. Status: CONFIRMED — user accepted the completed App Spec on 2026-09-19; feature decomposition and implementation authorized, runtime acceptance still outstanding.
 
 This operational extension of the [Logistics foundation App Spec](2026-09-19-app-spec-logistics-dashboard.md) is the source of truth for the next release. The foundation retains ownership of its seven navigation URLs and historical acceptance record. This document owns all new transport business rules; later feature specifications must conform to it. It is an App Spec, not a feature specification or evidence of working operational software.
 
@@ -588,7 +588,7 @@ N/A: this is an operating company's internal app, not a reference app. Reuse sha
 | R2 | Observed-snapshot eligibility, strong logistics exclusivity | Residual master edit/start race disclosed; no common transaction claim | Independent context re-review: resolved at specified consistency level |
 | P1 | Real cohort, reporting timezone and pilot start dates | Deployment configuration; no actual fleet roster supplied | Fleet manager: set/freeze before baseline; not a blocker to writing this spec |
 | P2 | Ability to obtain evidenced daily/night boundary readings | Determines actual comparison completeness | Fleet manager: operational pilot check; software must expose incompleteness |
-| G1 | Complete App Spec confirmation | Proceed to feature decomposition/implementation or revise business scope | User: awaiting confirmation of this completed, reviewed artifact |
+| G1 | Complete App Spec confirmation | Proceed to feature decomposition/implementation or revise business scope | User: CONFIRMED 2026-09-19 after reviewed App Spec and PR presentation |
 
 ## Production Readiness `PM`
 
@@ -671,10 +671,10 @@ Additional mandatory traces from review: source with onboard A and unpicked B ca
 | Domain acceptance | Twelve independently authored criteria accepted after PM challenge; implementation evidence outstanding |
 | Review gates | Context, workflow, story, both architect checkpoints and rollout PASS at App Spec level; historical findings and independent closure retained |
 | Proposed business target | 10% relative reduction, four baseline weeks and eight pilot weeks; proposal for final confirmation |
-| Remaining decisions | User confirmation; fleet manager configures cohort/timezone/dates and verifies boundary-reading practice before baseline |
+| Remaining decisions | Confirmation received; fleet manager configures cohort/timezone/dates and verifies boundary-reading practice before baseline |
 | Implementation | Not started; no application test/build or deployment claim |
 
-Review evidence: [final gate dispositions](app-spec-notes/challenger-logistics-operations-final.md), [approved precision closure](app-spec-notes/challenger-logistics-operations-precision-closure.md), [documentation verification](app-spec-notes/logistics-operations-spec-verification.md). No unresolved specification blocker remains; user confirmation and later deployment configuration are still required.
+Review evidence: [final gate dispositions](app-spec-notes/challenger-logistics-operations-final.md), [approved precision closure](app-spec-notes/challenger-logistics-operations-precision-closure.md), [documentation verification](app-spec-notes/logistics-operations-spec-verification.md). No unresolved specification blocker remains; user confirmation was received on 2026-09-19; later deployment configuration remains required.
 
 No feature specifications or code before completed App Spec confirmation. After confirmation, `om-spec-writing` decomposes independently deployable capabilities while preserving the single complete operational release and all end-to-end failure paths.
 
@@ -686,3 +686,5 @@ No feature specifications or code before completed App Spec confirmation. After 
 - Completed workflows, UI architecture, sixteen stories and impact/gap matrices, guarded API inventory, 33-commit provisional rollout, integration coverage and twelve independently authored domain acceptance criteria. Applied review fixes for recovery, source availability, read-only detection, correction/retry history and metric denominators.
 
 - Closed all App Spec review gates through independent final review and targeted timestamp-precision approval; awaiting user confirmation. Runtime acceptance remains unexecuted.
+
+- User confirmed the completed App Spec on 2026-09-19; begin feature decomposition and app-module implementation, preserving the full release gate.
