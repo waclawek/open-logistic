@@ -43,7 +43,7 @@ beforeEach(() => {
 afterEach(() => registerMutationGuards([]))
 
 function guard(overrides: Partial<MutationGuard>) {
-  registerMutationGuards([{ moduleId: 'logistics', guards: [{ id: 'logistics.test', targetEntity: 'logistics:transport_job', operations: ['update'], validate: async () => ({ ok: true }), ...overrides }] }])
+  registerMutationGuards([{ moduleId: 'logistics', guards: [{ id: 'logistics.test', targetEntity: 'logistics.job', operations: ['update'], validate: async () => ({ ok: true }), ...overrides }] }])
 }
 
 describe('acceptance HTTP boundary', () => {

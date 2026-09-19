@@ -9,6 +9,7 @@ import { CommandReceipt, CommandResultRecord, DriverProfile, TransportJob, Vehic
 import { commandActionSchema, commandResultSchema, type CommandRecord, type CommandResult } from '../data/commandValidators'
 import { uuidSchema } from '../data/validators'
 import { digestCommandInput } from '../lib/commandInput'
+import { readReceiptRequest } from '../lib/receiptRequest'
 import { authorizeLogisticsCommand, type LogisticsCommandContext } from './context'
 
 type Mutation = {
@@ -37,7 +38,7 @@ async function loadReceiptResult(em: EntityManager, context: LogisticsCommandCon
   })
 }
 
-export async function readCommandReceipt(options: ReceiptOptions): Promise<CommandResult | null> {
+export async function readCommandReceipt(options: ReceiptOptions & { inputDigest?: string }): Promise<CommandResult | null> {
   const action = commandActionSchema.parse(options.action)
   const requestId = uuidSchema.parse(options.requestId)
   const context = await authorizeLogisticsCommand(options.ctx, options.requiredFeatures)
@@ -45,6 +46,7 @@ export async function readCommandReceipt(options: ReceiptOptions): Promise<Comma
   const receipt = await findOneWithDecryption(em, CommandReceipt, {
     ...context.scope, actorUserId: context.actorUserId, action, requestId,
   }, undefined, context.scope)
+  if (receipt && options.inputDigest !== undefined && receipt.inputDigest !== options.inputDigest) return context.fail(409, 'requestIdReused')
   return receipt ? loadReceiptResult(em, context, receipt) : null
 }
 
@@ -58,7 +60,10 @@ export async function runReceiptedCommand(options: ReceiptOptions & {
   const rootEm = options.ctx.container.resolve<EntityManager>('em')
   if (options.ctx.transactionalEm || rootEm.isInTransaction()) return context.fail(409, 'nestedCommand')
   const em = rootEm.fork()
-  const inputDigest = digestCommandInput(options.input)
+  const request = readReceiptRequest(options.ctx.request)
+  if (request && (request.action !== action || request.requestId !== requestId || request.recordId !==
+    (options.input && typeof options.input === 'object' && 'id' in options.input ? options.input.id : null))) return context.fail(400, 'invalidInput')
+  const inputDigest = request?.inputDigest ?? digestCommandInput(options.input)
   const key = { ...context.scope, actorUserId: context.actorUserId, action, requestId }
   let result: CommandResult | undefined
   let mutation: Mutation | undefined

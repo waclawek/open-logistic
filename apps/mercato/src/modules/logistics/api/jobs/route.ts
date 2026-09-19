@@ -7,7 +7,11 @@ import { TransportJob } from '../../data/entities'
 import { jobCreateSchema, jobUpdateSchema, jobListSchema } from '../../data/validators'
 import { commandResultSchema } from '../../data/commandValidators'
 import { authorizeLogisticsCommand } from '../../commands/context'
-import { logisticsRouteError, resolveLogisticsRequest } from '../../lib/api'
+import { readCommandReceipt } from '../../commands/transaction'
+import { readJsonSafe } from '@open-mercato/shared/lib/http/readJsonSafe'
+import { logisticsJson, logisticsRouteError, resolveLogisticsRequest } from '../../lib/api'
+import { digestCommandInput } from '../../lib/commandInput'
+import { withReceiptRequest } from '../../lib/receiptRequest'
 
 const entityType = 'logistics:transport_job'
 const rawBodySchema = z.record(z.string(), z.unknown())
@@ -60,7 +64,22 @@ async function handle(req: Request, method: 'GET' | 'POST' | 'PUT') {
   try {
     const ctx = await resolveLogisticsRequest(req)
     await authorizeLogisticsCommand(ctx, method === 'GET' ? [] : ['logistics.jobs.manage'])
-    const response = await crud[method](req)
+    const invoke = () => crud[method](req)
+    let response: Response
+    if (method === 'GET') response = await invoke()
+    else {
+      const { parsed, custom } = parseWithCustomFields(method === 'POST' ? jobCreateSchema : jobUpdateSchema, await readJsonSafe(req.clone(), null))
+      const input = { ...parsed, customFields: custom }
+      const action = method === 'POST' ? 'logistics.jobs.create' : 'logistics.jobs.update'
+      const receipt = () => readCommandReceipt({ ctx, action, requestId: input.requestId, inputDigest: digestCommandInput(input), requiredFeatures: ['logistics.jobs.manage'] })
+      const committed = await receipt()
+      if (committed) return logisticsJson(responseResult({ result: committed }), method === 'POST' ? 201 : 200)
+      response = await withReceiptRequest(req, action, input, invoke)
+      if (response.status === 409) {
+        const concurrent = await receipt()
+        if (concurrent) return logisticsJson(responseResult({ result: concurrent }), method === 'POST' ? 201 : 200)
+      }
+    }
     response.headers.set('Cache-Control', 'no-store')
     return response
   } catch (error) { return logisticsRouteError(error) }

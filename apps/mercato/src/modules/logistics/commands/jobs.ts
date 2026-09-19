@@ -47,7 +47,7 @@ export const acceptJobCommand: CommandHandler<unknown, CommandResult> = {
       },
     })
   },
-  buildLog: ({ result, ctx }) => ({ resourceKind: 'logistics:transport_job', resourceId: result.records[0]?.id,
+  buildLog: ({ result, ctx }) => ({ resourceKind: 'logistics.job', resourceId: result.records[0]?.id,
     tenantId: ctx.auth?.tenantId, organizationId: ctx.selectedOrganizationId ?? ctx.auth?.orgId,
     payload: { requestId: result.requestId, action: result.action },
   }),

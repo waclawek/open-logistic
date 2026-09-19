@@ -9,8 +9,8 @@ import { buildCustomFieldResetMap } from '@open-mercato/shared/lib/commands/cust
 import { findOneWithDecryption } from '@open-mercato/shared/lib/encryption/find'
 import type { DataEngine } from '@open-mercato/shared/lib/data/engine'
 import type { QueryEngine } from '@open-mercato/shared/lib/query/types'
-import { TransportJob } from '../data/entities'
-import { jobCreateSchema, jobUpdateSchema } from '../data/validators'
+import { CommandReceipt, CommandResultRecord, TransportJob } from '../data/entities'
+import { jobCreateSchema, jobUpdateSchema, uuidSchema } from '../data/validators'
 import { commandResultSchema, type CommandResult } from '../data/commandValidators'
 import { nextRecordVersion, requireRecordVersion } from '../lib/version'
 import { digestCommandInput } from '../lib/commandInput'
@@ -96,13 +96,13 @@ function handler(mode: 'create' | 'update'): CommandHandler<unknown, DraftResult
   return {
     id: `logistics.jobs.${mode}`, isUndoable: true, outputSchema: commandResultSchema,
     execute: (raw, ctx) => writeDraft(raw, ctx, mode),
-    buildLog: ({ result, ctx }) => ({ skipLog: !result[snapshotsKey], resourceKind: entityType, resourceId: result.records[0]?.id,
+    buildLog: ({ result, ctx }) => ({ skipLog: !result[snapshotsKey], resourceKind: 'logistics.job', resourceId: result.records[0]?.id,
       tenantId: ctx.auth?.tenantId, organizationId: ctx.selectedOrganizationId,
       snapshotBefore: result[snapshotsKey]?.before, snapshotAfter: result[snapshotsKey]?.after,
       payload: { requestId: result.requestId, action: result.action, undo: result[snapshotsKey] } }),
     async undo({ logEntry, ctx }) {
       const snapshots = undoSchema.parse(extractUndoPayload(logEntry))
-      const requestId = randomUUID()
+      const requestId = uuidSchema.parse(logEntry.id)
       await runReceiptedCommand({ ctx, action: `logistics.jobs.undo_${mode}`, requestId, input: snapshots,
         requiredFeatures: ['logistics.jobs.manage'], async mutate(em, context) {
           if (snapshots.after.tenantId !== context.scope.tenantId || snapshots.after.organizationId !== context.scope.organizationId) return context.fail(404, 'notFound')
@@ -133,6 +133,15 @@ function handler(mode: 'create' | 'update'): CommandHandler<unknown, DraftResult
           if (!job) return context.fail(404, 'notFound')
           assertDraft(job, context)
           if (Boolean(job.deletedAt) !== (mode === 'create')) return context.fail(409, 'undoConflict')
+          const undoReceipt = await findOneWithDecryption(em, CommandReceipt, {
+            ...context.scope, action: `logistics.jobs.undo_${mode}`, requestId: uuidSchema.parse(logEntry.id),
+          }, undefined, context.scope)
+          if (!undoReceipt) return context.fail(409, 'undoConflict')
+          const undoRecord = await findOneWithDecryption(em, CommandResultRecord, {
+            ...context.scope, receiptId: undoReceipt.id, entityType, recordId: job.id,
+          }, undefined, context.scope)
+          if (!undoRecord) return context.fail(409, 'undoConflict')
+          requireRecordVersion(entityType, job, undoRecord.recordUpdatedAt.toISOString())
           const current = await snapshotJob(em, job)
           if (comparable(current) !== comparable(expected)) return context.fail(409, 'undoConflict')
           job.deletedAt = null

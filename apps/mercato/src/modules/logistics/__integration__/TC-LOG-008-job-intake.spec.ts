@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { readJsonSafe } from '@open-mercato/core/helpers/integration/generalFixtures'
 import { ALL_ORGANIZATIONS_COOKIE_VALUE } from '@open-mercato/core/modules/directory/constants'
 import { parseBooleanWithDefault } from '@open-mercato/shared/lib/boolean'
+import { OPTIMISTIC_LOCK_HEADER_NAME } from '@open-mercato/shared/lib/crud/optimistic-lock-headers'
 import { commandResultSchema } from '../data/commandValidators'
 import { test, expect } from './helpers/fixtures'
 
@@ -39,10 +40,15 @@ test('draft CRUD, version conflicts, concurrent acceptance and receipt recovery 
   expect(initial.total).toBe(1)
   expect(initial.items[0]).toMatchObject({ id: created.id, status: 'draft', customerNameSnapshot: name, cargoDescription: 'QA cargo' })
   const edit = { ...input, requestId: randomUUID(), id: created.id, expectedUpdatedAt: created.updatedAt, cargoDescription: 'QA amended' }
-  const updatedResponse = await page.request.put('/api/logistics/jobs', { data: edit })
+  const editHeaders = { [OPTIMISTIC_LOCK_HEADER_NAME]: created.updatedAt }
+  const updatedResponse = await page.request.put('/api/logistics/jobs', { data: edit, headers: editHeaders })
   expect(updatedResponse.status()).toBe(200)
   const updated = createdSchema.parse(await readJsonSafe(updatedResponse))
   expect(updated.updatedAt).not.toBe(created.updatedAt)
+  const replayUpdate = await page.request.put('/api/logistics/jobs', { data: edit, headers: editHeaders })
+  expect(replayUpdate.status()).toBe(200)
+  expect(createdSchema.parse(await readJsonSafe(replayUpdate))).toEqual(updated)
+  expect((await page.request.put('/api/logistics/jobs', { data: { ...edit, cargoDescription: 'Changed reuse' }, headers: editHeaders })).status()).toBe(409)
   const stale = await page.request.put('/api/logistics/jobs', { data: { ...edit, requestId: randomUUID() } })
   expect(stale.status()).toBe(409)
   const acceptance = { requestId: randomUUID(), expectedUpdatedAt: updated.updatedAt }
