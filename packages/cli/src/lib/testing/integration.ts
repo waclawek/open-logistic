@@ -1,6 +1,7 @@
 import type { ChildProcess, StdioOptions } from 'node:child_process'
 import { spawnSync } from 'node:child_process'
 import { createServer } from 'node:net'
+import { createRequire } from 'node:module'
 import { existsSync, readFileSync } from 'node:fs'
 import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { createHash, randomBytes } from 'node:crypto'
@@ -802,28 +803,45 @@ export function formatCapturedOutput(stderrText: string, stdoutText: string): st
   return stderrText || stdoutText
 }
 
-function startYarnRawCommand(
+const detachedYarnWrapper = `
+const spawn = require(process.argv[1]);
+const child = spawn(process.argv[2], process.argv.slice(3), { stdio: 'inherit', windowsHide: true });
+child.on('error', error => { console.error(error.message); process.exitCode = 1; });
+child.on('exit', code => { process.exitCode = code ?? 1; });
+`
+
+export function startYarnRawCommand(
   commandArgs: string[],
   environment: NodeJS.ProcessEnv,
   opts: { silent?: boolean; detached?: boolean } = {},
   cwd: string = projectRootDirectory,
 ): CapturedOutputProcess {
-  const outputMode: StdioOptions = opts.silent ? ['ignore', 'pipe', 'pipe'] : 'inherit'
+  const outputMode: StdioOptions = [opts.silent ? 'ignore' : 'inherit', 'pipe', 'pipe']
   const resolvedSpawn = resolveSpawnCommand(resolveYarnBinary(), commandArgs, { detached: opts.detached })
-  const processHandle: CapturedOutputProcess = spawn(resolvedSpawn.command, resolvedSpawn.args, {
+  const wrapWindowsCommand = process.platform === 'win32' && opts.detached
+  const command = wrapWindowsCommand ? process.execPath : resolvedSpawn.command
+  const args = wrapWindowsCommand
+    ? ['-e', detachedYarnWrapper, createRequire(path.join(env.packageRoot('@open-mercato/cli'), 'package.json')).resolve('cross-spawn'), resolvedSpawn.command, ...resolvedSpawn.args]
+    : resolvedSpawn.args
+  const processHandle: CapturedOutputProcess = spawn(command, args, {
     cwd,
     env: environment,
     stdio: outputMode,
+    windowsHide: true,
     ...resolvedSpawn.spawnOptions,
   })
-  if (opts.silent) {
-    const stdoutBuffer = createBoundedOutputBuffer()
-    const stderrBuffer = createBoundedOutputBuffer()
-    processHandle.stdout?.on('data', (chunk: Buffer | string) => stdoutBuffer.append(chunk))
-    processHandle.stderr?.on('data', (chunk: Buffer | string) => stderrBuffer.append(chunk))
-    processHandle.readCapturedOutput = () =>
-      formatCapturedOutput(stderrBuffer.read().trim(), stdoutBuffer.read().trim())
-  }
+  const stdoutBuffer = createBoundedOutputBuffer()
+  const stderrBuffer = createBoundedOutputBuffer()
+  processHandle.stdout?.on('data', (chunk: Buffer | string) => {
+    stdoutBuffer.append(chunk)
+    if (!opts.silent) process.stdout.write(chunk)
+  })
+  processHandle.stderr?.on('data', (chunk: Buffer | string) => {
+    stderrBuffer.append(chunk)
+    if (!opts.silent) process.stderr.write(chunk)
+  })
+  processHandle.readCapturedOutput = () =>
+    formatCapturedOutput(stderrBuffer.read().trim(), stdoutBuffer.read().trim())
   return processHandle
 }
 

@@ -1,6 +1,6 @@
 # Lessons
 
-This catalog indexes 143 focused lessons. Route the task first, then read only records whose modules, areas, or topics match the work.
+This catalog indexes 145 focused lessons. Route the task first, then read only records whose modules, areas, or topics match the work.
 
 ## How to use this catalog
 
@@ -19,6 +19,8 @@ This catalog indexes 143 focused lessons. Route the task first, then read only r
 ## Catalog
 
 ### architecture
+
+- [Terminal transport outcomes must settle obligations separately from mileage](lessons/terminal-transport-outcomes-settle-obligations.md) — area:architecture,spec-pr; module:logistics; topic:domain-modeling,state-transitions,data-integrity
 
 - [Durable quota reservations need fenced leases, conditional creates, and bounded sizes](lessons/durable-quota-reservations-need-fenced-leases.md) — area:architecture,module-data; module:attachments,storage_s3; topic:data-scoping,command-pattern,database-migrations
 - [Encode untrusted Markdown fragments as data, not chained escapes](lessons/encode-untrusted-markdown-fragments-as-data.md) — area:architecture,testing; module:platform; topic:network-security,testing
@@ -83,7 +85,7 @@ This catalog indexes 143 focused lessons. Route the task first, then read only r
 - [Sync progress must count source records, not emitted side-effect items](lessons/sync-progress-must-count-source-records-not-emitted.md) — area:module-data,integration; module:data_sync,progress,catalog; topic:data-import,events,testing
 - [Tool-scoped regeneration commands must not be blocked by unrelated existing files](lessons/tool-scoped-regeneration-commands-must-not-be-blocked.md) — area:module-data,architecture; module:cli; topic:command-pattern,data-scoping,regeneration
 - [Use canonical generated entity ids, not shortened ad-hoc aliases](lessons/use-canonical-generated-entity-ids-not-shortened-ad-hoc.md) — area:module-data,umes,architecture; module:checkout,entities,query_index; topic:auto-discovery,custom-fields,data-integrity
-- [We've got centralized helpers for extracting `UndoPayload`](lessons/weve-got-centralized-helpers-for-extracting-undopayload.md) — area:module-data; module:shared; topic:command-pattern,weve,centralized
+- [We've got centralized helpers for extracting `UndoPayload`](lessons/weve-got-centralized-helpers-for-extracting-undopayload.md) — area:module-data; module:shared,logistics; topic:command-pattern,weve,centralized,concurrency
 - [WeakSet-based circular reference detection drops shared (non-circular) object references](lessons/weakset-based-circular-reference-detection-drops-shared.md) — area:module-data,architecture; module:cache,events,shared; topic:events,generated-files,testing
 - [Windows `.cmd` wrappers must not be spawned directly in Node dev scripts](lessons/windows-cmd-wrappers-must-not-be-spawned-directly-in.md) — area:module-data,architecture,debugging; module:create_app; topic:command-pattern,dev-runtime,package-runtime
 - [Worker-emitted progress needs polling fallback even when SSE exists](lessons/worker-emitted-progress-needs-polling-fallback-even.md) — area:module-data,backend-ui,debugging; module:events,progress,queue; topic:events,realtime,testing
@@ -124,6 +126,8 @@ This catalog indexes 143 focused lessons. Route the task first, then read only r
 - [Standardize record-not-found as a dedicated page state in backend UI](lessons/standardize-record-not-found-as-a-dedicated-page-state.md) — area:backend-ui,debugging; module:ui,auth,customers; topic:error-states,ui-components
 
 ### integration
+
+- [Local HTTP API tests need explicit session authentication](lessons/local-http-api-tests-need-explicit-session-authentication.md) — area:integration,testing; module:logistics; topic:authentication,fixtures,cookies
 
 - [Documents module: collaboration runtime and data exposure](lessons/a-collaboration-sidecar-runs-outside-the-app-runtime.md) — area:integration,backend-ui,module-data; module:documents,search,auth; topic:realtime,access-control,data-scoping
 - [Akeneo base-field imports must not fall back across locales or channels](lessons/akeneo-base-field-imports-must-not-fall-back-across.md) — area:integration,debugging; module:data_sync,catalog; topic:data-import,data-scoping,testing
@@ -169,7 +173,7 @@ This catalog indexes 143 focused lessons. Route the task first, then read only r
 
 - [Validate downloaded design assets before integration](lessons/validate-downloaded-design-assets-before-integration.md) — area:testing,backend-ui; module:design_system; topic:figma,asset-integrity,downloads
 
-- [Determine super-admin via the immutable `isSuperAdmin` flag, never by role name](lessons/determine-super-admin-via-the-immutable-issuperadmin.md) — area:testing,module-data,debugging; module:auth,events; topic:access-control,command-pattern,data-scoping
+- [Determine super-admin via the immutable `isSuperAdmin` flag, never by role name](lessons/determine-super-admin-via-the-immutable-issuperadmin.md) — area:testing,module-data,debugging; module:auth,events,logistics; topic:access-control,command-pattern,data-scoping
 - [Enqueue then stamp](lessons/enqueue-then-stamp.md) — area:testing; module:events; topic:events,workers
 - [Integration routing tests must establish the route they claim to cover](lessons/integration-routing-tests-must-establish-the-route-they-claim-to-cover.md) — area:testing,integration,debugging; module:search,query_index; topic:async-indexing,polling,query-index,route-coverage
 - [Keep executable integration tests module-local](lessons/keep-executable-integration-tests-module-local.md) — area:testing,module-data; module:platform; topic:module-boundaries,package-runtime,testing
@@ -192,3 +196,5 @@ This catalog indexes 143 focused lessons. Route the task first, then read only r
 ### spec-pr
 
 - [Credit the author, not the merger, when generating a changelog](lessons/credit-the-author-not-the-merger-in-a-changelog.md) — area:spec-pr,ai-workflow; module:platform; topic:data-integrity,generated-files
+
+- [Retain required command reasons atomically](lessons/retain-required-command-reasons-atomically.md) — area:module-data,testing; module:logistics,audit_logs; topic:command-pattern,data-integrity

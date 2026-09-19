@@ -2,7 +2,9 @@
 
 **Data:** 2026-09-19
 
-**Status:** COMPLETE — specyfikacja fundamentu ukończona i sprawdzona; funkcja jeszcze niewdrożona.
+**Status:** FOUNDATION IMPLEMENTED — fundament nawigacji ma implementację i zapis weryfikacji w [raporcie](../../docs/logistics/verification.md). Nie oznacza to wdrożenia funkcji operacyjnych.
+
+**Rozszerzenie operacyjne (2026-09-19):** [Logistics — first operational release](2026-09-19-app-spec-logistics-operations.md) rozszerza ten App Spec o zlecenia, przejazdy, przydziały, ręczne wykonanie i pomiar pustych kilometrów. Użytkownik potwierdził własną flotę, cel ograniczenia pustych kilometrów i ręczny dispatch. Poniższy dokument zachowuje historyczny zakres fundamentu; jego wyłączenia dotyczą wyłącznie tamtego etapu. Reguły nowego etapu są w rozszerzeniu, które wymaga ukończenia przeglądów i potwierdzenia przed implementacją.
 
 **Zakres bieżący:** grupa menu „Logistyka” i siedem stron przygotowanych do dalszej rozbudowy.
 
@@ -426,6 +428,7 @@ Przy implementacji: wybrać runner zgodnie z `.ai/docs/agent-instructions.md`; u
 ## Changelog
 
 ### 2026-09-19
+- Powiązano rozszerzenie operacyjne po potwierdzeniu modelu własnej floty, celu ograniczenia pustych kilometrów i ręcznego dispatchu; skorygowano status fundamentu zgodnie z zapisanym raportem weryfikacji.
 - Utworzono szkic z siedmioma sekcjami S1 i minimalnym pierwszym etapem zgodnym z poleceniem użytkownika.
 - Po poleceniu autonomicznego zakończenia zastąpiono oczekiwanie na odpowiedzi jawnymi założeniami A1–A5.
 - Uzupełniono przepływy, historie i macierz wpływu, mapowanie do platformy, estymację i kryteria odbioru.

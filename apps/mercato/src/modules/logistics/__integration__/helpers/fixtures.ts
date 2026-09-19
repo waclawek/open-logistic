@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
-import { expect, test as base, type Page } from '@playwright/test'
+import { expect, test as base, type APIRequestContext, type Page } from '@playwright/test'
+import { z } from 'zod'
 import { getAuthToken, postForm } from '@open-mercato/core/helpers/integration/api'
 import {
   createOrganizationFixture,
@@ -10,7 +11,7 @@ import {
   deleteUserIfExists,
   setRoleAclFeatures,
 } from '@open-mercato/core/helpers/integration/authFixtures'
-import { getTokenContext } from '@open-mercato/core/helpers/integration/generalFixtures'
+import { getTokenContext, readJsonSafe } from '@open-mercato/core/helpers/integration/generalFixtures'
 
 export const sections = [
   { path: '/backend/logistics', title: 'Dispatcher dashboard' },
@@ -23,6 +24,7 @@ export const sections = [
 ] as const
 
 type LogisticsFixture = {
+  api: Pick<APIRequestContext, 'get' | 'post' | 'put'>
   organizationId: string
   organizationName: string
   addOrganization: () => Promise<{ id: string; name: string }>
@@ -70,6 +72,12 @@ export const test = base.extend<{ logistics: LogisticsFixture }>({
       })
       const loginResponse = await postForm(page.request, '/api/auth/login', { email, password })
       expect(loginResponse.ok(), 'The isolated logistics user should be able to sign in').toBe(true)
+      const { token } = z.object({ token: z.string().min(1) }).parse(await readJsonSafe(loginResponse))
+      const api: LogisticsFixture['api'] = {
+        get: (url, options) => page.request.get(url, { ...options, headers: { ...options?.headers, Authorization: `Bearer ${token}` } }),
+        post: (url, options) => page.request.post(url, { ...options, headers: { ...options?.headers, Authorization: `Bearer ${token}` } }),
+        put: (url, options) => page.request.put(url, { ...options, headers: { ...options?.headers, Authorization: `Bearer ${token}` } }),
+      }
       await page.context().addCookies([
         { name: 'om_selected_tenant', value: tenantId },
         { name: 'om_selected_org', value: organizationId },
@@ -79,6 +87,7 @@ export const test = base.extend<{ logistics: LogisticsFixture }>({
         { name: 'om_feedback_suppress', value: '1' },
       ].map((cookie) => ({ ...cookie, url: baseURL!, sameSite: 'Lax' as const })))
       await use({
+        api,
         organizationId,
         organizationName,
         grant,
