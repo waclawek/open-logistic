@@ -1,6 +1,6 @@
 # Lessons
 
-This catalog indexes 144 focused lessons. Route the task first, then read only records whose modules, areas, or topics match the work.
+This catalog indexes 145 focused lessons. Route the task first, then read only records whose modules, areas, or topics match the work.
 
 ## How to use this catalog
 
@@ -126,6 +126,8 @@ This catalog indexes 144 focused lessons. Route the task first, then read only r
 - [Standardize record-not-found as a dedicated page state in backend UI](lessons/standardize-record-not-found-as-a-dedicated-page-state.md) — area:backend-ui,debugging; module:ui,auth,customers; topic:error-states,ui-components
 
 ### integration
+
+- [Local HTTP API tests need explicit session authentication](lessons/local-http-api-tests-need-explicit-session-authentication.md) — area:integration,testing; module:logistics; topic:authentication,fixtures,cookies
 
 - [Documents module: collaboration runtime and data exposure](lessons/a-collaboration-sidecar-runs-outside-the-app-runtime.md) — area:integration,backend-ui,module-data; module:documents,search,auth; topic:realtime,access-control,data-scoping
 - [Akeneo base-field imports must not fall back across locales or channels](lessons/akeneo-base-field-imports-must-not-fall-back-across.md) — area:integration,debugging; module:data_sync,catalog; topic:data-import,data-scoping,testing
