@@ -36,5 +36,6 @@
   "logistics.errors.invalidInput": "작업 입력을 확인하고 다시 시도하세요.",
   "logistics.errors.requestFailed": "요청을 완료하지 못했습니다. 다시 시도하기 전에 결과를 확인하세요.",
   "logistics.errors.jobDraftRequired": "아직 수락하지 않은 초안만 수정하거나 복원할 수 있습니다.",
-  "logistics.errors.undoConflict": "이 작업 이후 기록이 변경되었습니다. 다시 변경하기 전에 새로고침하세요."
+  "logistics.errors.undoConflict": "이 작업 이후 기록이 변경되었습니다. 다시 변경하기 전에 새로고침하세요.",
+  "logistics.errors.jobCancellationRequiresUnassigned": "배정된 작업은 해당 운행에서 취소하세요. 완료되거나 취소된 작업은 다시 취소할 수 없습니다."
 }

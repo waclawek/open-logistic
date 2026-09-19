@@ -40,7 +40,7 @@ export const expectedRecordSchema = z.object({
 
 export const actionSchema = expectedRecordSchema.extend({ requestId: uuidSchema })
 export const acceptJobBodySchema = actionSchema.omit({ id: true })
-export const receiptQuerySchema = z.object({ action: z.enum(['logistics.jobs.accept', 'logistics.jobs.create', 'logistics.jobs.update']) }).strict()
+export const receiptQuerySchema = z.object({ action: z.enum(['logistics.jobs.accept', 'logistics.jobs.create', 'logistics.jobs.update', 'logistics.jobs.cancel']) }).strict()
 export const factActionSchema = actionSchema.extend({ expectedFactRevision: revisionSchema })
 export const planActionSchema = actionSchema.extend({ expectedPlanRevision: revisionSchema })
 export const ledgerActionSchema = actionSchema.extend({ expectedLedgerRevision: revisionSchema })
@@ -106,6 +106,7 @@ export const jobInputSchema = jobObjectSchema.superRefine(validateJob)
 export const jobCreateSchema = jobObjectSchema.extend({ requestId: uuidSchema }).superRefine(validateJob)
 export const jobUpdateSchema = jobObjectSchema.extend(actionSchema.shape).superRefine(validateJob)
 export const jobCancelSchema = actionSchema.extend({ reason: reasonSchema })
+export const cancelJobBodySchema = jobCancelSchema.omit({ id: true })
 export const jobListSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(50),

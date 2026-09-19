@@ -36,5 +36,6 @@
   "logistics.errors.invalidInput": "Check the action input and try again.",
   "logistics.errors.requestFailed": "The request could not be completed. Reconcile its outcome before retrying.",
   "logistics.errors.jobDraftRequired": "Only an unaccepted draft can be edited or restored.",
-  "logistics.errors.undoConflict": "The record changed after this operation. Reload it before making another change."
+  "logistics.errors.undoConflict": "The record changed after this operation. Reload it before making another change.",
+  "logistics.errors.jobCancellationRequiresUnassigned": "Cancel assigned work through its trip; completed or cancelled jobs cannot be cancelled again."
 }

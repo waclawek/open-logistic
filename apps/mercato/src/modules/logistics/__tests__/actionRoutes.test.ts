@@ -7,6 +7,7 @@ import type { MutationGuard } from '@open-mercato/shared/lib/crud/mutation-guard
 import { CrudHttpError } from '@open-mercato/shared/lib/crud/errors'
 import { readCommandReceipt } from '../commands/transaction'
 import { POST } from '../api/jobs/[id]/accept/route'
+import { POST as cancel } from '../api/jobs/[id]/cancel/route'
 import { GET } from '../api/commands/[requestId]/route'
 import { features } from '../acl'
 
@@ -37,6 +38,7 @@ function fixture() {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  jest.mocked(readCommandReceipt).mockResolvedValue(null)
   registerModules([{ id: 'logistics', features }])
   registerMutationGuards([])
 })
@@ -104,6 +106,37 @@ describe('acceptance HTTP boundary', () => {
     const response = await test.post()
     expect(response.status).toBe(500)
     expect(await response.text()).not.toContain('private cargo')
+  })
+})
+
+describe('cancellation HTTP boundary', () => {
+  it('validates the reason, honors mutation guards and rejects guard identity changes', async () => {
+    const test = fixture()
+    const post = (body: unknown) => cancel(new Request(`http://localhost/api/logistics/jobs/${test.id}/cancel`, { method: 'POST', body: JSON.stringify(body) }), { params: { id: test.id } })
+    const input = { ...test.body, reason: 'Customer request' }
+    expect((await post(test.body)).status).toBe(400)
+    guard({ validate: async () => ({ ok: false, status: 423, body: { error: 'locked' } }) })
+    expect((await post(input)).status).toBe(423)
+    guard({ validate: async () => ({ ok: true, modifiedPayload: { ...input, id: randomUUID() } }) })
+    expect((await post(input)).status).toBe(400)
+    guard({ validate: async () => ({ ok: true, modifiedPayload: { ...input, id: test.id, reason: 'Approved reason' } }) })
+    test.result.action = 'logistics.jobs.cancel'
+    const response = await post(input)
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(test.execute).toHaveBeenCalledTimes(1)
+    expect(test.execute).toHaveBeenCalledWith('logistics.jobs.cancel', expect.objectContaining({ input: { ...input, id: test.id, reason: 'Approved reason' } }))
+  })
+  it('replays an authorized cancellation without repeating guards or execution', async () => {
+    const test = fixture()
+    test.result.action = 'logistics.jobs.cancel'
+    jest.mocked(readCommandReceipt).mockResolvedValue(test.result)
+    const validate = jest.fn(async () => ({ ok: false, status: 423, body: { error: 'locked' } }))
+    guard({ validate })
+    const response = await cancel(new Request(`http://localhost/api/logistics/jobs/${test.id}/cancel`, { method: 'POST', body: JSON.stringify({ ...test.body, reason: 'Reason' }) }), { params: { id: test.id } })
+    expect(response.status).toBe(200)
+    expect(validate).not.toHaveBeenCalled()
+    expect(test.execute).not.toHaveBeenCalled()
   })
 })
 

@@ -5,6 +5,7 @@ export const events = [
   { id: 'logistics.job.updated', label: 'Transport job updated', entity: 'job', category: 'lifecycle', clientBroadcast: true },
   { id: 'logistics.job.deleted', label: 'Transport draft removed', entity: 'job', category: 'lifecycle', clientBroadcast: true },
   { id: 'logistics.job.accepted', label: 'Transport job accepted', entity: 'job', category: 'lifecycle', clientBroadcast: true },
+  { id: 'logistics.job.cancelled', label: 'Transport job cancelled', entity: 'job', category: 'lifecycle', clientBroadcast: true },
 ] as const
 
 export const eventsConfig = createModuleEvents({ moduleId: 'logistics', events })

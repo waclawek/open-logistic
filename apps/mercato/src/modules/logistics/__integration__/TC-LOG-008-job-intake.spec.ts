@@ -9,7 +9,7 @@ import { commandResultSchema } from '../data/commandValidators'
 import { test, expect } from './helpers/fixtures'
 
 export const integrationMeta = { dependsOnModules: ['customers'] }
-const recordSchema = z.object({ id: z.string().uuid(), updatedAt: z.string().datetime(), status: z.string(), cargoDescription: z.string(), customerNameSnapshot: z.string() })
+const recordSchema = z.object({ id: z.string().uuid(), updatedAt: z.string().datetime(), status: z.string(), cargoDescription: z.string(), customerNameSnapshot: z.string(), terminalAt: z.string().datetime().nullable() })
 const listSchema = z.object({ items: z.array(recordSchema), total: z.number() })
 const createdSchema = commandResultSchema.extend({ id: z.string().uuid(), updatedAt: z.string().datetime() })
 const writeFeatures = ['logistics.view', 'logistics.jobs.manage', 'customers.companies.view', 'customers.companies.manage']
@@ -68,6 +68,25 @@ test('draft CRUD, version conflicts, concurrent acceptance and receipt recovery 
   await logistics.grant(['logistics.view'])
   expect((await logistics.api.get(`/api/logistics/commands/${acceptance.requestId}?action=logistics.jobs.accept`)).status()).toBe(403)
   expect((await logistics.api.post(path, { data: acceptance })).status()).toBe(403)
+  await logistics.grant(writeFeatures)
+  const cancellation = { requestId: randomUUID(), expectedUpdatedAt: current.updatedAt, reason: 'Customer withdrew the job' }
+  const cancelPath = `/api/logistics/jobs/${created.id}/cancel`
+  expect((await logistics.api.post(cancelPath, { data: { ...cancellation, expectedUpdatedAt: created.updatedAt } })).status()).toBe(409)
+  const cancelled = await logistics.api.post(cancelPath, { data: cancellation })
+  expect(cancelled.status()).toBe(200)
+  const cancellationResult = commandResultSchema.parse(await readJsonSafe(cancelled))
+  const repeated = await logistics.api.post(cancelPath, { data: cancellation })
+  expect(repeated.status()).toBe(200)
+  expect(await readJsonSafe(repeated)).toEqual(cancellationResult)
+  expect((await logistics.api.post(cancelPath, { data: { ...cancellation, reason: 'Changed reason' } })).status()).toBe(409)
+  const cancellationReceipt = await logistics.api.get(`/api/logistics/commands/${cancellation.requestId}?action=logistics.jobs.cancel`)
+  expect(cancellationReceipt.status()).toBe(200)
+  expect(await readJsonSafe(cancellationReceipt)).toEqual({ committed: true, result: cancellationResult })
+  const cancelledList = await logistics.api.get(`/api/logistics/jobs?id=${created.id}`)
+  const cancelledJob = listSchema.parse(await readJsonSafe(cancelledList)).items[0]
+  expect(cancelledJob.status).toBe('cancelled')
+  expect(cancelledJob.terminalAt).not.toBeNull()
+  expect((await logistics.api.post(path, { data: { requestId: randomUUID(), expectedUpdatedAt: cancelledJob.updatedAt } })).status()).toBe(409)
 })
 
 test('rejects protected input, invalid cargo, all-organizations selection and missing receipts safely', async ({ page, logistics, baseURL }) => {
@@ -78,8 +97,11 @@ test('rejects protected input, invalid cargo, all-organizations selection and mi
   expect(missing.status()).toBe(200)
   expect(await readJsonSafe(missing)).toEqual({ committed: false, result: null })
   expect((await logistics.api.get(`/api/logistics/commands/${requestId}?action=logistics.jobs.accept&action=logistics.jobs.create`)).status()).toBe(400)
-  await page.context().addCookies([{ name: 'om_selected_org', value: ALL_ORGANIZATIONS_COOKIE_VALUE, url: baseURL!, sameSite: 'Lax' }])
-  expect((await logistics.api.post(`/api/logistics/jobs/${randomUUID()}/accept`, { data: { requestId, expectedUpdatedAt: '2026-09-19T10:00:00.000Z' } })).status()).toBe(400)
+  for (const choice of [ALL_ORGANIZATIONS_COOKIE_VALUE, '%20__all__%20', '%09__all__%09']) {
+    await page.context().addCookies([{ name: 'om_selected_org', value: choice, url: baseURL!, sameSite: 'Lax' }])
+    expect((await logistics.api.post(`/api/logistics/jobs/${randomUUID()}/accept`, { data: { requestId, expectedUpdatedAt: '2026-09-19T10:00:00.000Z' } })).status()).toBe(400)
+    expect((await logistics.api.get(`/api/logistics/commands/${requestId}?action=logistics.jobs.accept`)).status()).toBe(400)
+  }
 })
 
 test('round-trips decimal drafts through persisted undo/redo and rejects later ABA edits', async ({ logistics }) => {
@@ -128,4 +150,9 @@ test('round-trips decimal drafts through persisted undo/redo and rejects later A
   const staleRedo = await logistics.api.post('/api/audit_logs/audit-logs/actions/redo', { data: { logId: editOperation.id } })
   expect(staleRedo.status()).toBe(409)
   expect(await current()).toEqual(before)
+  const cancellation = await logistics.api.post(`/api/logistics/jobs/${created.id}/cancel`, { data: { requestId: randomUUID(), expectedUpdatedAt: before.updatedAt, reason: 'Draft no longer required' } })
+  expect(cancellation.status()).toBe(200)
+  expect((await current()).status).toBe('cancelled')
+  const editCancelled = await edit('Attempt to reopen')
+  expect(editCancelled.status()).toBe(409)
 })

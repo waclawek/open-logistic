@@ -36,5 +36,6 @@
   "logistics.errors.invalidInput": "Sprawdź dane operacji i spróbuj ponownie.",
   "logistics.errors.requestFailed": "Nie udało się zakończyć żądania. Sprawdź jego wynik przed ponowieniem.",
   "logistics.errors.jobDraftRequired": "Można edytować lub przywrócić tylko niezaakceptowany szkic.",
-  "logistics.errors.undoConflict": "Rekord zmienił się po tej operacji. Odśwież go przed kolejną zmianą."
+  "logistics.errors.undoConflict": "Rekord zmienił się po tej operacji. Odśwież go przed kolejną zmianą.",
+  "logistics.errors.jobCancellationRequiresUnassigned": "Anuluj przypisane zlecenie w ramach jego kursu. Zakończonych ani anulowanych zleceń nie można anulować ponownie."
 }

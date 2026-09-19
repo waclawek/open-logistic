@@ -36,5 +36,6 @@
   "logistics.errors.invalidInput": "Prüfen Sie die Eingaben und versuchen Sie es erneut.",
   "logistics.errors.requestFailed": "Die Anfrage konnte nicht abgeschlossen werden. Prüfen Sie vor einem erneuten Versuch das Ergebnis.",
   "logistics.errors.jobDraftRequired": "Nur ein nicht angenommener Entwurf kann bearbeitet oder wiederhergestellt werden.",
-  "logistics.errors.undoConflict": "Der Datensatz wurde nach dieser Aktion geändert. Laden Sie ihn vor weiteren Änderungen neu."
+  "logistics.errors.undoConflict": "Der Datensatz wurde nach dieser Aktion geändert. Laden Sie ihn vor weiteren Änderungen neu.",
+  "logistics.errors.jobCancellationRequiresUnassigned": "Stornieren Sie zugewiesene Aufträge über ihre Fahrt. Abgeschlossene oder stornierte Aufträge können nicht erneut storniert werden."
 }

@@ -4,7 +4,7 @@ import type { CommandRuntimeContext } from '@open-mercato/shared/lib/commands'
 import { findOneWithDecryption, findWithDecryption } from '@open-mercato/shared/lib/encryption/find'
 import { reportError } from '@open-mercato/telemetry'
 import { CommandReceipt, CommandResultRecord, TransportJob } from '../data/entities'
-import { acceptJobCommand } from '../commands/jobs'
+import { acceptJobCommand, cancelJobCommand } from '../commands/jobs'
 import { authorizeLogisticsCommand } from '../commands/context'
 import { readCommandReceipt } from '../commands/transaction'
 import { digestCommandInput } from '../lib/commandInput'
@@ -175,6 +175,58 @@ describe('receipted job acceptance', () => {
     await expect(acceptJobCommand.execute(test.input, test.ctx)).rejects.toMatchObject({ status: 409, body: { code: 'nestedCommand' } })
     expect(test.trace).toEqual(['begin'])
     expect(test.rows).toHaveLength(0)
+  })
+})
+
+describe('receipted unassigned job cancellation', () => {
+  it.each(['draft', 'ready'] as const)('cancels %s with one terminal version, receipt and postcommit event', async status => {
+    const test = harness()
+    test.job.status = status
+    test.job.acceptedAt = status === 'ready' ? new Date(initialVersion) : null
+    const acceptedAt = test.job.acceptedAt
+    const input = { ...test.input, reason: 'Customer withdrew request' }
+    const result = await cancelJobCommand.execute(input, test.ctx)
+    expect(test.job.status).toBe('cancelled')
+    expect(test.job.terminalAt).toBeInstanceOf(Date)
+    expect(test.job.acceptedAt).toBe(acceptedAt)
+    expect(test.rows).toHaveLength(2)
+    expect(test.trace.indexOf('commit')).toBeLessThan(test.trace.indexOf('effects'))
+    expect(emitLogisticsEvent).toHaveBeenCalledWith('logistics.job.cancelled', expect.not.objectContaining({ reason: input.reason }))
+    expect(JSON.stringify(result)).not.toContain(input.reason)
+    const replay = await cancelJobCommand.execute(input, test.ctx)
+    expect(JSON.stringify(replay)).toBe(JSON.stringify(result))
+    expect(emitLogisticsEvent).toHaveBeenCalledTimes(1)
+    expect(await cancelJobCommand.buildLog!({ input, result, ctx: test.ctx, snapshots: {} })).toMatchObject({ skipLog: false, payload: { reason: input.reason, previousStatus: status } })
+    expect(await cancelJobCommand.buildLog!({ input, result: replay, ctx: test.ctx, snapshots: {} })).toMatchObject({ skipLog: true })
+    expect(cancelJobCommand.isUndoable).toBe(false)
+  })
+  it.each(['assigned', 'in_transit', 'delivered', 'returned', 'cancelled'] as const)('rejects %s without changing custody or terminal state', async status => {
+    const test = harness()
+    test.job.status = status
+    await expect(cancelJobCommand.execute({ ...test.input, reason: 'Requested cancellation' }, test.ctx)).rejects.toMatchObject({ status: 409 })
+    expect(test.job.status).toBe(status)
+    expect(test.job.terminalAt).toBeNull()
+    expect(test.rows).toHaveLength(0)
+    expect(emitLogisticsEvent).not.toHaveBeenCalled()
+  })
+  it('requires a reason, rejects stale versions and conflicts on changed retry input', async () => {
+    const test = harness()
+    await expect(cancelJobCommand.execute({ ...test.input, reason: ' ' }, test.ctx)).rejects.toThrow()
+    await expect(cancelJobCommand.execute({ ...test.input, reason: 'Reason', expectedUpdatedAt: '2026-09-18T00:00:00Z' }, test.ctx)).rejects.toMatchObject({ status: 409 })
+    const input = { ...test.input, reason: 'Reason' }
+    await cancelJobCommand.execute(input, test.ctx)
+    await expect(cancelJobCommand.execute({ ...input, reason: 'Different reason' }, test.ctx)).rejects.toMatchObject({ status: 409, body: { code: 'requestIdReused' } })
+    test.fresh.acl.features = ['logistics.view']
+    await expect(cancelJobCommand.execute(input, test.ctx)).rejects.toMatchObject({ status: 403 })
+  })
+  it('rolls back cancellation and its receipt when persistence fails', async () => {
+    const test = harness()
+    test.em.flush.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('DB failure'))
+    await expect(cancelJobCommand.execute({ ...test.input, reason: 'Reason' }, test.ctx)).rejects.toThrow('DB failure')
+    expect(test.job.status).toBe('draft')
+    expect(test.job.terminalAt).toBeNull()
+    expect(test.rows).toHaveLength(0)
+    expect(emitLogisticsEvent).not.toHaveBeenCalled()
   })
 })
 
