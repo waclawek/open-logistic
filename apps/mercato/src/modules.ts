@@ -133,7 +133,31 @@ export const enabledModules: ModuleEntry[] = [
   { id: 'catalog', from: '@open-mercato/core' },
   { id: 'sales', from: '@open-mercato/core' },
   { id: 'feature_toggles', from: '@open-mercato/core' },
-  { id: 'inbox_ops', from: '@open-mercato/core' },
+  {
+    id: 'inbox_ops',
+    from: '@open-mercato/core',
+    overrides: {
+      events: {
+        // Core's extraction worker and the logistics freight extractor
+        // (`logistics:offer-freight-extraction`) both subscribe to
+        // `inbox_ops.email.received`, and the event bus runs every persistent
+        // subscriber for one event concurrently, so both race the same
+        // optimistic claim on `inbox_emails.status`.
+        //
+        // Core's worker cannot produce the action this app needs: its output
+        // contract pins `actionType` to a closed enum of nine built-ins with no
+        // `draft_offer` (packages/core/src/modules/inbox_ops/data/validators.ts,
+        // extractedActionSchema). A run it wins ends with a `create_quote`
+        // carrying model-written prices, which is exactly what the freight flow
+        // exists to avoid.
+        //
+        // Remove this line to get core's generic extraction back. The logistics
+        // subscriber then falls back to taking an email over only after core's
+        // extraction has failed on it.
+        subscribers: { 'inbox_ops:extraction-worker': null },
+      },
+    },
+  },
   { id: 'perspectives', from: '@open-mercato/core' },
   { id: 'entities', from: '@open-mercato/core' },
   { id: 'configs', from: '@open-mercato/core' },
