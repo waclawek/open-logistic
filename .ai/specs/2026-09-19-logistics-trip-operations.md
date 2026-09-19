@@ -34,7 +34,7 @@ Shared contract defines responses/errors, guard protocol, versions, receipts, cu
 
 ## File Manifest / UI / Frontend Architecture
 
-commands/trips.ts, execution.ts, recovery.ts, disruptions.ts; services/operations.ts; lib/planning.ts, custody.ts; typed A04-A09/A16 routes; components/trips/TripList.tsx (table), TripPlanForm.tsx (ordered inputs), TripDetail.tsx (actions/history), StopActionDialog.tsx, RecoveryDialog.tsx (typed dialogs); disruptions list client leaf.
+commands/trips.ts, execution.ts, recovery.ts, disruptions.ts; services/operations.ts; lib/planning.ts, custody.ts; typed A04-A08/A16 routes; components/trips/TripList.tsx (table), TripPlanForm.tsx (ordered inputs), TripDetail.tsx (actions/history), StopActionDialog.tsx, RecoveryDialog.tsx (typed dialogs); disruptions list client leaf.
 
 Each named client leaf owns the stated browser state, remains <=300 lines and uses shared forms/tables/dialog primitives. No client page roots/global providers/heavy root imports. Stable entity and extension handles, five locales, keyboard submission/cancel, conflict UI and hydration evidence are required.
 
@@ -73,6 +73,7 @@ Not started.
 ## Changelog
 
 ### 2026-09-19
+- Closed the independent scope review's remaining F1 manifest mismatch: A09 belongs solely to report correction. Seven-capability boundaries reviewed; runtime verification remains outstanding.
 - Expanded skeleton from approved decisions into capability-specific design and shared contract.
 
 ## Correction capability boundary

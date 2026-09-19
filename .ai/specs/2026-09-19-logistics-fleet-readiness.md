@@ -68,7 +68,7 @@ Guides: root/core/customers/shared/UI/backend/QA and shared contract references.
 
 ## Implementation Status
 
-Not started.
+In progress. Profile entities, scoped uniqueness/capacity/location constraints, encryption maps, master extension declarations and metadata-generated initial migration/snapshot are authored. Availability grammar and interval evaluation have 82 passing tests. Profile/source API and UI integration remain outstanding. Local generation completed; normal db:generate failed PostgreSQL authentication, so scoped SQL/snapshot were produced with the existing ORM metadata generator in connect:false mode and verified for zero snapshot drift. No migration was applied.
 
 ## Changelog
 
