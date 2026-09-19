@@ -4,6 +4,7 @@ import { readJsonSafe } from '@open-mercato/core/helpers/integration/generalFixt
 import { ALL_ORGANIZATIONS_COOKIE_VALUE } from '@open-mercato/core/modules/directory/constants'
 import { parseBooleanWithDefault } from '@open-mercato/shared/lib/boolean'
 import { OPTIMISTIC_LOCK_HEADER_NAME } from '@open-mercato/shared/lib/crud/optimistic-lock-headers'
+import { deserializeOperationMetadata } from '@open-mercato/shared/lib/commands/operationMetadata'
 import { commandResultSchema } from '../data/commandValidators'
 import { test, expect } from './helpers/fixtures'
 
@@ -79,4 +80,52 @@ test('rejects protected input, invalid cargo, all-organizations selection and mi
   expect((await page.request.get(`/api/logistics/commands/${requestId}?action=logistics.jobs.accept&action=logistics.jobs.create`)).status()).toBe(400)
   await page.context().addCookies([{ name: 'om_selected_org', value: ALL_ORGANIZATIONS_COOKIE_VALUE, url: baseURL!, sameSite: 'Lax' }])
   expect((await page.request.post(`/api/logistics/jobs/${randomUUID()}/accept`, { data: { requestId, expectedUpdatedAt: '2026-09-19T10:00:00.000Z' } })).status()).toBe(400)
+})
+
+test('round-trips decimal drafts through persisted undo/redo and rejects later ABA edits', async ({ page, logistics }) => {
+  await logistics.grant([...writeFeatures, 'audit_logs.undo_self', 'audit_logs.redo_self'])
+  const customer = await page.request.post('/api/customers/companies', { data: { displayName: `QA undo ${randomUUID()}` } })
+  expect(customer.status()).toBe(201)
+  const customerId = z.object({ id: z.string().uuid() }).parse(await readJsonSafe(customer)).id
+  const place = { label: 'Depot', addressLine: '2 Depot Street', city: 'Warsaw', countryCode: 'PL', timezone: 'Europe/Warsaw' }
+  const input = { requestId: randomUUID(), customerId, cargoDescription: 'Original', weightKg: '12.5', isPalletized: false, pallets: null,
+    pickupPlace: place, deliveryPlace: place, pickupWindowStart: '2026-10-02T08:00:00.000Z', pickupWindowEnd: '2026-10-02T09:00:00.000Z',
+    deliveryWindowStart: '2026-10-02T12:00:00.000Z', deliveryWindowEnd: '2026-10-02T14:00:00.000Z' }
+  const createdResponse = await page.request.post('/api/logistics/jobs', { data: input })
+  expect(createdResponse.status()).toBe(201)
+  const created = createdSchema.parse(await readJsonSafe(createdResponse))
+  let operation = deserializeOperationMetadata(createdResponse.headers()['x-om-operation'])
+  expect(operation).not.toBeNull()
+  const current = async () => {
+    const response = await page.request.get(`/api/logistics/jobs?id=${created.id}`)
+    expect(response.status()).toBe(200)
+    return listSchema.parse(await readJsonSafe(response)).items[0]
+  }
+  for (let cycle = 0; cycle < 2; cycle++) {
+    expect((await current()).cargoDescription).toBe('Original')
+    const undone = await page.request.post('/api/audit_logs/audit-logs/actions/undo', { data: { undoToken: operation!.undoToken } })
+    expect(undone.status()).toBe(200)
+    expect(await current()).toBeUndefined()
+    const redone = await page.request.post('/api/audit_logs/audit-logs/actions/redo', { data: { logId: operation!.id } })
+    expect(redone.status()).toBe(200)
+    operation = deserializeOperationMetadata(redone.headers()['x-om-operation'])
+    expect(operation).not.toBeNull()
+    expect((await current()).id).toBe(created.id)
+  }
+  const edit = async (cargoDescription: string) => {
+    const record = await current()
+    return page.request.put('/api/logistics/jobs', { data: { ...input, requestId: randomUUID(), id: created.id, expectedUpdatedAt: record.updatedAt, cargoDescription },
+      headers: { [OPTIMISTIC_LOCK_HEADER_NAME]: record.updatedAt } })
+  }
+  const edited = await edit('Old edit')
+  expect(edited.status()).toBe(200)
+  const editOperation = deserializeOperationMetadata(edited.headers()['x-om-operation'])!
+  expect(editOperation).not.toBeNull()
+  expect((await page.request.post('/api/audit_logs/audit-logs/actions/undo', { data: { undoToken: editOperation.undoToken } })).status()).toBe(200)
+  expect((await edit('Intervening edit')).status()).toBe(200)
+  expect((await edit('Original')).status()).toBe(200)
+  const before = await current()
+  const staleRedo = await page.request.post('/api/audit_logs/audit-logs/actions/redo', { data: { logId: editOperation.id } })
+  expect(staleRedo.status()).toBe(409)
+  expect(await current()).toEqual(before)
 })
