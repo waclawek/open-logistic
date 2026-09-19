@@ -1,12 +1,13 @@
 import { Page, PageBody } from '@open-mercato/ui/backend/Page'
-import { LogisticsPageContent, LogisticsPageHeader } from '../../../components/LogisticsPage'
+import { LogisticsPageHeader } from '../../../components/LogisticsPage'
+import { FleetMap } from '../../../components/FleetMap'
 
-export default function MapPage() {
+export default function LogisticsPrototypePage() {
   return (
     <Page data-testid="logistics-page">
       <LogisticsPageHeader section="map" />
       <PageBody>
-        <LogisticsPageContent section="map" />
+        <FleetMap />
       </PageBody>
     </Page>
   )
