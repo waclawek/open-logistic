@@ -1,6 +1,7 @@
 export const metadata = {
   requireAuth: true,
-  requireFeatures: ['logistics.view'],
+  navHidden: true,
+  requireFeatures: ['logistics.view', 'inbox_ops.proposals.view'],
   pageTitle: 'AI inbox',
   pageTitleKey: 'logistics.dispatcher.inbox',
   pageGroup: 'Logistics',

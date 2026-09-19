@@ -108,7 +108,7 @@ export function startMockServer(opts: {
     json(res, status, body)
   })
 
-  server.listen(port, () => {
+  server.listen(port, '127.0.0.1', () => {
     console.log(`[mock-server] Trans.eu mock on http://127.0.0.1:${port}`)
     console.log(`[mock-server] health: http://127.0.0.1:${port}/__sim/health`)
     console.log(`[mock-server] catalog: ${catalog.length} ops`)

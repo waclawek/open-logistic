@@ -343,7 +343,11 @@ export class CommandBus {
     }
 
     if (!effectiveOptions.skipCacheInvalidation) {
-      await this.invalidateCacheAfterExecute(commandId, effectiveOptions, finalResult, mergedMeta)
+      const invalidate = async () => {
+        await this.invalidateCacheAfterExecute(commandId, effectiveOptions, finalResult, mergedMeta)
+      }
+      if (effectiveOptions.ctx.deferredSideEffects) effectiveOptions.ctx.deferredSideEffects.push(invalidate)
+      else await invalidate()
     }
     // Bulk-import backfills defer heavy per-record side effects: the ctx flags are read here and
     // threaded as a local into the flush (never stored on the shared dataEngine), so a concurrent

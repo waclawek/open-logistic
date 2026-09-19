@@ -22,6 +22,26 @@ most of the patterns listed below in a user's codebase.
 
 ---
 
+## Logistics dispatcher Sales cutover (2026-09-19)
+
+The app's logistics panel now reads Sales orders with transport custom fields.
+Existing `logistics_transports` rows are retained and require an explicit scoped
+`yarn mercato logistics migrate-sales --tenant <id> --org <id> --channel <id>`
+dry-run followed by the reviewed `--apply` run. See the [logistics rollout guide](apps/mercato/src/modules/logistics/README.md).
+
+Transport list rows follow the Sales-backed shape. Rich detail is returned by
+`GET /api/logistics/transports/:id`; consumers must use its aggregate `updatedAt`
+for decisions and supply `transportVersion` to also detect removed child orders.
+Offer APIs and legacy page URLs remain. The AI Inbox alias now
+requires `inbox_ops.proposals.view` and redirects to the existing Inbox Ops screen.
+
+Command composers may supply the optional `CommandRuntimeContext.deferredSideEffects`
+array. Sales order commands and command-bus cache invalidation append post-commit work
+to it. The composer must run it after commit, discard it on rollback, and preserve its
+DI scope until callbacks finish. Ordinary callers need no changes. Interceptors still
+run synchronously to validate and transform results; any externally publishing custom
+interceptor must explicitly join the supplied queue. See the [specification](.ai/specs/2026-09-19-sales-backed-dispatcher-panel.md).
+
 ## 0.7.0 → 0.8.0 (2026-09-17)
 
 Companion skill: [`om-auto-upgrade-0.7.0-to-0.8.0`](.ai/skills/om-auto-upgrade-0.7.0-to-0.8.0/SKILL.md).

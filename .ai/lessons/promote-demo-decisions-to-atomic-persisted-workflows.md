@@ -2,7 +2,7 @@
 title: "Promote demo decisions to atomic persisted workflows"
 modules: ["logistics"]
 areas: ["module-data", "backend-ui", "testing"]
-topics: ["data-integrity", "optimistic-locking", "testing"]
+topics: ["data-integrity", "optimistic-locking", "testing", "pricing"]
 ---
 
 # Promote demo decisions to atomic persisted workflows
@@ -23,3 +23,12 @@ CRUD query schemas may be parsed more than once; boolean preprocessors must
 accept their already-parsed values. Browser workflows must wait for the selected
 organization to finish initializing before opening scoped details. Otherwise the
 initial scope event correctly dismisses a dialog while a test is using it.
+
+A tariff catalog alone does not implement automatic quoting. When importing a user
+rate table, distinguish vehicle minimum charges from one-time tail-lift surcharges,
+keep payload units explicit, and disclose when demo prices were supplied manually.
+The corrected logistics table sets FTL to 24,000 kg and Solo 18t to 9,000 kg.
+
+When pricing is assigned to a separate feature, keep the dispatcher consuming supplied
+prices and retain the vehicle catalogue without embedding a second pricing engine.
+Remove calculator UI, write hooks and request fields together so ownership is clear.

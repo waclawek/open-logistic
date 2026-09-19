@@ -30,6 +30,30 @@ describe('CommandBus cache invalidation for sales documents', () => {
     invalidateMock.mockClear()
   })
 
+  it.each(['commit', 'rollback'] as const)('defers execute cache invalidation until %s', async (outcome) => {
+    registerCommand({
+      id: 'sales.orders.update',
+      execute: async () => ({ id: 'order-1', tenantId: 'tenant-1', organizationId: 'org-1' }),
+    })
+    const container = createContainer({ injectionMode: InjectionMode.CLASSIC })
+    container.register({ dataEngine: asValue({ flushOrmEntityChanges: jest.fn() }) })
+    const pending: Array<() => Promise<void>> = []
+    const ctx = {
+      container,
+      auth: { sub: 'user-1', tenantId: 'tenant-1', orgId: 'org-1' },
+      organizationScope: null,
+      selectedOrganizationId: 'org-1',
+      organizationIds: null,
+      deferredSideEffects: pending,
+    }
+    await new CommandBus().execute('sales.orders.update', { input: {}, ctx, metadata: { skipLog: true, resourceKind: 'sales.order' } })
+    expect(invalidateMock).not.toHaveBeenCalled()
+    expect(pending).toHaveLength(1)
+    if (outcome === 'commit') for (const effect of pending) await effect()
+    else pending.length = 0
+    expect(invalidateMock).toHaveBeenCalledTimes(outcome === 'commit' ? 1 : 0)
+  })
+
   it('invalidates cache on execute (redo) and undo for sales orders update', async () => {
     const logMock = jest.fn(async () => ({ id: 'log-entry' }))
     const undoMock = jest.fn(async () => {})

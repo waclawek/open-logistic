@@ -58,6 +58,8 @@ export type CommandRuntimeContext = {
    * surrounding work as a single atomic, single-locked operation.
    */
   transactionalEm?: EntityManager
+  /** Callbacks owned by a composing transaction: run after commit, discard on rollback. */
+  deferredSideEffects?: Array<() => Promise<void>>
   /**
    * On-behalf-of attribution for non-human principals (Agent Identity &
    * On-Behalf-Of, Wave 4 P2). When an agent runs on behalf of a human, the

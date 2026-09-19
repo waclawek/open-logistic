@@ -22,7 +22,7 @@ Env:
   TARGET_BASE_URL              destination (OM or mock)
   EURODEBT_SIM_API_KEY         x-api-key value (default: eurodebt-sim-key)
   EURODEBT_WEBHOOK_SECRET      HMAC secret for X-Eurodebt-Signature
-  TRANS_INBOX_TENANT_ID        optional X-Om-Tenant-Id for live inbox SSE
+  TRANS_INBOX_TOKEN        shared diagnostic inbox token (required for application capture)
 `)
 }
 

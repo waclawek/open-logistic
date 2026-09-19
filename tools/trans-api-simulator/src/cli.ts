@@ -16,6 +16,7 @@ Usage:
   yarn trans:sim mock-server [--port 4099] [--latency 25]
 
 Env:
+  TRANS_INBOX_TOKEN shared diagnostic inbox token (required for application capture)
   TARGET_BASE_URL   default destination (scenario can override)
   TRANS_SIM_TOKEN   optional bearer token injected if scenario uses \${TRANS_SIM_TOKEN}
 `)

@@ -1,5 +1,6 @@
 /** @jest-environment jsdom */
 
+import { redirect } from 'next/navigation'
 import { render, screen } from '@testing-library/react'
 import { I18nProvider } from '@open-mercato/shared/lib/i18n/context'
 import { features } from '../acl'
@@ -9,6 +10,8 @@ import pl from '../i18n/pl.json'
 import de from '../i18n/de.json'
 import es from '../i18n/es.json'
 import ko from '../i18n/ko.json'
+import InboxPage from '../backend/logistics/ai-inbox/page'
+import { metadata as inboxMetadata } from '../backend/logistics/ai-inbox/page.meta'
 import DashboardPage from '../backend/logistics/page'
 import { metadata as dashboardMetadata } from '../backend/logistics/page.meta'
 import TransportsPage from '../backend/logistics/transports/page'
@@ -26,15 +29,13 @@ import { metadata as statisticsMetadata } from '../backend/logistics/statistics/
 import proposalsDisruptionsPage from '../backend/logistics/proposals-disruptions/page'
 import { metadata as proposalsDisruptionsMetadata } from '../backend/logistics/proposals-disruptions/page.meta'
 
-jest.mock('../components/DispatcherPanel', () => ({
-  DispatcherPanelHeader: () => null,
-  DispatcherPanel: ({ initialTab }: { initialTab: 'inbox' | 'transports' }) => (
-    <div data-testid="dispatcher-panel" data-initial-tab={initialTab} />
-  ),
-}))
+jest.mock('next/navigation', () => ({ redirect: jest.fn() }))
+jest.mock('../components/TransportsTable', () => ({ TransportsTable: () => <div data-testid="transports-table" /> }))
+
 
 const pages = [
   { id: 'dashboard', path: '/backend/logistics', Component: DashboardPage, metadata: dashboardMetadata },
+  { id: 'inbox', path: '/backend/logistics/ai-inbox', Component: InboxPage, metadata: inboxMetadata },
   { id: 'transports', path: '/backend/logistics/transports', Component: TransportsPage, metadata: transportsMetadata },
   { id: 'transportJobs', path: '/backend/logistics/transport-jobs', Component: transportJobsPage, metadata: transportJobsMetadata },
   { id: 'fleet', path: '/backend/logistics/fleet', Component: fleetPage, metadata: fleetMetadata },
@@ -49,7 +50,7 @@ const dictionaries: Record<string, Record<string, string>> = { en, pl, de, es, k
 describe('Logistics navigation foundation', () => {
   test.each(pages)('$path is individually protected by the read feature', ({ metadata }) => {
     expect(metadata.requireAuth).toBe(true)
-    expect(metadata.requireFeatures).toEqual(['logistics.view'])
+    expect(metadata.requireFeatures).toContain('logistics.view')
     expect(metadata.pageGroupKey).toBe('logistics.nav.group')
   })
 
@@ -60,7 +61,7 @@ describe('Logistics navigation foundation', () => {
 
   test('shows exactly the inbox and transports routes in the sidebar', () => {
     const visiblePages = pages.filter(({ metadata }) => !('navHidden' in metadata && metadata.navHidden))
-    expect(visiblePages.map(({ path }) => path)).toEqual(['/backend/logistics', '/backend/logistics/transports'])
+    expect(visiblePages.map(({ path }) => path)).toEqual(['/backend/logistics/ai-inbox', '/backend/logistics/transports'])
     expect(visiblePages.map(({ metadata }) => metadata.pageOrder)).toEqual([10, 20])
     expect(visiblePages.map(({ metadata }) => metadata.pageTitleKey)).toEqual([
       'logistics.dispatcher.inbox',
@@ -68,17 +69,21 @@ describe('Logistics navigation foundation', () => {
     ])
   })
 
-  test.each([
-    { Component: DashboardPage, initialTab: 'inbox' },
-    { Component: TransportsPage, initialTab: 'transports' },
-  ])('opens the $initialTab tab at its dedicated route', ({ Component, initialTab }) => {
-    render(<Component />)
-    expect(screen.getByTestId('dispatcher-panel')).toHaveAttribute('data-initial-tab', initialTab)
+  test('redirects AI inbox to the existing inbox module and protects destination access', () => {
+    DashboardPage()
+    InboxPage()
+    expect(redirect).toHaveBeenCalledWith('/backend/inbox-ops')
+    expect(dashboardMetadata.requireFeatures).toContain('inbox_ops.proposals.view')
+  })
+
+  test('opens the Sales transport table at its dedicated route', () => {
+    render(<TransportsPage />)
+    expect(screen.getByTestId('transports-table')).toBeInTheDocument()
   })
 
   describe.each(['en', 'pl', 'de', 'es', 'ko'] as const)('%s locale', (locale) => {
     const dict = dictionaries[locale]
-    test.each(pages.slice(2))('$path displays its translated purpose and honest availability', ({ id, Component }) => {
+    test.each(pages.slice(3))('$path displays its translated purpose and honest availability', ({ id, Component }) => {
       const { container } = render(
         <I18nProvider locale={locale} dict={dict}>
           <Component />

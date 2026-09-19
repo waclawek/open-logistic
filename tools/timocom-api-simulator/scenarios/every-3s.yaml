@@ -1,13 +1,13 @@
 name: every-3s
 description: Every 3s fire a small TIMOCOM batch into OM inbox (ctrl+c to stop)
 target:
-  baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:3001}
+  baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:3000}
   headers:
+    X-Trans-Inbox-Token: ${TRANS_INBOX_TOKEN:-}
     Authorization: Basic ${TIMOCOM_SIM_BASIC:-dGVzdDp0ZXN0}
     Content-Type: application/vnd.freight-exchange.v3+json
     Accept: application/vnd.freight-exchange.v3+json
     X-Timocom-Sim: "1"
-    X-Om-Tenant-Id: ${TRANS_INBOX_TENANT_ID:-}
   pathMap:
     "POST /freight-exchange/3/my-freight-offers": /api/integrations/timocom/webhooks/freight-offer
     "POST /freight-exchange/3/my-vehicle-space-offers": /api/integrations/timocom/webhooks/vehicle-space

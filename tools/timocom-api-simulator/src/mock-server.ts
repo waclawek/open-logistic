@@ -126,7 +126,7 @@ export function startMockServer(opts: {
     })
   })
 
-  server.listen(port, () => {
+  server.listen(port, '127.0.0.1', () => {
     console.log(`[mock-server] TIMOCOM Freight Exchange mock on http://127.0.0.1:${port}`)
     console.log(`[mock-server] base path prefix: /freight-exchange/3`)
     console.log(`[mock-server] health: http://127.0.0.1:${port}/__sim/health`)

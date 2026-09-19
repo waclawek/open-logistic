@@ -1,5 +1,7 @@
 # App Spec: Logistyka — fundament panelu dyspozytora
 
+> The current Sales-backed design supersedes the transport-storage and inbox design below: [Sales-backed dispatcher](2026-09-19-sales-backed-dispatcher-panel.md).
+
 **Data:** 2026-09-19
 
 **Aktualizacja zakresu 2026-09-19:** ekran główny `/backend/logistics` rozwija

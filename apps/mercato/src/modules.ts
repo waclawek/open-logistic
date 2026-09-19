@@ -80,6 +80,10 @@ export const enabledModules: ModuleEntry[] = [
   { id: 'auth', from: '@open-mercato/core' },
   { id: 'directory', from: '@open-mercato/core' },
   { id: 'customers', from: '@open-mercato/core' },
+  { id: 'catalog', from: '@open-mercato/core' },
+  { id: 'sales', from: '@open-mercato/core' },
+  { id: 'feature_toggles', from: '@open-mercato/core' },
+  { id: 'inbox_ops', from: '@open-mercato/core' },
   { id: 'perspectives', from: '@open-mercato/core' },
   { id: 'entities', from: '@open-mercato/core' },
   { id: 'configs', from: '@open-mercato/core' },
@@ -106,8 +110,6 @@ export const enabledModules: ModuleEntry[] = [
 // Full catalog extras — skipped when OM_SLIM_DEV_MODULES=true.
 if (!parseBooleanWithDefault(process.env.OM_SLIM_DEV_MODULES, false)) {
   enabledModules.push(
-    { id: 'catalog', from: '@open-mercato/core' },
-    { id: 'sales', from: '@open-mercato/core' },
     { id: 'warranty_claims', from: '@open-mercato/core' },
     { id: 'wms', from: '@open-mercato/core' },
     { id: 'devices', from: '@open-mercato/core' },
@@ -115,7 +117,6 @@ if (!parseBooleanWithDefault(process.env.OM_SLIM_DEV_MODULES, false)) {
     // design_system.view). Disable by removing this line.
     { id: 'design_system', from: '@open-mercato/core' },
     { id: 'business_rules', from: '@open-mercato/core' },
-    { id: 'feature_toggles', from: '@open-mercato/core' },
     { id: 'workflows', from: '@open-mercato/core' },
     { id: 'search', from: '@open-mercato/search' },
     { id: 'planner', from: '@open-mercato/core' },
@@ -135,7 +136,6 @@ if (!parseBooleanWithDefault(process.env.OM_SLIM_DEV_MODULES, false)) {
     { id: 'ai_assistant', from: '@open-mercato/ai-assistant' },
     // agent_orchestrator moved to the enterprise catalog — enabled below behind
     // OM_ENABLE_ENTERPRISE_MODULES + OM_ENABLE_ENTERPRISE_MODULES_AGENTS.
-    { id: 'inbox_ops', from: '@open-mercato/core' },
     { id: 'payment_gateways', from: '@open-mercato/core' },
     { id: 'checkout', from: '@open-mercato/checkout' },
     { id: 'documents', from: '@open-mercato/documents' },

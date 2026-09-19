@@ -3,10 +3,9 @@ description: Hit OM Trans Inbox — 5 freights + 3 orders (use --dry-run to skip
 target:
   baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:3000}
   headers:
+    X-Trans-Inbox-Token: ${TRANS_INBOX_TOKEN:-}
     Authorization: Bearer ${TRANS_SIM_TOKEN:-dev-token}
     X-Trans-Sim: "1"
-    # Optional: match logged-in tenant for SSE live updates on /backend/trans_inbox
-    X-Om-Tenant-Id: ${TRANS_INBOX_TENANT_ID:-}
   pathMap:
     "POST /ext/freights-api/v2/freights": /api/integrations/trans/webhooks/freight
     "POST /ext/orders-api/v1/orders": /api/integrations/trans/webhooks/order

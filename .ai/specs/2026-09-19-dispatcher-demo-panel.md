@@ -1,5 +1,7 @@
 # Persistent dispatcher panel
 
+> Sales-backed extension: [2026-09-19-sales-backed-dispatcher-panel.md](2026-09-19-sales-backed-dispatcher-panel.md). The original PR #11 implementation remains the baseline.
+
 Date: 2026-09-19. Status: persistence implemented and verified.
 
 ## Overview

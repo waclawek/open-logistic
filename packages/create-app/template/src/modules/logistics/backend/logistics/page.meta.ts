@@ -1,10 +1,11 @@
 export const metadata = {
   requireAuth: true,
-  requireFeatures: ['logistics.view'],
-  pageTitle: 'Dispatcher dashboard',
-  pageTitleKey: 'logistics.dashboard.title',
+  navHidden: true,
+  requireFeatures: ['logistics.view', 'inbox_ops.proposals.view'],
+  pageTitle: 'AI inbox',
+  pageTitleKey: 'logistics.dispatcher.inbox',
   pageGroup: 'Logistics',
   pageGroupKey: 'logistics.nav.group',
   pageOrder: 10,
-  icon: 'layout-dashboard',
+  icon: 'inbox',
 }

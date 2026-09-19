@@ -1,6 +1,6 @@
 # GraphHopper demo (WAW → POZ)
 
-Self-contained routing demo for Open Mercato showcases. Uses **GraphHopper** + Poland OSM extract behind Docker, with a **committed route fixture** so the map works offline even before import finishes.
+Self-contained routing demo for Open Mercato showcases. Uses **GraphHopper** + Poland OSM extract behind Docker, with a **committed route fixture** so route geometry is available before import finishes (Leaflet and map tiles still require network access).
 
 ## Quick start (demo laptop)
 
@@ -36,7 +36,7 @@ yarn graphhopper:stop
 |------|---------|
 | `config.yml` | Car-only, no elevation (fast import) |
 | `fixtures/waw-poz.route.json` | Committed WAW→POZ geometry + PL instructions (~42 KB) |
-| `demo.html` | Leaflet map: fixture offline / live `:8989` |
+| `demo.html` | Leaflet map: local fixture / live `:8989` |
 | `setup.sh` / `test.sh` / `stop.sh` | Full setup + smoke test |
 
 **Not in git** (downloaded by setup): `data/*.osm.pbf`, `data/*-gh/` graph cache.
@@ -74,3 +74,7 @@ Refresh the committed fixture after a big OSM refresh:
 - Docker Desktop (or Engine) running
 - ~8 GB free RAM for Poland import
 - ~4 GB disk (`data/`)
+
+## Limitations and Windows
+
+Run the shell scripts in Git Bash or WSL with Docker access; they are not PowerShell scripts. The car profile does not enforce truck height, weight, axle or hazardous-goods constraints. This standalone demo does not update dispatcher business records. The local route fixture does not require GraphHopper, but the viewer still downloads Leaflet from a CDN and OSM map tiles.

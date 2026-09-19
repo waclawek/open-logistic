@@ -13,7 +13,7 @@ test('the standard mobile menu and keyboard links reach both logistics screens',
     await link.focus()
     await expect(link).toBeFocused()
     await page.keyboard.press('Enter')
-    await expect(page).toHaveURL(section.path)
+    await expect(page).toHaveURL(section.tab === 'inbox' ? '/backend/inbox-ops' : section.path)
     await expectPlannedPage(page, section)
     await expect(page.getByRole('button', { name: 'Close menu', exact: true })).toHaveCount(0)
   }

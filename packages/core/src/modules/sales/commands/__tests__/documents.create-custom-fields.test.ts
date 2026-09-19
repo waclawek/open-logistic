@@ -54,8 +54,24 @@ jest.mock('@open-mercato/shared/lib/commands/helpers', () => ({
   emitCrudSideEffects: jest.fn(async () => undefined),
 }))
 
+const mockCreateNotification = jest.fn(async () => undefined)
+const mockLifecycleEvent = jest.fn(async (..._args: unknown[]) => undefined)
+const mockTotalsEvent = jest.fn(async () => undefined)
+const mockInvalidateCache = jest.fn(async (..._args: unknown[]) => undefined)
 jest.mock('@open-mercato/core/modules/notifications/lib/notificationService', () => ({
-  resolveNotificationService: () => ({ createForFeature: jest.fn(async () => undefined) }),
+  resolveNotificationService: () => ({ createForFeature: mockCreateNotification }),
+}))
+jest.mock('../../events', () => ({
+  ...jest.requireActual('../../events'),
+  emitSalesEvent: (...args: unknown[]) => mockLifecycleEvent(...args),
+}))
+jest.mock('../../lib/dictionaries', () => ({
+  ...jest.requireActual('../../lib/dictionaries'),
+  resolveCachedDictionaryEntryValue: async (_em: unknown, id: string | null) => id ? 'confirmed' : null,
+}))
+jest.mock('@open-mercato/shared/lib/crud/cache', () => ({
+  ...jest.requireActual('@open-mercato/shared/lib/crud/cache'),
+  invalidateCrudCache: (...args: unknown[]) => mockInvalidateCache(...args),
 }))
 
 const { setRecordCustomFields } = jest.requireMock(
@@ -98,7 +114,7 @@ function buildHarness() {
   container.register({
     em: asValue(em),
     dataEngine: asValue({}),
-    eventBus: asValue({ emit: async () => undefined, emitEvent: async () => undefined }),
+    eventBus: asValue({ emit: async () => undefined, emitEvent: mockTotalsEvent }),
     salesCalculationService: asValue(new DefaultSalesCalculationService(null)),
     salesDocumentNumberGenerator: asValue({ generate: async () => ({ number: 'DOC-1' }) }),
   })
@@ -166,6 +182,10 @@ describe('sales document create commands — customFields (GSM-296)', () => {
   beforeEach(() => {
     setRecordCustomFields.mockClear()
     emitCrudSideEffects.mockClear()
+    mockCreateNotification.mockClear()
+    mockLifecycleEvent.mockClear()
+    mockTotalsEvent.mockClear()
+    mockInvalidateCache.mockClear()
   })
 
   function getHandler(id: string) {
@@ -173,6 +193,37 @@ describe('sales document create commands — customFields (GSM-296)', () => {
     expect(handler).toBeTruthy()
     return handler!
   }
+
+  it.each(['immediate', 'commit', 'rollback'] as const)(
+    'publishes notifications, totals, lifecycle events and cache invalidation only at the %s boundary',
+    async (mode) => {
+      const { ctx } = buildHarness()
+      const pending: Array<() => Promise<void>> = []
+      if (mode !== 'immediate') ctx.deferredSideEffects = pending
+      await getHandler('sales.orders.create').execute(buildInput({
+        statusEntryId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      }) as never, ctx)
+
+      const expectedBeforeCommit = mode === 'immediate' ? 1 : 0
+      expect(mockCreateNotification).toHaveBeenCalledTimes(expectedBeforeCommit)
+      expect(mockTotalsEvent).toHaveBeenCalledTimes(expectedBeforeCommit)
+      expect(mockLifecycleEvent).toHaveBeenCalledTimes(expectedBeforeCommit)
+      expect(mockInvalidateCache).toHaveBeenCalledTimes(expectedBeforeCommit)
+      if (mode !== 'immediate') expect(pending.length).toBeGreaterThan(0)
+      if (mode === 'commit') for (const effect of pending) await effect()
+      if (mode === 'rollback') pending.length = 0
+
+      const expectedAfterBoundary = mode === 'rollback' ? 0 : 1
+      expect(mockCreateNotification).toHaveBeenCalledTimes(expectedAfterBoundary)
+      expect(mockTotalsEvent).toHaveBeenCalledTimes(expectedAfterBoundary)
+      expect(mockLifecycleEvent).toHaveBeenCalledTimes(expectedAfterBoundary)
+      expect(mockInvalidateCache).toHaveBeenCalledTimes(expectedAfterBoundary)
+      if (mode !== 'rollback') {
+        expect(mockTotalsEvent).toHaveBeenCalledWith('sales.document.totals.calculated', expect.objectContaining({ tenantId: TEST_TENANT_ID, organizationId: TEST_ORG_ID }))
+        expect(mockLifecycleEvent).toHaveBeenCalledWith('sales.order.confirmed', expect.objectContaining({ tenantId: TEST_TENANT_ID, organizationId: TEST_ORG_ID }))
+      }
+    },
+  )
 
   it('persists customFields supplied to sales.orders.create', async () => {
     const { ctx } = buildHarness()

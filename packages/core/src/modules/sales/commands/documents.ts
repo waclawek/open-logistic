@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
 import { registerCommand } from "@open-mercato/shared/lib/commands";
-import type { CommandHandler } from "@open-mercato/shared/lib/commands";
+import type { CommandHandler, CommandRuntimeContext } from "@open-mercato/shared/lib/commands";
 import { withAtomicFlush } from "@open-mercato/shared/lib/commands/flush";
 import {
   buildChanges,
@@ -151,6 +151,7 @@ import {
 import type { AuthContext } from "@open-mercato/shared/lib/auth/server";
 import type { TranslateWithFallbackFn } from "@open-mercato/shared/lib/i18n/translate";
 import { createLogger } from '@open-mercato/shared/lib/logger'
+import { getTelemetryRuntime } from '@open-mercato/shared/lib/telemetry/runtime'
 
 const logger = createLogger('sales')
 let warnedDeprecatedOrderPaymentLedgerInput = false
@@ -951,12 +952,36 @@ async function emitOrderLifecycleEvent(input: {
   });
 }
 
+async function runOrDeferDocumentSideEffect(
+  ctx: CommandRuntimeContext,
+  effect: () => Promise<void>,
+): Promise<void> {
+  if (ctx.deferredSideEffects) {
+    ctx.deferredSideEffects.push(effect);
+    return;
+  }
+  await effect();
+}
+
 function emitOrderLifecycleEventsForTransition(input: {
   order: SalesOrder;
   previousStatus: string | null;
-}): void {
+}, deferredSideEffects?: Array<() => Promise<void>>): void {
   const nextStatus = normalizeStatusValue(input.order.status);
   if (input.previousStatus === nextStatus) return;
+  if (deferredSideEffects) {
+    const eventId = isConfirmedOrderStatus(nextStatus)
+      ? "sales.order.confirmed"
+      : isCancelledOrderStatus(nextStatus) ? "sales.order.cancelled" : null;
+    if (eventId) {
+      deferredSideEffects.push(() => emitOrderLifecycleEvent({
+        eventId,
+        order: input.order,
+        previousStatus: input.previousStatus,
+      }));
+    }
+    return;
+  }
 
   if (isConfirmedOrderStatus(nextStatus)) {
     void emitOrderLifecycleEvent({
@@ -5651,7 +5676,7 @@ const updateOrderCommand: CommandHandler<
             } catch {
               eventBus = null;
             }
-            await emitTotalsCalculated(eventBus, {
+            await runOrDeferDocumentSideEffect(ctx, () => emitTotalsCalculated(eventBus, {
               documentKind: "order",
               documentId: order.id,
               organizationId: order.organizationId,
@@ -5659,7 +5684,7 @@ const updateOrderCommand: CommandHandler<
               customerId: order.customerEntityId ?? null,
               totals: calculation.totals,
               lineCount: calculation.lines.length,
-            });
+            }));
           }
           statusChangeNote = await appendOrderStatusChangeNote({
             em,
@@ -5672,7 +5697,7 @@ const updateOrderCommand: CommandHandler<
       ],
       { transaction: true },
     );
-    emitOrderLifecycleEventsForTransition({ order, previousStatus });
+    emitOrderLifecycleEventsForTransition({ order, previousStatus }, ctx.deferredSideEffects);
     if (statusChangeNote) {
       const dataEngine = ctx.container.resolve("dataEngine");
       await emitCrudSideEffects({
@@ -5689,7 +5714,7 @@ const updateOrderCommand: CommandHandler<
     }
     const resourceKind =
       deriveResourceFromCommandId(updateOrderCommand.id) ?? "sales.order";
-    await invalidateCrudCache(
+    await runOrDeferDocumentSideEffect(ctx, () => invalidateCrudCache(
       ctx.container,
       resourceKind,
       {
@@ -5699,7 +5724,7 @@ const updateOrderCommand: CommandHandler<
       },
       ctx.auth?.tenantId ?? null,
       "updated",
-    );
+    ));
     return { order };
   },
   captureAfter: async (_input, result, ctx) => {
@@ -6033,7 +6058,7 @@ const createOrderCommand: CommandHandler<
             adjustmentInputs,
           );
           applyOrderTotals(order, calculation.totals, calculation.lines.length);
-          await emitTotalsCalculated(eventBus, {
+          await runOrDeferDocumentSideEffect(ctx, () => emitTotalsCalculated(eventBus, {
             documentKind: "order",
             documentId: order.id,
             organizationId: order.organizationId,
@@ -6041,7 +6066,7 @@ const createOrderCommand: CommandHandler<
             customerId: order.customerEntityId ?? null,
             totals: calculation.totals,
             lineCount: calculation.lines.length,
-          });
+          }));
           await syncSalesDocumentTags(em, {
             documentId: order.id,
             kind: "order",
@@ -6062,42 +6087,45 @@ const createOrderCommand: CommandHandler<
     );
 
     // Create notification for users with sales.orders.manage feature
-    try {
-      const notificationService = resolveNotificationService(ctx.container);
-      const typeDef = notificationTypes.find(
-        (type) => type.type === "sales.order.created",
-      );
-      if (typeDef) {
-        const totalAmount =
-          order.grandTotalGrossAmount && order.currencyCode
-            ? `${order.grandTotalGrossAmount} ${order.currencyCode}`
-            : "";
-        const totalDisplay = totalAmount ? ` (${totalAmount})` : "";
-        const notificationInput = buildFeatureNotificationFromType(typeDef, {
-          requiredFeature: "sales.orders.manage",
-          bodyVariables: {
-            orderNumber: order.orderNumber,
-            total: totalDisplay,
-            totalAmount,
-          },
-          sourceEntityType: "sales:order",
-          sourceEntityId: order.id,
-          linkHref: `/backend/sales/orders/${order.id}`,
-        });
-
-        // Bulk-import backfills opt out of the per-record notification fan-out (and its inline
-        // e-mail delivery); interactive creates are unaffected.
-        if (!ctx.bulkImport?.skipNotifications) {
-          await notificationService.createForFeature(notificationInput, {
-            tenantId: order.tenantId,
-            organizationId: order.organizationId ?? null,
+    await runOrDeferDocumentSideEffect(ctx, async () => {
+      try {
+        const notificationService = resolveNotificationService(ctx.container);
+        const typeDef = notificationTypes.find(
+          (type) => type.type === "sales.order.created",
+        );
+        if (typeDef) {
+          const totalAmount =
+            order.grandTotalGrossAmount && order.currencyCode
+              ? `${order.grandTotalGrossAmount} ${order.currencyCode}`
+              : "";
+          const totalDisplay = totalAmount ? ` (${totalAmount})` : "";
+          const notificationInput = buildFeatureNotificationFromType(typeDef, {
+            requiredFeature: "sales.orders.manage",
+            bodyVariables: {
+              orderNumber: order.orderNumber,
+              total: totalDisplay,
+              totalAmount,
+            },
+            sourceEntityType: "sales:order",
+            sourceEntityId: order.id,
+            linkHref: `/backend/sales/orders/${order.id}`,
           });
+
+          // Bulk-import backfills opt out of the per-record notification fan-out (and its inline
+          // e-mail delivery); interactive creates are unaffected.
+          if (!ctx.bulkImport?.skipNotifications) {
+            await notificationService.createForFeature(notificationInput, {
+              tenantId: order.tenantId,
+              organizationId: order.organizationId ?? null,
+            });
+          }
         }
+      } catch (err) {
+        // Notification creation is non-critical, don't fail the command
+        logger.error("sales.orders.create failed to create notification", { err });
+        getTelemetryRuntime()?.reportError(err, { module: "sales", code: "sales.order.notification_failed" });
       }
-    } catch (err) {
-      // Notification creation is non-critical, don't fail the command
-      logger.error("sales.orders.create failed to create notification", { err });
-    }
+    });
 
     // Emit CRUD side effects to trigger workflow event listeners
     const dataEngine = ctx.container.resolve("dataEngine") as DataEngine;
@@ -6118,7 +6146,7 @@ const createOrderCommand: CommandHandler<
     // Invalidate cache
     const resourceKind =
       deriveResourceFromCommandId(createOrderCommand.id) ?? "sales.order";
-    await invalidateCrudCache(
+    await runOrDeferDocumentSideEffect(ctx, () => invalidateCrudCache(
       ctx.container,
       resourceKind,
       {
@@ -6128,12 +6156,12 @@ const createOrderCommand: CommandHandler<
       },
       ctx.auth?.tenantId ?? null,
       "created",
-    );
+    ));
 
     emitOrderLifecycleEventsForTransition({
       order,
       previousStatus: null,
-    });
+    }, ctx.deferredSideEffects);
 
     return {
       orderId: order.id,

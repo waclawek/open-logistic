@@ -1,5 +1,7 @@
 # Eurodebt API simulator
 
+> Application capture requires development mode, explicit enablement, configured tenant/organization and X-Trans-Inbox-Token. Set TRANS_INBOX_TOKEN in the simulator terminal. See [diagnostic inbox setup](../../apps/mercato/src/modules/trans_inbox/README.md). Provider authorization headers below are simulated and do not authenticate the diagnostic inbox.
+
 Fire mock **company/carrier verification** traffic (and outbound webhook payloads)
 shaped like [Eurodebt API](https://eurodebt.eu/api/docs/) into Open Mercato `trans_inbox`.
 
@@ -14,8 +16,8 @@ yarn eurodebt:sim catalog
 # dry-run
 yarn eurodebt:sim run tools/eurodebt-api-simulator/scenarios/smoke.yaml --dry-run
 
-# hit local OM inbox (:3001)
-TARGET_BASE_URL=http://127.0.0.1:3001 \
+# hit local OM inbox (:3000)
+TARGET_BASE_URL=http://127.0.0.1:3000 \
   yarn eurodebt:sim run tools/eurodebt-api-simulator/scenarios/smoke.yaml
 
 # every 3s

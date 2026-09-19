@@ -46,7 +46,7 @@ This catalog indexes 144 focused lessons. Route the task first, then read only r
 
 ### module-data
 
-- [Promote demo decisions to atomic persisted workflows](lessons/promote-demo-decisions-to-atomic-persisted-workflows.md) — area:module-data,backend-ui,testing; module:logistics; topic:data-integrity,optimistic-locking,testing
+- [Promote demo decisions to atomic persisted workflows](lessons/promote-demo-decisions-to-atomic-persisted-workflows.md) — area:module-data,backend-ui,testing; module:logistics; topic:data-integrity,optimistic-locking,testing,pricing
 
 - [Auto-discovery routing surprises only a running app catches](lessons/api-route-files-must-sit-directly-under-the-resource.md) — area:module-data,backend-ui,testing; module:documents,cli,ui; topic:auto-discovery,generated-files,error-states
 - [Local tooling gotchas: stale snapshots and ephemeral restarts](lessons/db-generate-re-emits-an-unrelated-stale-snapshot.md) — area:module-data,testing,debugging; module:cli,ai_assistant; topic:database-migrations,dev-runtime,regeneration

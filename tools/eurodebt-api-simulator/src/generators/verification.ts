@@ -47,7 +47,7 @@ export function verificationSubmit(ctx: GenCtx) {
   const webhookUrl =
     typeof ctx.vars?.webhookUrl === 'string'
       ? ctx.vars.webhookUrl
-      : 'http://127.0.0.1:3001/api/integrations/eurodebt/webhooks/verification'
+      : 'http://127.0.0.1:3000/api/integrations/eurodebt/webhooks/verification'
 
   return {
     type,

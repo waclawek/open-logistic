@@ -1,4 +1,5 @@
 export const metadata = {
+  navHidden: true,
   requireAuth: true,
   requireFeatures: ['logistics.view'],
   pageTitle: 'Trips and routes',

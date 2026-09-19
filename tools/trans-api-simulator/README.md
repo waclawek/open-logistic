@@ -1,5 +1,7 @@
 # Trans.eu API Simulator
 
+> Application capture requires development mode, explicit enablement, configured tenant/organization and X-Trans-Inbox-Token. Set TRANS_INBOX_TOKEN in the simulator terminal. See [diagnostic inbox setup](../../apps/mercato/src/modules/trans_inbox/README.md). Provider authorization headers below are simulated and do not authenticate the diagnostic inbox.
+
 Load / traffic generator for the Trans.eu OpenAPI under `trans_api_doc/`.
 Fires mock payloads at Open Mercato (or a local Trans mock server), with **named batches** and **schedules**.
 
@@ -58,6 +60,7 @@ name: my-load
 target:
   baseUrl: ${TARGET_BASE_URL:-http://127.0.0.1:3000}
   headers:
+    X-Trans-Inbox-Token: ${TRANS_INBOX_TOKEN}
     Authorization: Bearer ${TRANS_SIM_TOKEN}
   # Rewrite Trans paths → OM routes
   pathMap:
@@ -117,5 +120,5 @@ NDJSON: one `stats` line + one `result` line per request under `.reports/`.
 ## Notes
 
 - Path map keys must match catalog keys exactly (`yarn trans:sim catalog`).
-- Until OM has real Trans webhook routes, use `--dry-run` or point `pathMap` at any sink you stand up (even a `nc`/`http-echo`).
+- Application scenarios target the development-only diagnostic inbox. Enable it and configure the shared token as described above, or use `--dry-run`.
 - `mock-server` answers every catalogued Trans path with plausible JSON so pull adapters can be developed offline.

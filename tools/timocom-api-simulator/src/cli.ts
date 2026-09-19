@@ -21,7 +21,7 @@ Usage:
 Env:
   TARGET_BASE_URL          destination (OM or mock)
   TIMOCOM_SIM_BASIC        optional Basic auth value (group:password or already base64)
-  TRANS_INBOX_TENANT_ID    optional X-Om-Tenant-Id for live inbox SSE
+  TRANS_INBOX_TOKEN        shared diagnostic inbox token (required for application capture)
 `)
 }
 

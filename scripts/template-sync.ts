@@ -306,10 +306,13 @@ export const TEMPLATE_COMMENTED_MODULES: Record<string, { source: string; templa
 
 function commentOutTemplateModules(content: string, rel: string): string {
   return Object.entries(TEMPLATE_COMMENTED_MODULES).reduce((current, [moduleId, replacement]) => {
-    if (!current.includes(replacement.source)) {
+    const nestedSource = replacement.source.replace(/^/gm, '  ')
+    const source = current.includes(replacement.source) ? replacement.source : nestedSource
+    if (!current.includes(source)) {
       failTemplateTransform(rel, `expected the ${moduleId} enabledModules entry with its source comment`)
     }
-    return current.replace(replacement.source, () => replacement.template)
+    const template = source === nestedSource ? replacement.template.replace(/^/gm, '  ') : replacement.template
+    return current.replace(source, () => template)
   }, content)
 }
 
