@@ -46,3 +46,7 @@ Every unlisted work package is provisionally one commit (19 total). Split these 
 | C18 | C18a versioned day-envelope model and entry APIs; C18b exact reconciliation/provenance/conflict computation; C18c reconciliation UI and missing-data repair | 3 |
 
 Sequence C09 before the source-dependent C03 eligibility integration and C08/C10 confirmation integration. These are testable internal increments, not standalone promises that partial custody or recovery can go live. An implementation readiness audit can revise the estimate; the count is neither a delivery date nor a requirement to manufacture commits.
+
+## Implementation evidence — 2026-09-19
+
+Initial ordinary ready-job load-plan validation merged from independently scoped task 2a9aad3c (88cdb7845). Parent reran 59 focused adversarial cases, strict planning compilation (including tests, no skipLibCheck) and all logistics unit suites: 369 tests across 13 suites passed. Normal app typechecking passed. This covers pickup/delivery pairing, final empty end, exact payload and pallet capacity after every stop. It does not authorize dispatch or cover trip persistence, timing, reservations, source eligibility, recovery or execution; those remain required.
