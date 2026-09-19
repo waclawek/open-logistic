@@ -31,5 +31,6 @@
   "logistics.errors.nestedCommand": "Esta acción debe ejecutarse como un comando independiente.",
   "logistics.errors.requestIdReused": "Este identificador de solicitud ya se utilizó con otros datos. Comprueba su resultado.",
   "logistics.errors.notFound": "El registro no está disponible en esta organización.",
-  "logistics.errors.jobNotDraft": "Solo se puede aceptar un trabajo en borrador que aún no haya sido aceptado."
+  "logistics.errors.jobNotDraft": "Solo se puede aceptar un trabajo en borrador que aún no haya sido aceptado.",
+  "logistics.errors.sourceUnavailable": "La fuente necesaria no está disponible. Inténtalo de nuevo cuando se restablezca el acceso."
 }

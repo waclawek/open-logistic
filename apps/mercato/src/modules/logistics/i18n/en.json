@@ -31,5 +31,6 @@
   "logistics.errors.nestedCommand": "This action must run as a separate command.",
   "logistics.errors.requestIdReused": "This request identifier was already used for different input. Reconcile its outcome.",
   "logistics.errors.notFound": "The record is not available in this organization.",
-  "logistics.errors.jobNotDraft": "Only an unaccepted draft job can be accepted."
+  "logistics.errors.jobNotDraft": "Only an unaccepted draft job can be accepted.",
+  "logistics.errors.sourceUnavailable": "The required source is unavailable. Try again after access is restored."
 }

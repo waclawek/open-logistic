@@ -31,5 +31,6 @@
   "logistics.errors.nestedCommand": "Ta operacja musi zostać wykonana jako osobne polecenie.",
   "logistics.errors.requestIdReused": "Ten identyfikator żądania został już użyty dla innych danych. Sprawdź jego wynik.",
   "logistics.errors.notFound": "Rekord nie jest dostępny w tej organizacji.",
-  "logistics.errors.jobNotDraft": "Można przyjąć wyłącznie nieprzyjęte zlecenie w wersji roboczej."
+  "logistics.errors.jobNotDraft": "Można przyjąć wyłącznie nieprzyjęte zlecenie w wersji roboczej.",
+  "logistics.errors.sourceUnavailable": "Wymagane źródło jest niedostępne. Spróbuj ponownie po przywróceniu dostępu."
 }
