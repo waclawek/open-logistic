@@ -1,8 +1,5 @@
 import {
-  acceptDemoAdditionalLoad,
-  approveDemoCarrier,
   canAcceptAdditionalLoad,
-  demoTransports,
   getRemainingCapacity,
   type Cargo,
   type Transport,
@@ -10,7 +7,7 @@ import {
 
 function createTransport(): Transport {
   return {
-    id: 'test-transport', customer: 'Customer Demo', origin: 'Warszawa', destination: 'Berlin',
+    id: 'test-transport', reference: 'TR-TEST', updatedAt: '2026-09-19T12:00:00.000Z', customer: 'Customer Demo', origin: 'Warszawa', destination: 'Berlin',
     pickupDate: '2026-09-21', deliveryDate: '2026-09-22',
     order1: { id: 'order-1', status: 'confirmed', cargo: { weightKg: 10000, palletSpaces: 20 } },
     order2: {
@@ -25,8 +22,8 @@ describe('remaining vehicle capacity', () => {
   it('subtracts Order 1 and every accepted load independently in kilograms and pallet spaces', () => {
     const transport = createTransport()
     transport.additionalLoads = [
-      { id: 'extra-1', cargo: { weightKg: 2000, palletSpaces: 3 } },
-      { id: 'extra-2', cargo: { weightKg: 3500, palletSpaces: 4 } },
+      { id: 'extra-1', offerId: 'offer-1', orderNumber: 3, status: 'confirmed', cargo: { weightKg: 2000, palletSpaces: 3 } },
+      { id: 'extra-2', offerId: 'offer-2', orderNumber: 4, status: 'confirmed', cargo: { weightKg: 3500, palletSpaces: 4 } },
     ]
     expect(getRemainingCapacity(transport)).toEqual({ weightKg: 8500, palletSpaces: 6 })
   })
@@ -45,6 +42,7 @@ describe('remaining vehicle capacity', () => {
 
 describe('additional load eligibility', () => {
   it.each<[Cargo, boolean]>([
+    [{ weightKg: 0, palletSpaces: 0 }, false],
     [{ weightKg: 14000, palletSpaces: 13 }, true],
     [{ weightKg: 14001, palletSpaces: 1 }, false],
     [{ weightKg: 1, palletSpaces: 14 }, false],
@@ -66,7 +64,7 @@ describe('additional load eligibility', () => {
 
   it('rejects invalid existing load and capacity data', () => {
     const transport = createTransport()
-    transport.additionalLoads = [{ id: 'invalid', cargo: { weightKg: -500, palletSpaces: 0 } }]
+    transport.additionalLoads = [{ id: 'invalid', offerId: 'offer-3', orderNumber: 3, status: 'confirmed', cargo: { weightKg: -500, palletSpaces: 0 } }]
     expect(canAcceptAdditionalLoad(transport, { weightKg: 1, palletSpaces: 1 })).toBe(false)
     transport.additionalLoads = []
     if (!transport.order2) throw new Error('[internal] Missing test Order 2')
@@ -75,32 +73,19 @@ describe('additional load eligibility', () => {
   })
 })
 
-describe('demo actions', () => {
-  it('confirms only the chosen existing carrier and does not mutate the source', () => {
-    const approved = approveDemoCarrier(demoTransports, 'TR-001')
-    expect(approved[0].order2?.status).toBe('confirmed')
-    expect(demoTransports[0].order2?.status).toBe('pending')
-    expect(approved[1]).toBe(demoTransports[1])
-    expect(approveDemoCarrier(approved, 'TR-001')[0]).toBe(approved[0])
-    expect(approveDemoCarrier(demoTransports, 'TR-003')[2].order2).toBeNull()
+describe('rejected orders', () => {
+  it('does not subtract rejected additional loads', () => {
+    const transport = createTransport()
+    transport.additionalLoads = [{ id: 'rejected', offerId: 'offer-4', orderNumber: 3, status: 'rejected', cargo: { weightKg: 1000, palletSpaces: 2 } }]
+    expect(getRemainingCapacity(transport)).toEqual({ weightKg: 14000, palletSpaces: 13 })
   })
 
-  it('accepts a fitting load once and preserves the original fixture', () => {
+  it('does not accept additional cargo when either order is rejected', () => {
     const transport = createTransport()
-    const accepted = acceptDemoAdditionalLoad([transport], transport.id)
-    expect(accepted[0].additionalLoads).toEqual([
-      { id: 'test-transport-additional-demo', cargo: { weightKg: 2000, palletSpaces: 4 } },
-    ])
-    expect(getRemainingCapacity(accepted[0])).toEqual({ weightKg: 12000, palletSpaces: 9 })
-    expect(acceptDemoAdditionalLoad(accepted, transport.id)[0]).toBe(accepted[0])
-    expect(transport.additionalLoads).toEqual([])
-  })
-
-  it('does not overbook or accept a load without an approved carrier', () => {
-    const transport = createTransport()
-    transport.order1.cargo.palletSpaces = 30
-    expect(acceptDemoAdditionalLoad([transport], transport.id)[0]).toBe(transport)
-    expect(acceptDemoAdditionalLoad(demoTransports, 'TR-001')[0]).toBe(demoTransports[0])
-    expect(acceptDemoAdditionalLoad(demoTransports, 'TR-003')[2]).toBe(demoTransports[2])
+    transport.order1.status = 'rejected'
+    expect(canAcceptAdditionalLoad(transport, { weightKg: 1, palletSpaces: 1 })).toBe(false)
+    transport.order1.status = 'confirmed'
+    if (transport.order2) transport.order2.status = 'rejected'
+    expect(canAcceptAdditionalLoad(transport, { weightKg: 1, palletSpaces: 1 })).toBe(false)
   })
 })

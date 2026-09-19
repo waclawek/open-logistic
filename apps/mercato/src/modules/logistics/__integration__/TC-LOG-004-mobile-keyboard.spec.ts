@@ -1,10 +1,10 @@
-import { expect, expectPlannedPage, sections, test } from './helpers/fixtures'
+import { expect, expectPlannedPage, menuSections, test } from './helpers/fixtures'
 
-test('the standard mobile menu and keyboard links reach every logistics section', async ({ page, logistics }) => {
+test('the standard mobile menu and keyboard links reach both logistics screens', async ({ page, logistics }) => {
   expect(logistics.organizationId).toBeTruthy()
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto(sections[0].path)
-  for (const section of sections) {
+  await page.goto(menuSections[0].path)
+  for (const section of menuSections) {
     const openMenu = page.getByRole('button', { name: 'Open menu', exact: true })
     await openMenu.focus()
     await page.keyboard.press('Enter')

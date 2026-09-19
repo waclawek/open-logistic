@@ -1,5 +1,6 @@
-import { DispatcherPanel } from '../../components/DispatcherPanel'
+import { Page, PageBody } from '@open-mercato/ui/backend/Page'
+import { DispatcherPanel, DispatcherPanelHeader } from '../../components/DispatcherPanel'
 
 export default function DashboardPage() {
-  return <DispatcherPanel />
+  return <Page data-testid="logistics-page"><DispatcherPanelHeader /><PageBody><DispatcherPanel initialTab="inbox" /></PageBody></Page>
 }

@@ -10,10 +10,15 @@ import {
   deleteUserIfExists,
   setRoleAclFeatures,
 } from '@open-mercato/core/helpers/integration/authFixtures'
-import { getTokenContext } from '@open-mercato/core/helpers/integration/generalFixtures'
+import { getTokenContext, readJsonSafe } from '@open-mercato/core/helpers/integration/generalFixtures'
+import en from '../../i18n/en.json' with { type: 'json' }
 
-export const sections = [
-  { path: '/backend/logistics', title: 'Dispatcher panel' },
+export const menuSections = [
+  { path: '/backend/logistics', title: en['logistics.dispatcher.inbox'], tab: 'inbox' },
+  { path: '/backend/logistics/transports', title: en['logistics.dispatcher.transports'], tab: 'transports' },
+] as const
+
+export const legacySections = [
   { path: '/backend/logistics/transport-jobs', title: 'Transport jobs' },
   { path: '/backend/logistics/fleet', title: 'Vehicles / drivers' },
   { path: '/backend/logistics/trips', title: 'Trips and routes' },
@@ -22,7 +27,10 @@ export const sections = [
   { path: '/backend/logistics/proposals-disruptions', title: 'Proposals and disruptions' },
 ] as const
 
+export const sections = [...menuSections, ...legacySections] as const
+
 type LogisticsFixture = {
+  authorizeApi: () => Promise<void>
   organizationId: string
   organizationName: string
   addOrganization: () => Promise<{ id: string; name: string }>
@@ -70,6 +78,8 @@ export const test = base.extend<{ logistics: LogisticsFixture }>({
       })
       const loginResponse = await postForm(page.request, '/api/auth/login', { email, password })
       expect(loginResponse.ok(), 'The isolated logistics user should be able to sign in').toBe(true)
+      const loginResult = await readJsonSafe<{ token: string }>(loginResponse)
+      expect(loginResult?.token).toBeTruthy()
       await page.context().addCookies([
         { name: 'om_selected_tenant', value: tenantId },
         { name: 'om_selected_org', value: organizationId },
@@ -79,6 +89,7 @@ export const test = base.extend<{ logistics: LogisticsFixture }>({
         { name: 'om_feedback_suppress', value: '1' },
       ].map((cookie) => ({ ...cookie, url: baseURL!, sameSite: 'Lax' as const })))
       await use({
+        authorizeApi: () => page.context().setExtraHTTPHeaders({ Authorization: `Bearer ${loginResult!.token}` }),
         organizationId,
         organizationName,
         grant,
@@ -103,11 +114,12 @@ export { expect }
 
 export async function expectPlannedPage(page: Page, section: typeof sections[number]): Promise<void> {
   const content = page.getByTestId('logistics-page')
-  if (section.path === '/backend/logistics') {
+  if ('tab' in section) {
     await expect(content.getByRole('heading', { name: 'Dispatcher panel', exact: true })).toBeVisible()
     await expect(content.getByRole('tab')).toHaveCount(2)
-    await expect(content.getByRole('tab', { name: 'AI Inbox', exact: true })).toBeVisible()
-    await expect(content.getByRole('tab', { name: 'AI Transports', exact: true })).toBeVisible()
+    await expect(content.getByRole('tab', { name: en['logistics.dispatcher.inbox'], exact: true })).toBeVisible()
+    await expect(content.getByRole('tab', { name: en['logistics.dispatcher.transports'], exact: true })).toBeVisible()
+    await expect(content.getByRole('tab', { name: section.title, exact: true })).toHaveAttribute('aria-selected', 'true')
     return
   }
   await expect(content.getByRole('heading', { name: section.title, exact: true })).toBeVisible()

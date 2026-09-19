@@ -1,6 +1,8 @@
 import { expect, sections, test } from './helpers/fixtures'
+import pl from '../i18n/pl.json' with { type: 'json' }
 
 const polishTitles = [
+  'Panel dyspozytora',
   'Panel dyspozytora',
   'Zlecenia transportowe',
   'Pojazdy / kierowcy',
@@ -10,16 +12,17 @@ const polishTitles = [
   'Propozycje i zakłócenia',
 ]
 
-test('Polish logistics pages and the seven ordered navigation entries are translated', async ({ page, logistics, baseURL }) => {
+test('Polish logistics pages and the two ordered navigation entries are translated', async ({ page, logistics, baseURL }) => {
   expect(logistics.organizationId).toBeTruthy()
   await page.context().addCookies([{ name: 'locale', value: 'pl', url: baseURL!, sameSite: 'Lax' }])
   for (const [index, section] of sections.entries()) {
     await page.goto(section.path)
     const content = page.getByTestId('logistics-page')
-    if (index === 0) {
+    if ('tab' in section) {
       await expect(content.getByRole('heading', { name: 'Panel dyspozytora', exact: true })).toBeVisible()
-      await expect(content.getByRole('tab', { name: 'AI Inbox', exact: true })).toBeVisible()
-      await expect(content.getByRole('tab', { name: 'AI Przewozy', exact: true })).toBeVisible()
+      await expect(content.getByRole('tab', { name: pl['logistics.dispatcher.inbox'], exact: true })).toBeVisible()
+      await expect(content.getByRole('tab', { name: pl['logistics.dispatcher.transports'], exact: true })).toBeVisible()
+      await expect(content.getByRole('tab', { name: pl[`logistics.dispatcher.${section.tab}`], exact: true })).toHaveAttribute('aria-selected', 'true')
     } else {
       await expect(content.getByRole('heading', { name: polishTitles[index], exact: true })).toBeVisible()
       await expect(content.getByText('Funkcja planowana', { exact: true })).toBeVisible()
@@ -27,6 +30,6 @@ test('Polish logistics pages and the seven ordered navigation entries are transl
   }
   const sidebar = page.getByTestId('sidebar')
   await expect(sidebar.getByRole('button', { name: 'Logistyka', exact: true })).toHaveCount(1)
-  const logisticsLinks = sidebar.getByRole('link').filter({ hasText: new RegExp(`^(${polishTitles.join('|')})$`) })
-  await expect(logisticsLinks).toHaveText(polishTitles)
+  const logisticsLinks = sidebar.locator('a[href="/backend/logistics"], a[href^="/backend/logistics/"]')
+  await expect(logisticsLinks).toHaveText([pl['logistics.dispatcher.inbox'], pl['logistics.dispatcher.transports']])
 })

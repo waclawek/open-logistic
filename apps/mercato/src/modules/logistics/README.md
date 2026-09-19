@@ -1,10 +1,16 @@
 # Logistics dispatcher panel
 
-Seven backend pages share the read-only `logistics.view` feature:
+Two sidebar entries share the read-only `logistics.view` feature:
 
 | Page | URL |
 |---|---|
-| Dispatcher panel — AI Inbox / AI Transports | `/backend/logistics` |
+| AI inbox | `/backend/logistics` |
+| AI Przewozy | `/backend/logistics/transports` |
+
+The following legacy routes remain accessible but are hidden from navigation:
+
+| Page | URL |
+|---|---|
 | Transport jobs | `/backend/logistics/transport-jobs` |
 | Vehicles / drivers | `/backend/logistics/fleet` |
 | Trips and routes | `/backend/logistics/trips` |
@@ -12,23 +18,23 @@ Seven backend pages share the read-only `logistics.view` feature:
 | Statistics | `/backend/logistics/statistics` |
 | Proposals and disruptions | `/backend/logistics/proposals-disruptions` |
 
-The dispatcher panel contains searchable demo offers and transports, offer details,
-and paired Order 1 / Order 2 details with carrier, vehicle and remaining capacity.
-Carrier approval and additional-load acceptance are **session-only simulations**:
-refreshing the page or choosing Reset demo restores the fixtures. No real sales
-orders are created, messages sent, or vehicles reserved. A visible demo notice
-explains this behavior. The other six pages still describe planned capabilities.
+The dispatcher reads offers and transports from tenant/organization-scoped database
+tables. Carrier approval/rejection, offer rejection and additional-load allocations
+persist across reloads. Each accepted offer becomes the next numbered order
+(Order 3, 4, 5, ...). Sales accounting and external communication are outside this
+module. The six legacy pages still describe planned capabilities.
 
 Remaining capacity is calculated separately in kg and pallet spaces, subtracting
 Order 1 and all accepted additional loads. Missing Order 2 means unknown capacity.
-Demo acceptance requires an approved carrier and enough room under both limits.
+Acceptance requires confirmed customer/carrier orders and enough room under both limits.
 This foundation models a single shared transport leg, not route-segment planning.
 
-Data and calculations live in `lib/dispatcher-data.ts`; the client panel and details
-live in `components/DispatcherPanel.tsx` and `components/TransportDetails.tsx`.
-Replace the fixture/state boundary with tenant-scoped APIs, mutation guards and
-optimistic locking when implementing persistence. The demo Order 2 does not imply
-a decision to represent carrier costs as Sales orders.
+Entities live in `data/entities.ts`, inputs in `data/validators.ts`, and writes in
+the module's commands. Allocation locks both transport and offer in one transaction
+and rechecks both capacity dimensions. Version headers prevent stale decisions;
+mutation guards and command side effects remain active. Client calculations are
+display helpers, never authority for accepting a load. Example data belongs to
+`setup.seedExamples`; the browser never seeds records or falls back to fixtures.
 
 ## Enable and grant access
 
@@ -40,11 +46,17 @@ yarn mercato auth sync-role-acls
 yarn mercato configs cache structural --all-tenants
 ```
 
-New tenants receive `logistics.view` for the existing administrator role through `setup.ts`. The sync command updates existing roles additively. There is no default employee grant and no new role. Use the existing role Access editor to grant an operator `logistics.view`; this feature does not grant ACL management. Standard `logistics.*` and `*` grants also apply.
+Apply the module's additive migration before using the database-backed pages.
+New tenants receive `logistics.view` and `logistics.manage` for the existing
+administrator role through `setup.ts`. The sync command updates existing roles
+additively. There is no default employee grant and no new role. Grant operators
+`logistics.view` for reads and `logistics.manage` for decisions. Standard
+`logistics.*` and `*` grants also apply.
 
 To revoke access, remove every effective grant (including inherited/wildcard sources) through the existing ACL editor. The existing server-side page guards and navigation filtering enforce access using the selected tenant/organization. An already-rendered static page may remain in an open tab; subsequent requests must be authorized. No logistics-specific session or cache implementation is introduced.
 
-To disable the foundation, remove its module entry, regenerate registries and clear the structural cache. No logistics tables or migrations exist.
+To disable the module, remove its module entry, regenerate registries and clear
+the structural cache. Existing logistics tables and records remain in the database.
 
 ## Verification
 

@@ -1,11 +1,17 @@
 'use client'
 
+import * as React from 'react'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
+import { DataTable } from '@open-mercato/ui/backend/DataTable'
+import { ErrorMessage } from '@open-mercato/ui/backend/detail'
+import { EmptyState } from '@open-mercato/ui/primitives/empty-state'
+import type { useDispatcherList } from '../lib/useDispatcherList'
 import { useT } from '@open-mercato/shared/lib/i18n/context'
 import { SectionHeader } from '@open-mercato/ui/backend/SectionHeader'
 import { Alert, AlertDescription } from '@open-mercato/ui/primitives/alert'
 import { Button } from '@open-mercato/ui/primitives/button'
 import { StatusBadge } from '@open-mercato/ui/primitives/status-badge'
-import { canAcceptAdditionalLoad, demoAdditionalCargo, getRemainingCapacity, type Cargo, type OrderStatus, type Transport } from '../lib/dispatcher-data'
+import { canAcceptAdditionalLoad, getRemainingCapacity, type Cargo, type Offer, type OrderStatus, type Transport } from '../lib/dispatcher-data'
 
 export function CargoSummary({ cargo }: { cargo: Cargo }) {
   const t = useT()
@@ -20,21 +26,33 @@ export function CargoSummary({ cargo }: { cargo: Cargo }) {
 export function OrderStatusBadge({ status }: { status: OrderStatus | 'unassigned' }) {
   const t = useT()
   return (
-    <StatusBadge variant={status === 'confirmed' ? 'success' : status === 'pending' ? 'warning' : 'neutral'} dot>
+    <StatusBadge variant={status === 'confirmed' ? 'success' : status === 'pending' ? 'warning' : status === 'rejected' ? 'error' : 'neutral'} dot>
       {t(`logistics.dispatcher.status.${status}`)}
     </StatusBadge>
   )
 }
 
-export function TransportDetails({ transport, onApproveCarrier, onAcceptAdditional }: {
+export function TransportDetails({ transport, candidates, saving, onApproveCarrier, onRejectCarrier, onAcceptAdditional }: {
   transport: Transport
+  candidates: ReturnType<typeof useDispatcherList<Offer>>
+  saving: boolean
   onApproveCarrier: () => void
-  onAcceptAdditional: () => void
+  onRejectCarrier: () => void
+  onAcceptAdditional: (offerId: string) => void
 }) {
   const t = useT()
   const remaining = getRemainingCapacity(transport)
-  const acceptedDemoLoad = transport.additionalLoads.some((load) => load.id === `${transport.id}-additional-demo`)
-  const canAccept = !acceptedDemoLoad && canAcceptAdditionalLoad(transport, demoAdditionalCargo)
+  const candidateColumns = React.useMemo<ColumnDef<Offer>[]>(() => [
+    { accessorKey: 'reference', header: t('logistics.dispatcher.additionalCandidate') },
+    { id: 'route', header: t('logistics.dispatcher.route'), accessorFn: (offer) => `${offer.origin} → ${offer.destination}` },
+    { id: 'cargo', header: t('logistics.dispatcher.cargo'), cell: ({ row }) => <CargoSummary cargo={row.original.cargo} /> },
+    { id: 'accept', header: t('logistics.dispatcher.status'), cell: ({ row }) => (
+      <Button type="button" variant="outline" disabled={saving || !canAcceptAdditionalLoad(transport, row.original.cargo)
+        || transport.additionalLoads.some((load) => load.offerId === row.original.id)}
+        aria-label={`${t('logistics.dispatcher.acceptAdditional')}: ${row.original.reference}`}
+        onClick={() => onAcceptAdditional(row.original.id)}>{t('logistics.dispatcher.acceptAdditional')}</Button>
+    ) },
+  ], [transport, saving, onAcceptAdditional, t])
   const overloaded = remaining !== null && (remaining.weightKg < 0 || remaining.palletSpaces < 0)
 
   return (
@@ -67,7 +85,10 @@ export function TransportDetails({ transport, onApproveCarrier, onAcceptAddition
                 <div><dt className="text-muted-foreground">{t('logistics.dispatcher.capacity')}</dt><dd><CargoSummary cargo={transport.order2.vehicle.capacity} /></dd></div>
               </dl>
               {transport.order2.status === 'pending' ? (
-                <Button type="button" onClick={onApproveCarrier}>{t('logistics.dispatcher.approveCarrier')}</Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" disabled={saving} onClick={onApproveCarrier}>{t('logistics.dispatcher.approveCarrier')}</Button>
+                  <Button type="button" variant="destructive" disabled={saving} onClick={onRejectCarrier}>{t('logistics.dispatcher.rejectCarrier')}</Button>
+                </div>
               ) : null}
             </>
           ) : <p className="text-sm text-muted-foreground">{t('logistics.dispatcher.noCarrier')}</p>}
@@ -84,21 +105,18 @@ export function TransportDetails({ transport, onApproveCarrier, onAcceptAddition
         <SectionHeader title={t('logistics.dispatcher.additionalLoads')} count={transport.additionalLoads.length} />
         {transport.additionalLoads.length ? (
           <ul className="space-y-2 text-sm">
-            {transport.additionalLoads.map((load) => <li key={load.id}><CargoSummary cargo={load.cargo} /></li>)}
+            {transport.additionalLoads.map((load) => <li key={load.id} className="flex flex-wrap items-center gap-3">
+              <span className="font-medium">{t('logistics.dispatcher.additionalOrder', { number: load.orderNumber })}</span>
+              <CargoSummary cargo={load.cargo} /><OrderStatusBadge status={load.status} />
+            </li>)}
           </ul>
         ) : <p className="text-sm text-muted-foreground">{t('logistics.dispatcher.noAdditionalLoads')}</p>}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
-          <div className="space-y-1 text-sm">
-            <p className="font-medium">{t('logistics.dispatcher.additionalCandidate')}</p>
-            <CargoSummary cargo={demoAdditionalCargo} />
-          </div>
-          <Button type="button" variant="outline" disabled={!canAccept} onClick={onAcceptAdditional} aria-describedby="additional-load-hint">
-            {t('logistics.dispatcher.acceptAdditional')}
-          </Button>
-        </div>
-        <p id="additional-load-hint" className="text-sm text-muted-foreground">
-          {t(acceptedDemoLoad ? 'logistics.dispatcher.additionalAlreadyAccepted' : 'logistics.dispatcher.additionalUnavailable')}
-        </p>
+        {candidates.failed ? <ErrorMessage label={t('logistics.dispatcher.loadFailed')} action={<Button type="button" variant="outline" onClick={candidates.reload}>{t('logistics.dispatcher.retry')}</Button>} /> : null}
+        <DataTable columns={candidateColumns} data={candidates.items} isLoading={candidates.loading}
+          pagination={candidates.pagination} exporter={false}
+          searchValue={candidates.search} onSearchChange={candidates.changeSearch} searchPlaceholder={t('logistics.dispatcher.searchOffers')}
+          emptyState={<EmptyState title={t('logistics.dispatcher.noCandidates')} />} />
+        <p className="text-sm text-muted-foreground">{t('logistics.dispatcher.additionalUnavailable')}</p>
       </section>
     </div>
   )

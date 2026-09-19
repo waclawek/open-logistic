@@ -11,6 +11,8 @@ import es from '../i18n/es.json'
 import ko from '../i18n/ko.json'
 import DashboardPage from '../backend/logistics/page'
 import { metadata as dashboardMetadata } from '../backend/logistics/page.meta'
+import TransportsPage from '../backend/logistics/transports/page'
+import { metadata as transportsMetadata } from '../backend/logistics/transports/page.meta'
 import transportJobsPage from '../backend/logistics/transport-jobs/page'
 import { metadata as transportJobsMetadata } from '../backend/logistics/transport-jobs/page.meta'
 import fleetPage from '../backend/logistics/fleet/page'
@@ -24,12 +26,16 @@ import { metadata as statisticsMetadata } from '../backend/logistics/statistics/
 import proposalsDisruptionsPage from '../backend/logistics/proposals-disruptions/page'
 import { metadata as proposalsDisruptionsMetadata } from '../backend/logistics/proposals-disruptions/page.meta'
 
-jest.mock('@open-mercato/ui/backend/DataTable', () => ({
-  DataTable: jest.requireActual('./helpers/DispatcherDataTable').DispatcherDataTable,
+jest.mock('../components/DispatcherPanel', () => ({
+  DispatcherPanelHeader: () => null,
+  DispatcherPanel: ({ initialTab }: { initialTab: 'inbox' | 'transports' }) => (
+    <div data-testid="dispatcher-panel" data-initial-tab={initialTab} />
+  ),
 }))
 
 const pages = [
   { id: 'dashboard', path: '/backend/logistics', Component: DashboardPage, metadata: dashboardMetadata },
+  { id: 'transports', path: '/backend/logistics/transports', Component: TransportsPage, metadata: transportsMetadata },
   { id: 'transportJobs', path: '/backend/logistics/transport-jobs', Component: transportJobsPage, metadata: transportJobsMetadata },
   { id: 'fleet', path: '/backend/logistics/fleet', Component: fleetPage, metadata: fleetMetadata },
   { id: 'trips', path: '/backend/logistics/trips', Component: tripsPage, metadata: tripsMetadata },
@@ -47,15 +53,32 @@ describe('Logistics navigation foundation', () => {
     expect(metadata.pageGroupKey).toBe('logistics.nav.group')
   })
 
-  test('declares only read access and grants it to administrators by default', () => {
-    expect(features.map((feature) => feature.id)).toEqual(['logistics.view'])
-    expect(setup.defaultRoleFeatures).toEqual({ admin: ['logistics.view'] })
-    expect(pages.map((page) => page.metadata.pageOrder)).toEqual([10, 20, 30, 40, 50, 60, 70])
+  test('declares read access and grants it to administrators by default', () => {
+    expect(features.map((feature) => feature.id)).toContain('logistics.view')
+    expect(setup.defaultRoleFeatures?.admin).toContain('logistics.view')
+  })
+
+  test('shows exactly the inbox and transports routes in the sidebar', () => {
+    const visiblePages = pages.filter(({ metadata }) => !('navHidden' in metadata && metadata.navHidden))
+    expect(visiblePages.map(({ path }) => path)).toEqual(['/backend/logistics', '/backend/logistics/transports'])
+    expect(visiblePages.map(({ metadata }) => metadata.pageOrder)).toEqual([10, 20])
+    expect(visiblePages.map(({ metadata }) => metadata.pageTitleKey)).toEqual([
+      'logistics.dispatcher.inbox',
+      'logistics.dispatcher.transports',
+    ])
+  })
+
+  test.each([
+    { Component: DashboardPage, initialTab: 'inbox' },
+    { Component: TransportsPage, initialTab: 'transports' },
+  ])('opens the $initialTab tab at its dedicated route', ({ Component, initialTab }) => {
+    render(<Component />)
+    expect(screen.getByTestId('dispatcher-panel')).toHaveAttribute('data-initial-tab', initialTab)
   })
 
   describe.each(['en', 'pl', 'de', 'es', 'ko'] as const)('%s locale', (locale) => {
     const dict = dictionaries[locale]
-    test.each(pages.slice(1))('$path displays its translated purpose and honest availability', ({ id, Component }) => {
+    test.each(pages.slice(2))('$path displays its translated purpose and honest availability', ({ id, Component }) => {
       const { container } = render(
         <I18nProvider locale={locale} dict={dict}>
           <Component />
@@ -72,17 +95,9 @@ describe('Logistics navigation foundation', () => {
       expect(screen.getByRole('link', { name: dict['logistics.back'] })).toHaveAttribute('href', '/backend/logistics')
     })
 
-    test('dashboard displays a translated demo panel with exactly two tabs', () => {
-      const { container } = render(
-        <I18nProvider locale={locale} dict={dict}>
-          <DashboardPage />
-        </I18nProvider>,
-      )
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(dict['logistics.dispatcher.title'])
-      expect(screen.getByText(dict['logistics.dispatcher.description'])).toBeVisible()
-      expect(screen.getAllByRole('tab')).toHaveLength(2)
-      expect(screen.getByRole('tab', { name: 'AI Inbox', exact: true })).toHaveAttribute('aria-selected', 'true')
-      expect(container.textContent).not.toMatch(/logistics\.[a-zA-Z.]+/)
+    test('translates both sidebar entries', () => {
+      expect(dict[dashboardMetadata.pageTitleKey]).toBeTruthy()
+      expect(dict[transportsMetadata.pageTitleKey]).toBeTruthy()
     })
   })
 })

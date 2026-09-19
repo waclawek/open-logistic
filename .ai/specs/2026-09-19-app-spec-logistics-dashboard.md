@@ -5,8 +5,9 @@
 **Aktualizacja zakresu 2026-09-19:** ekran główny `/backend/logistics` rozwija
 specyfikacja [Dispatcher demo panel](2026-09-19-dispatcher-demo-panel.md), zgodnie
 z późniejszym poleceniem użytkownika: AI Inbox i AI Przewozy na danych demonstracyjnych.
-Poniższy opis statycznego pulpitu dokumentuje wcześniejszy etap. Sześć pozostałych
-stron oraz istniejące uprawnienia pozostają bez zmian.
+Nowa rewizja tego samego dokumentu przenosi dane do bazy i ogranicza menu do
+„AI inbox” i „AI Przewozy”. Sześć dawnych adresów pozostaje dostępnych bez
+wpisów w menu. Poniższa specyfikacja opisuje historyczny etap fundamentu.
 
 **Status:** COMPLETE — specyfikacja fundamentu ukończona i sprawdzona; funkcja jeszcze niewdrożona.
 

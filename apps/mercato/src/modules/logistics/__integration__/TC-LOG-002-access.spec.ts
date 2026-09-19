@@ -10,7 +10,7 @@ test.describe('Logistics effective permissions', () => {
   }
 
   for (const wildcard of ['logistics.*', '*']) {
-    test(`${wildcard} grants all seven pages`, async ({ page, logistics }) => {
+    test(`${wildcard} grants the current and legacy pages`, async ({ page, logistics }) => {
       await logistics.grant([wildcard])
       for (const section of sections) {
         await page.goto(section.path)
