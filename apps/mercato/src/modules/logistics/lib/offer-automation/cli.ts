@@ -380,7 +380,10 @@ const SEND_EMAIL_USAGE = [
   'the payload can override it.',
   '',
   'What reacts, in order:',
-  '  1. an events worker picks the job up (`yarn dev` spawns one automatically),',
+  '  1. an events worker picks the job up (`yarn dev` spawns one automatically).',
+  '     A worker started by hand must run from the SAME directory as the server,',
+  '     because QUEUE_BASE_DIR is a relative path and the local queue strategy',
+  '     resolves it against the process cwd — see the failure hint below,',
   `  2. ${'logistics:offer-freight-extraction'} turns the email into a proposal`,
   `     carrying one pending ${DRAFT_OFFER_ACTION_TYPE} action,`,
   '  3. a HUMAN accepts that action at /backend/inbox-ops/proposals/<id>, which',
@@ -906,10 +909,16 @@ const sendEmail: ModuleCli = {
 
       if (describeUnsettled(state) === 'nothing-reacted') {
         console.log('Nothing has touched this email. The job is durable and still queued, so the')
-        console.log('cause is almost always that no events worker is draining the queue.')
-        console.log('Start one with:')
-        console.log('  yarn mercato queue worker --all')
+        console.log('cause is almost always that no events worker is draining the queue THIS')
+        console.log('server writes to. Start one from the app directory:')
+        console.log('  cd apps/mercato && yarn mercato queue worker --all')
         console.log('(`yarn dev` spawns one itself when AUTO_SPAWN_WORKERS is on.)')
+        console.log('')
+        console.log(`The directory matters: QUEUE_BASE_DIR (currently ${process.env.QUEUE_BASE_DIR ?? './.mercato/queue'})`)
+        console.log('is relative, so a worker started from the monorepo root drains a DIFFERENT')
+        console.log('directory from the one the server enqueues to, and reports itself healthy')
+        console.log('while this email waits forever. No re-send is needed once a worker on the')
+        console.log('right directory starts: the job is still queued and will be picked up.')
       } else {
         console.log('Something is working on it and the watch window closed first. Give it longer')
         console.log('with --watch-timeout, or check the queue worker log for an error.')
