@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { Inbox, Truck } from 'lucide-react'
 import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
@@ -18,6 +19,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { EmptyState } from '@open-mercato/ui/primitives/empty-state'
 import { StatusBadge } from '@open-mercato/ui/primitives/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@open-mercato/ui/primitives/tabs'
+import { LinkButton } from '@open-mercato/ui/primitives/link-button'
 import { extensionPoints } from '../extension-points'
 import { getRemainingCapacity, type Offer, type Transport } from '../lib/dispatcher-data'
 import { useDispatcherList } from '../lib/useDispatcherList'
@@ -45,7 +47,8 @@ export function DispatcherPanel({ initialTab = 'inbox' }: { initialTab?: 'inbox'
   const [mutationFailed, setMutationFailed] = React.useState(false)
   const [saving, setSaving] = React.useState(false)
   const [savingRecordId, setSavingRecordId] = React.useState<string | null>(null)
-  React.useEffect(() => { setSelection(null); setFeedback(''); setMutationFailed(false) }, [scopeVersion, initialTab])
+  const [handoffTransportId, setHandoffTransportId] = React.useState<string | null>(null)
+  React.useEffect(() => { setSelection(null); setFeedback(''); setMutationFailed(false); setHandoffTransportId(null) }, [scopeVersion, initialTab])
   const savingRef = React.useRef(false)
   const { runMutation, retryLastMutation } = useGuardedMutation({ contextId: 'logistics.dispatcher' })
   const candidates = useDispatcherList<Offer>('offers', true, selection?.kind === 'transport')
@@ -100,7 +103,34 @@ export function DispatcherPanel({ initialTab = 'inbox' }: { initialTab?: 'inbox'
           offers.reload()
           transports.reload()
           candidates.reload()
-          if (sameSelection()) setFeedback(t('logistics.dispatcher.saved'))
+          if (sameSelection()) {
+            if (action === 'approve_carrier' && response.result?.item) {
+              const updated = response.result.item as Transport
+              if (updated.order1.status === 'confirmed' && updated.order2?.status === 'confirmed') {
+                try {
+                  await withScopedApiRequestHeaders({}, () =>
+                    apiCallOrThrow<{ run: { id: string }; created: boolean }>(
+                      '/api/logistics/transport-runs',
+                      {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          action: 'start-from-dispatcher-transport',
+                          transportId: updated.id,
+                        }),
+                      },
+                    ),
+                  )
+                  setFeedback(t('logistics.dispatcher.handoffStarted'))
+                  setHandoffTransportId(updated.id)
+                  return
+                } catch {
+                  // Decision already saved — handoff can be retried from the monitoring inbox.
+                }
+              }
+            }
+            setFeedback(t('logistics.dispatcher.saved'))
+          }
         },
       })
     } catch (error) {
@@ -200,8 +230,27 @@ export function DispatcherPanel({ initialTab = 'inbox' }: { initialTab?: 'inbox'
             {saving && selection?.id === savingRecordId ? <LoadingMessage label={t('logistics.dispatcher.saving')} /> : null}
             {mutationFailed ? <ErrorMessage label={t('logistics.dispatcher.saveFailed')} /> : null}
             {selection && feedback ? <p role="status" className="text-sm text-status-success-text">{feedback}</p> : null}
+            {selectedTransport &&
+            selectedTransport.order1.status === 'confirmed' &&
+            selectedTransport.order2?.status === 'confirmed' ? (
+              <div className="rounded-md border border-border bg-muted/30 p-3 text-sm">
+                <p className="mb-2 font-medium">{t('logistics.dispatcher.handoffReady')}</p>
+                <LinkButton asChild>
+                  <Link href="/backend/logistics/proposals-disruptions">
+                    {t('logistics.dispatcher.handoffToMonitoring')}
+                  </Link>
+                </LinkButton>
+              </div>
+            ) : null}
             <DialogFooter>
               {selectedOffer && (selectedOffer.status === 'new' || selectedOffer.status === 'review') ? <Button type="button" variant="destructive" disabled={saving} onClick={() => void decide('reject')}>{t('logistics.dispatcher.rejectOffer')}</Button> : null}
+              {handoffTransportId && selection?.id === handoffTransportId ? (
+                <LinkButton asChild>
+                  <Link href="/backend/logistics/proposals-disruptions">
+                    {t('logistics.dispatcher.handoffToMonitoring')}
+                  </Link>
+                </LinkButton>
+              ) : null}
               <Button type="button" variant="outline" onClick={() => setSelection(null)}>{t('logistics.dispatcher.close')}</Button></DialogFooter>
           </DialogContent>
         </Dialog>

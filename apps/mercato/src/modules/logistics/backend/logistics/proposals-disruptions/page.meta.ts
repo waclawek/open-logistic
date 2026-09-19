@@ -1,11 +1,10 @@
 export const metadata = {
-  navHidden: true,
   requireAuth: true,
   requireFeatures: ['logistics.view'],
-  pageTitle: 'Proposals and disruptions',
+  pageTitle: 'Agent inbox',
   pageTitleKey: 'logistics.proposalsDisruptions.title',
   pageGroup: 'Logistics',
   pageGroupKey: 'logistics.nav.group',
-  pageOrder: 70,
-  icon: 'lightbulb',
+  pageOrder: 30,
+  icon: 'bot',
 }

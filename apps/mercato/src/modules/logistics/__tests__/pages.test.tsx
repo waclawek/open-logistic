@@ -23,7 +23,7 @@ import mapPage from '../backend/logistics/map/page'
 import { metadata as mapMetadata } from '../backend/logistics/map/page.meta'
 import statisticsPage from '../backend/logistics/statistics/page'
 import { metadata as statisticsMetadata } from '../backend/logistics/statistics/page.meta'
-import proposalsDisruptionsPage from '../backend/logistics/proposals-disruptions/page'
+import ProposalsDisruptionsPage from '../backend/logistics/proposals-disruptions/page'
 import { metadata as proposalsDisruptionsMetadata } from '../backend/logistics/proposals-disruptions/page.meta'
 
 jest.mock('../components/DispatcherPanel', () => ({
@@ -33,16 +33,22 @@ jest.mock('../components/DispatcherPanel', () => ({
   ),
 }))
 
+jest.mock('../components/LogisticsAgentInbox', () => ({
+  LogisticsAgentInbox: () => <div data-testid="logistics-agent-inbox" />,
+}))
+
 const pages = [
   { id: 'dashboard', path: '/backend/logistics', Component: DashboardPage, metadata: dashboardMetadata },
   { id: 'transports', path: '/backend/logistics/transports', Component: TransportsPage, metadata: transportsMetadata },
+  { id: 'proposalsDisruptions', path: '/backend/logistics/proposals-disruptions', Component: ProposalsDisruptionsPage, metadata: proposalsDisruptionsMetadata },
   { id: 'transportJobs', path: '/backend/logistics/transport-jobs', Component: transportJobsPage, metadata: transportJobsMetadata },
   { id: 'fleet', path: '/backend/logistics/fleet', Component: fleetPage, metadata: fleetMetadata },
   { id: 'trips', path: '/backend/logistics/trips', Component: tripsPage, metadata: tripsMetadata },
   { id: 'map', path: '/backend/logistics/map', Component: mapPage, metadata: mapMetadata },
   { id: 'statistics', path: '/backend/logistics/statistics', Component: statisticsPage, metadata: statisticsMetadata },
-  { id: 'proposalsDisruptions', path: '/backend/logistics/proposals-disruptions', Component: proposalsDisruptionsPage, metadata: proposalsDisruptionsMetadata },
 ] as const
+
+const plannedPages = pages.filter((page) => page.id !== 'dashboard' && page.id !== 'transports' && page.id !== 'proposalsDisruptions')
 
 const dictionaries: Record<string, Record<string, string>> = { en, pl, de, es, ko }
 
@@ -58,13 +64,18 @@ describe('Logistics navigation foundation', () => {
     expect(setup.defaultRoleFeatures?.admin).toContain('logistics.view')
   })
 
-  test('shows exactly the inbox and transports routes in the sidebar', () => {
+  test('shows inbox, transports and agent monitoring routes in the sidebar', () => {
     const visiblePages = pages.filter(({ metadata }) => !('navHidden' in metadata && metadata.navHidden))
-    expect(visiblePages.map(({ path }) => path)).toEqual(['/backend/logistics', '/backend/logistics/transports'])
-    expect(visiblePages.map(({ metadata }) => metadata.pageOrder)).toEqual([10, 20])
+    expect(visiblePages.map(({ path }) => path)).toEqual([
+      '/backend/logistics',
+      '/backend/logistics/transports',
+      '/backend/logistics/proposals-disruptions',
+    ])
+    expect(visiblePages.map(({ metadata }) => metadata.pageOrder)).toEqual([10, 20, 30])
     expect(visiblePages.map(({ metadata }) => metadata.pageTitleKey)).toEqual([
       'logistics.dispatcher.inbox',
       'logistics.dispatcher.transports',
+      'logistics.proposalsDisruptions.title',
     ])
   })
 
@@ -76,9 +87,18 @@ describe('Logistics navigation foundation', () => {
     expect(screen.getByTestId('dispatcher-panel')).toHaveAttribute('data-initial-tab', initialTab)
   })
 
+  test('opens the agent monitoring inbox at proposals-disruptions', () => {
+    render(
+      <I18nProvider locale="en" dict={en}>
+        <ProposalsDisruptionsPage />
+      </I18nProvider>,
+    )
+    expect(screen.getByTestId('logistics-agent-inbox')).toBeInTheDocument()
+  })
+
   describe.each(['en', 'pl', 'de', 'es', 'ko'] as const)('%s locale', (locale) => {
     const dict = dictionaries[locale]
-    test.each(pages.slice(2))('$path displays its translated purpose and honest availability', ({ id, Component }) => {
+    test.each(plannedPages)('$path displays its translated purpose and honest availability', ({ id, Component }) => {
       const { container } = render(
         <I18nProvider locale={locale} dict={dict}>
           <Component />
@@ -95,9 +115,10 @@ describe('Logistics navigation foundation', () => {
       expect(screen.getByRole('link', { name: dict['logistics.back'] })).toHaveAttribute('href', '/backend/logistics')
     })
 
-    test('translates both sidebar entries', () => {
+    test('translates sidebar entries including agent inbox', () => {
       expect(dict[dashboardMetadata.pageTitleKey]).toBeTruthy()
       expect(dict[transportsMetadata.pageTitleKey]).toBeTruthy()
+      expect(dict[proposalsDisruptionsMetadata.pageTitleKey]).toBeTruthy()
     })
   })
 })

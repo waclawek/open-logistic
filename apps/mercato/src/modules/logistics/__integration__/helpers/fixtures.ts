@@ -16,6 +16,7 @@ import en from '../../i18n/en.json' with { type: 'json' }
 export const menuSections = [
   { path: '/backend/logistics', title: en['logistics.dispatcher.inbox'], tab: 'inbox' },
   { path: '/backend/logistics/transports', title: en['logistics.dispatcher.transports'], tab: 'transports' },
+  { path: '/backend/logistics/proposals-disruptions', title: en['logistics.proposalsDisruptions.title'] },
 ] as const
 
 export const legacySections = [
@@ -24,7 +25,6 @@ export const legacySections = [
   { path: '/backend/logistics/trips', title: 'Trips and routes' },
   { path: '/backend/logistics/map', title: 'Fleet map' },
   { path: '/backend/logistics/statistics', title: 'Statistics' },
-  { path: '/backend/logistics/proposals-disruptions', title: 'Proposals and disruptions' },
 ] as const
 
 export const sections = [...menuSections, ...legacySections] as const
@@ -123,6 +123,10 @@ export async function expectPlannedPage(page: Page, section: typeof sections[num
     return
   }
   await expect(content.getByRole('heading', { name: section.title, exact: true })).toBeVisible()
+  if (section.path === '/backend/logistics/proposals-disruptions') {
+    await expect(content.getByTestId('logistics-agent-inbox')).toBeVisible()
+    return
+  }
   await expect(content.getByText('Planned feature', { exact: true })).toBeVisible()
 }
 
