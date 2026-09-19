@@ -12,6 +12,7 @@ import { readJsonSafe } from '@open-mercato/shared/lib/http/readJsonSafe'
 import { logisticsJson, logisticsRouteError, resolveLogisticsRequest } from '../../lib/api'
 import { digestCommandInput } from '../../lib/commandInput'
 import { withReceiptRequest } from '../../lib/receiptRequest'
+import { jobTimestampValue } from '../../lib/jobTimestamp'
 
 const entityType = 'logistics:transport_job'
 const rawBodySchema = z.record(z.string(), z.unknown())
@@ -47,7 +48,7 @@ const crud = makeCrudRoute({
       const values: Record<string, unknown> = {}
       for (const [property, column] of Object.entries(fields)) {
         const value = item[column] ?? item[property] ?? null
-        values[property] = value instanceof Date ? value.toISOString() : value
+        values[property] = jobTimestampValue(property, value)
       }
       return { ...values, ...extractAllCustomFieldEntries(item) }
     },

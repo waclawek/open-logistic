@@ -4,6 +4,8 @@ import { authorizeFeatures } from '@open-mercato/shared/security/featurePolicy'
 import { CrudHttpError } from '@open-mercato/shared/lib/crud/errors'
 import { resolveTranslations } from '@open-mercato/shared/lib/i18n/server'
 import { uuidSchema } from '../data/validators'
+import { isAllOrganizationsSelection } from '@open-mercato/core/modules/directory/constants'
+import { parseSelectedOrganizationCookie } from '@open-mercato/core/modules/directory/utils/scopeCookies'
 
 export async function authorizeLogisticsCommand(ctx: CommandRuntimeContext, required: string[]) {
   const { translate } = await resolveTranslations()
@@ -12,7 +14,8 @@ export async function authorizeLogisticsCommand(ctx: CommandRuntimeContext, requ
   if (ctx.organizationScope?.selectionRejected) return fail(403, 'forbidden')
   const tenantId = ctx.auth.tenantId
   const organizationId = ctx.selectedOrganizationId
-  if (!tenantId || !organizationId) return fail(400, 'organization_scope_required')
+  const requestedOrganization = parseSelectedOrganizationCookie(ctx.request?.headers.get('cookie'))
+  if (!tenantId || !organizationId || isAllOrganizationsSelection(requestedOrganization)) return fail(400, 'organization_scope_required')
   if (ctx.auth.isApiKey) return fail(403, 'forbidden')
   const actorUserId = ctx.auth.sub
   if (![tenantId, organizationId, actorUserId].every((id) => uuidSchema.safeParse(id).success)) return fail(403, 'forbidden')
