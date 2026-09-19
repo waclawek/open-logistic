@@ -21,6 +21,7 @@ export const defaultEncryptionMaps: ModuleEncryptionMap[] = [
       { field: 'pickup_place' },
       { field: 'delivery_place' },
       { field: 'notes' },
+      { field: 'cancellation_reason' },
     ],
   },
 ]

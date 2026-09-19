@@ -9,7 +9,7 @@ import { commandResultSchema } from '../data/commandValidators'
 import { test, expect } from './helpers/fixtures'
 
 export const integrationMeta = { dependsOnModules: ['customers'] }
-const recordSchema = z.object({ id: z.string().uuid(), updatedAt: z.string().datetime(), status: z.string(), cargoDescription: z.string(), customerNameSnapshot: z.string(), terminalAt: z.string().datetime().nullable() })
+const recordSchema = z.object({ id: z.string().uuid(), updatedAt: z.string().datetime(), status: z.string(), cargoDescription: z.string(), customerNameSnapshot: z.string(), terminalAt: z.string().datetime().nullable(), cancellationReason: z.string().nullable() })
 const listSchema = z.object({ items: z.array(recordSchema), total: z.number() })
 const createdSchema = commandResultSchema.extend({ id: z.string().uuid(), updatedAt: z.string().datetime() })
 const writeFeatures = ['logistics.view', 'logistics.jobs.manage', 'customers.companies.view', 'customers.companies.manage']
@@ -86,6 +86,7 @@ test('draft CRUD, version conflicts, concurrent acceptance and receipt recovery 
   const cancelledJob = listSchema.parse(await readJsonSafe(cancelledList)).items[0]
   expect(cancelledJob.status).toBe('cancelled')
   expect(cancelledJob.terminalAt).not.toBeNull()
+  expect(cancelledJob.cancellationReason).toBe(cancellation.reason)
   expect((await logistics.api.post(path, { data: { requestId: randomUUID(), expectedUpdatedAt: cancelledJob.updatedAt } })).status()).toBe(409)
 })
 

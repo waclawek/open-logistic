@@ -48,7 +48,7 @@ describe('logistics persistence boundaries', () => {
     ])
     expect(maps.get('logistics:driver_profile')).toEqual([{ field: 'dispatcher_notes' }])
     expect(maps.get('logistics:transport_job')?.map((field) => field.field)).toEqual([
-      'customer_name_snapshot', 'customer_reference', 'cargo_description', 'pickup_place', 'delivery_place', 'notes',
+      'customer_name_snapshot', 'customer_reference', 'cargo_description', 'pickup_place', 'delivery_place', 'notes', 'cancellation_reason',
     ])
   })
 

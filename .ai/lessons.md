@@ -196,3 +196,5 @@ This catalog indexes 145 focused lessons. Route the task first, then read only r
 ### spec-pr
 
 - [Credit the author, not the merger, when generating a changelog](lessons/credit-the-author-not-the-merger-in-a-changelog.md) — area:spec-pr,ai-workflow; module:platform; topic:data-integrity,generated-files
+
+- [Retain required command reasons atomically](lessons/retain-required-command-reasons-atomically.md) — area:module-data,testing; module:logistics,audit_logs; topic:command-pattern,data-integrity

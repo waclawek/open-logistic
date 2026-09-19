@@ -72,6 +72,7 @@ export const cancelJobCommand: CommandHandler<unknown, CancellationResult> = {
         requireRecordVersion('logistics:transport_job', job, input.expectedUpdatedAt)
         if ((job.status !== 'draft' && job.status !== 'ready') || job.terminalAt !== null) return context.fail(409, 'jobCancellationRequiresUnassigned')
         log = { reason: input.reason, previousStatus: job.status }
+        job.cancellationReason = input.reason
         job.status = 'cancelled'
         job.terminalAt = new Date()
         job.updatedAt = nextRecordVersion(job.updatedAt, job.terminalAt)

@@ -11,6 +11,7 @@ import { digestCommandInput } from '../lib/commandInput'
 import { nextRecordVersion, requireRecordVersion } from '../lib/version'
 import { emitLogisticsEvent } from '../events'
 import { registerModules } from '@open-mercato/shared/lib/modules/registry'
+import { CommandBus } from '@open-mercato/shared/lib/commands/command-bus'
 import { features } from '../acl'
 
 jest.mock('@open-mercato/shared/lib/encryption/find', () => ({ findOneWithDecryption: jest.fn(), findWithDecryption: jest.fn() }))
@@ -179,6 +180,23 @@ describe('receipted job acceptance', () => {
 })
 
 describe('receipted unassigned job cancellation', () => {
+  it('retains the mandatory reason through a real CommandBus audit failure and retry', async () => {
+    const test = harness()
+    const log = jest.fn().mockRejectedValueOnce(new Error('Audit unavailable')).mockResolvedValue(null)
+    test.ctx.container.register({ actionLogService: asValue({ log }) })
+    const bus = new CommandBus()
+    const input = { ...test.input, reason: 'Customer withdrew work' }
+    const options = { input, ctx: test.ctx, skipCacheInvalidation: true }
+    await expect(bus.execute('logistics.jobs.cancel', options)).rejects.toThrow('Audit unavailable')
+    expect(test.job).toMatchObject({ status: 'cancelled', cancellationReason: input.reason })
+    expect(test.rows).toHaveLength(2)
+    expect(test.em.rollback).not.toHaveBeenCalled()
+    const retry = await bus.execute('logistics.jobs.cancel', options)
+    expect(test.job.cancellationReason).toBe(input.reason)
+    expect(JSON.stringify(retry.result)).not.toContain(input.reason)
+    expect(log).toHaveBeenCalledTimes(1)
+    expect(emitLogisticsEvent).toHaveBeenCalledTimes(1)
+  })
   it.each(['draft', 'ready'] as const)('cancels %s with one terminal version, receipt and postcommit event', async status => {
     const test = harness()
     test.job.status = status
@@ -187,6 +205,7 @@ describe('receipted unassigned job cancellation', () => {
     const input = { ...test.input, reason: 'Customer withdrew request' }
     const result = await cancelJobCommand.execute(input, test.ctx)
     expect(test.job.status).toBe('cancelled')
+    expect(test.job.cancellationReason).toBe(input.reason)
     expect(test.job.terminalAt).toBeInstanceOf(Date)
     expect(test.job.acceptedAt).toBe(acceptedAt)
     expect(test.rows).toHaveLength(2)
@@ -225,6 +244,7 @@ describe('receipted unassigned job cancellation', () => {
     await expect(cancelJobCommand.execute({ ...test.input, reason: 'Reason' }, test.ctx)).rejects.toThrow('DB failure')
     expect(test.job.status).toBe('draft')
     expect(test.job.terminalAt).toBeNull()
+    expect(test.job.cancellationReason).toBeNull()
     expect(test.rows).toHaveLength(0)
     expect(emitLogisticsEvent).not.toHaveBeenCalled()
   })

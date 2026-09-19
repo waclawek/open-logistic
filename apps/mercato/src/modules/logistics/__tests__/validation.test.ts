@@ -14,7 +14,7 @@ describe('Logistics input boundaries', () => {
   test('accepts complete unassigned work without any vehicle or driver', () => {
     expect(jobCreateSchema.parse(job).weightKg).toBe('200.001')
   })
-  test.each(['tenantId', 'organizationId', 'actorUserId', 'status', 'customerNameSnapshot'])('rejects client-controlled %s', (field) => {
+  test.each(['tenantId', 'organizationId', 'actorUserId', 'status', 'customerNameSnapshot', 'cancellationReason'])('rejects client-controlled %s', (field) => {
     expect(jobCreateSchema.safeParse({ ...job, [field]: recordId }).success).toBe(false)
   })
   test.each([

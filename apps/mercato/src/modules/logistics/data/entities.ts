@@ -161,6 +161,9 @@ export class TransportJob {
   @Property({ name: 'terminal_at', type: Date, nullable: true })
   terminalAt: Date | null = null
 
+  @Property({ name: 'cancellation_reason', type: 'text', nullable: true })
+  cancellationReason: string | null = null
+
   @Property({ type: 'text', nullable: true })
   notes: string | null = null
 

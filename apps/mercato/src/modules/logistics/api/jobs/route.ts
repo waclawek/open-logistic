@@ -26,7 +26,7 @@ const fields = {
   customerReference: 'customer_reference', cargoDescription: 'cargo_description', weightKg: 'weight_kg', isPalletized: 'is_palletized', pallets: 'pallets',
   pickupPlace: 'pickup_place', deliveryPlace: 'delivery_place', pickupWindowStart: 'pickup_window_start', pickupWindowEnd: 'pickup_window_end',
   deliveryWindowStart: 'delivery_window_start', deliveryWindowEnd: 'delivery_window_end', status: 'status', acceptedAt: 'accepted_at',
-  firstAssignedAt: 'first_assigned_at', terminalAt: 'terminal_at', notes: 'notes', createdAt: 'created_at', updatedAt: 'updated_at',
+  firstAssignedAt: 'first_assigned_at', terminalAt: 'terminal_at', cancellationReason: 'cancellation_reason', notes: 'notes', createdAt: 'created_at', updatedAt: 'updated_at',
 }
 function responseResult({ result }: { result?: unknown }) {
   const parsed = commandResultSchema.parse(result)
