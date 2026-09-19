@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { parseBooleanToken } from '@open-mercato/shared/lib/boolean'
+import { parseBooleanFromUnknown } from '@open-mercato/shared/lib/boolean'
 
 export const cargoSchema = z.object({ weightKg: z.number().finite().nonnegative(), palletSpaces: z.number().finite().nonnegative() }).refine((value) => value.weightKg > 0 || value.palletSpaces > 0, { message: 'logistics.dispatcher.errors.invalidCargo' })
 const labelSchema = z.string().trim().min(1).max(200)
@@ -37,7 +37,7 @@ export const transportItemSchema = z.object({
 export const listQuerySchema = z.object({
   id: z.uuid().optional(), page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(50), search: z.string().max(200).optional(),
-  available: z.preprocess((value) => value === undefined ? undefined : parseBooleanToken(typeof value === 'string' ? value : null), z.boolean().optional()),
+  available: z.preprocess((value) => value === undefined ? undefined : parseBooleanFromUnknown(value), z.boolean().optional()),
 })
 export const transportVersionSchema = z.string().regex(/^[a-f0-9]{64}$/).optional()
 export const deleteSchema = z.object({ id: z.uuid(), transportVersion: transportVersionSchema })

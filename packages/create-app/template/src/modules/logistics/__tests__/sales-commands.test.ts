@@ -2,6 +2,7 @@ import { salesTransportCommands, assertLoadFits, nextLoadNumber } from '../comma
 import { findOneWithDecryption, findWithDecryption } from '@open-mercato/shared/lib/encryption/find'
 import { enforceCommandOptimisticLockWithGuards } from '@open-mercato/shared/lib/crud/optimistic-lock-command'
 import { executeSales, withSalesTransaction } from '../lib/sales-transaction'
+import { commandScope } from '../lib/server-scope'
 import { loadTransportDetail, lockLinkedSalesOrders } from '../lib/transports'
 import type { TransportDetail } from '../types'
 import type { CommandRuntimeContext } from '@open-mercato/shared/lib/commands'
@@ -28,7 +29,10 @@ function detail(): TransportDetail {
   const base = { orderNumber: 'TEST', currencyCode: 'EUR', customerId: null, customerName: 'Test', updatedAt }
   return { transportVersion: 'a'.repeat(64), updatedAt, order1: { ...base, id, status: 'confirmed', fields: { transport_role: 'client', cargo_pallets: 2, cargo_weight_kg: 500 } }, order2: { ...base, id: carrierId, status: 'approved', fields: { transport_role: 'carrier', vehicle_capacity_pallets: 6, vehicle_capacity_kg: 1500 } }, carrierHistory: [], additionalLoads: [], freeSpace: { pallets: 4, kg: 1000, limiting: 'pallets' } }
 }
-beforeEach(() => jest.resetAllMocks())
+beforeEach(() => {
+  jest.resetAllMocks()
+  jest.mocked(commandScope).mockResolvedValue({ tenantId: 'tenant', organizationId: 'org', deletedAt: null })
+})
 test('capacity checks require confirmed primary order and approved carrier, independently enforce both dimensions', async () => {
   await expect(assertLoadFits(detail(), 4, 1000)).resolves.toBeUndefined()
   await expect(assertLoadFits(detail(), 5, 1)).rejects.toMatchObject({ status: 409 })

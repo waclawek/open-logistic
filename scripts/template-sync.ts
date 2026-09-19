@@ -264,6 +264,17 @@ function stripEnabledModuleEntry(content: string, moduleId: string, rel: string)
   return stripped
 }
 
+function inlineTemplateDefaultModules(content: string, rel: string): string {
+  const normalized = content.replace(/\r\n/g, '\n')
+  if (!normalized.includes('process.env.OM_SLIM_DEV_MODULES')) return normalized
+  const catalogPattern = /\n\]\n\n\/\/ Full catalog extras — skipped when OM_SLIM_DEV_MODULES=true\.\nif \(!parseBooleanWithDefault\(process\.env\.OM_SLIM_DEV_MODULES, false\)\) \{\n  enabledModules\.push\(\n([\s\S]*?)\n  \)\n\}/g
+  const catalogs = [...normalized.matchAll(catalogPattern)]
+  if (catalogs.length !== 1) failTemplateTransform(rel, 'could not locate exactly one monorepo slim-mode catalog to inline')
+  return normalized
+    .replace('// Lean base always registered. With OM_SLIM_DEV_MODULES=true this is the whole set\n// (plus official/enterprise/S3 gated pushes below). Cuts the Turbopack cold graph.\n', '')
+    .replace(catalogPattern, (_match, entries: string) => `\n${entries.replace(/^  /gm, '')}\n]`)
+}
+
 function stripTemplateDisabledModules(content: string, rel: string): string {
   const stripped = TEMPLATE_DISABLED_MODULE_IDS.reduce(
     (current, moduleId) => stripEnabledModuleEntry(current, moduleId, rel),
@@ -327,7 +338,7 @@ export const TEMPLATE_CONTENT_TRANSFORMS: Record<string, (content: string) => st
     ),
   // Scaffolds ship the example and design-system source but keep both runtime-disabled;
   // channel_discord stays commented out with a byte-budget explanation instead.
-  'modules.ts': (content) => commentOutTemplateModules(stripTemplateDisabledModules(content, 'modules.ts'), 'modules.ts'),
+  'modules.ts': (content) => commentOutTemplateModules(stripTemplateDisabledModules(inlineTemplateDefaultModules(content, 'modules.ts'), 'modules.ts'), 'modules.ts'),
   'scripts/dev-cache-purge.mjs': (content) =>
     content
       .replaceAll("['apps', 'mercato', '.mercato', 'next'", "['.mercato', 'next'")

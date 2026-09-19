@@ -72,8 +72,6 @@ export const moduleOverrideExamples: ModuleOverrides = {
   },
 }
 
-// Lean base always registered. With OM_SLIM_DEV_MODULES=true this is the whole set
-// (plus official/enterprise/S3 gated pushes below). Cuts the Turbopack cold graph.
 export const enabledModules: ModuleEntry[] = [
   { id: 'logistics', from: '@app' },
   { id: 'dashboards', from: '@open-mercato/core' },
@@ -104,71 +102,65 @@ export const enabledModules: ModuleEntry[] = [
   { id: 'scheduler', from: '@open-mercato/scheduler' },
   { id: 'webhooks', from: '@open-mercato/webhooks' },
   { id: 'trans_inbox', from: '@app' },
+  { id: 'warranty_claims', from: '@open-mercato/core' },
+  { id: 'wms', from: '@open-mercato/core' },
+  { id: 'devices', from: '@open-mercato/core' },
+  { id: 'business_rules', from: '@open-mercato/core' },
+  { id: 'workflows', from: '@open-mercato/core' },
+  { id: 'search', from: '@open-mercato/search' },
+  { id: 'planner', from: '@open-mercato/core' },
+  { id: 'resources', from: '@open-mercato/core' },
+  { id: 'staff', from: '@open-mercato/core' },
+  { id: 'data_sync', from: '@open-mercato/core' },
+  { id: 'sync_excel', from: '@open-mercato/core' },
+  { id: 'messages', from: '@open-mercato/core' },
+  // Communication channels hub (SPEC-045d) — bridges external chat/email channels
+  // (Slack, WhatsApp, Email) to the unified Messages inbox. Provider packages
+  // (channel-slack, channel-whatsapp, future email providers) register adapters here.
+  { id: 'communication_channels', from: '@open-mercato/core' },
+  // Push notification rails — `push` delivery strategy + delivery log + send-push worker.
+  // Fans out to `devices` tokens and sends through the `communication_channels` hub.
+  { id: 'push_notifications', from: '@open-mercato/core' },
+  { id: 'phone_calls', from: '@open-mercato/core' },
+  { id: 'ai_assistant', from: '@open-mercato/ai-assistant' },
+  // agent_orchestrator moved to the enterprise catalog — enabled below behind
+  // OM_ENABLE_ENTERPRISE_MODULES + OM_ENABLE_ENTERPRISE_MODULES_AGENTS.
+  { id: 'payment_gateways', from: '@open-mercato/core' },
+  { id: 'checkout', from: '@open-mercato/checkout' },
+  { id: 'documents', from: '@open-mercato/documents' },
+  { id: 'gateway_stripe', from: '@open-mercato/gateway-stripe' },
+  // Per-user email channels for the Communications Hub (SPEC-045d / email
+  // integration spec). Each provider package registers its `ChannelAdapter`
+  // at import time via `setup.ts`; the hub picks them up by `providerKey`.
+  { id: 'channel_resend', from: '@open-mercato/channel-resend' },
+  { id: 'channel_ses', from: '@open-mercato/channel-ses' },
+  { id: 'channel_imap', from: '@open-mercato/channel-imap' },
+  { id: 'channel_gmail', from: '@open-mercato/channel-gmail' },
+  // Mobile push providers for the push_notifications channel. Each registers a
+  // `push` ChannelAdapter at import time; the push delivery strategy routes each
+  // device to the channel whose providerKey matches its push_provider.
+  { id: 'channel_apns', from: '@open-mercato/channel-apns' },
+  { id: 'channel_expo', from: '@open-mercato/channel-expo' },
+  { id: 'channel_fcm', from: '@open-mercato/channel-fcm' },
+  // Discord bot channel (SPEC 2026-06-19). The package ships with the scaffold
+  // but stays disabled by default. #4989 removed the hard overflow this used to
+  // cause (the generated root now sheds its module-fact index instead), but the
+  // headroom is still gone: enabling it puts the generated root at 12,275 of the
+  // 12,288-byte target, so the next module enabled after it drops the inline
+  // index to pointer form. Enabling is therefore a maintainer call about that
+  // budget, not a one-line edit — see
+  // packages/create-app/src/lib/agent-instruction-budget.test.ts
+  // ('one more template module still fits the root budget with its inline index
+  // intact'), and #4983 for the discussion.
+  // { id: 'channel_discord', from: '@open-mercato/channel-discord' },
+  { id: 'sync_akeneo', from: '@open-mercato/sync-akeneo' },
+  { id: 'tillio', from: '@open-mercato/tillio' },
+  { id: 'shipping_carriers', from: '@open-mercato/core' },
+  { id: 'eudr', from: '@open-mercato/core' },
+  { id: 'customer_accounts', from: '@open-mercato/core' },
+  { id: 'portal', from: '@open-mercato/core' },
+  { id: 'ratelimit_probe', from: '@app' },
 ]
-
-// Full catalog extras — skipped when OM_SLIM_DEV_MODULES=true.
-if (!parseBooleanWithDefault(process.env.OM_SLIM_DEV_MODULES, false)) {
-  enabledModules.push(
-    { id: 'warranty_claims', from: '@open-mercato/core' },
-    { id: 'wms', from: '@open-mercato/core' },
-    { id: 'devices', from: '@open-mercato/core' },
-    { id: 'business_rules', from: '@open-mercato/core' },
-    { id: 'workflows', from: '@open-mercato/core' },
-    { id: 'search', from: '@open-mercato/search' },
-    { id: 'planner', from: '@open-mercato/core' },
-    { id: 'resources', from: '@open-mercato/core' },
-    { id: 'staff', from: '@open-mercato/core' },
-    { id: 'data_sync', from: '@open-mercato/core' },
-    { id: 'sync_excel', from: '@open-mercato/core' },
-    { id: 'messages', from: '@open-mercato/core' },
-    // Communication channels hub (SPEC-045d) — bridges external chat/email channels
-    // (Slack, WhatsApp, Email) to the unified Messages inbox. Provider packages
-    // (channel-slack, channel-whatsapp, future email providers) register adapters here.
-    { id: 'communication_channels', from: '@open-mercato/core' },
-    // Push notification rails — `push` delivery strategy + delivery log + send-push worker.
-    // Fans out to `devices` tokens and sends through the `communication_channels` hub.
-    { id: 'push_notifications', from: '@open-mercato/core' },
-    { id: 'phone_calls', from: '@open-mercato/core' },
-    { id: 'ai_assistant', from: '@open-mercato/ai-assistant' },
-    // agent_orchestrator moved to the enterprise catalog — enabled below behind
-    // OM_ENABLE_ENTERPRISE_MODULES + OM_ENABLE_ENTERPRISE_MODULES_AGENTS.
-    { id: 'payment_gateways', from: '@open-mercato/core' },
-    { id: 'checkout', from: '@open-mercato/checkout' },
-    { id: 'documents', from: '@open-mercato/documents' },
-    { id: 'gateway_stripe', from: '@open-mercato/gateway-stripe' },
-    // Per-user email channels for the Communications Hub (SPEC-045d / email
-    // integration spec). Each provider package registers its `ChannelAdapter`
-    // at import time via `setup.ts`; the hub picks them up by `providerKey`.
-    { id: 'channel_resend', from: '@open-mercato/channel-resend' },
-    { id: 'channel_ses', from: '@open-mercato/channel-ses' },
-    { id: 'channel_imap', from: '@open-mercato/channel-imap' },
-    { id: 'channel_gmail', from: '@open-mercato/channel-gmail' },
-    // Mobile push providers for the push_notifications channel. Each registers a
-    // `push` ChannelAdapter at import time; the push delivery strategy routes each
-    // device to the channel whose providerKey matches its push_provider.
-    { id: 'channel_apns', from: '@open-mercato/channel-apns' },
-    { id: 'channel_expo', from: '@open-mercato/channel-expo' },
-    { id: 'channel_fcm', from: '@open-mercato/channel-fcm' },
-    // Discord bot channel (SPEC 2026-06-19). The package ships with the scaffold
-    // but stays disabled by default. #4989 removed the hard overflow this used to
-    // cause (the generated root now sheds its module-fact index instead), but the
-    // headroom is still gone: enabling it puts the generated root at 12,275 of the
-    // 12,288-byte target, so the next module enabled after it drops the inline
-    // index to pointer form. Enabling is therefore a maintainer call about that
-    // budget, not a one-line edit — see
-    // packages/create-app/src/lib/agent-instruction-budget.test.ts
-    // ('one more template module still fits the root budget with its inline index
-    // intact'), and #4983 for the discussion.
-    // { id: 'channel_discord', from: '@open-mercato/channel-discord' },
-    { id: 'sync_akeneo', from: '@open-mercato/sync-akeneo' },
-    { id: 'tillio', from: '@open-mercato/tillio' },
-    { id: 'shipping_carriers', from: '@open-mercato/core' },
-    { id: 'eudr', from: '@open-mercato/core' },
-    { id: 'customer_accounts', from: '@open-mercato/core' },
-    { id: 'portal', from: '@open-mercato/core' },
-    { id: 'ratelimit_probe', from: '@app' },
-  )
-}
 
 // Official modules activated via official-modules.json / official-modules.local.json
 // (managed by `yarn official-modules`; backed by the external/official-modules submodule).

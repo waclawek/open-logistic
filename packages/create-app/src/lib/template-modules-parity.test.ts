@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
+import { readEnabledModuleIds } from '../setup/tools/shared.js'
 import { TEMPLATE_COMMENTED_MODULES, TEMPLATE_CONTENT_TRANSFORMS } from '../../../../scripts/template-sync.ts'
 
 // `packages/create-app/template/src/modules.ts` deliberately diverges from
@@ -57,4 +58,16 @@ test('modules.ts transform keeps every commented module commented out, not delet
       `${moduleId} must not remain enabled in the template`,
     )
   }
+})
+
+
+test('standalone default catalog stays visible to static module-fact discovery', () => {
+  const templateContent = fs.readFileSync(TEMPLATE_MODULES_FILE, 'utf8')
+  const moduleIds = readEnabledModuleIds(TEMPLATE_MODULES_FILE)
+  for (const moduleId of ['sales', 'workflows', 'integrations', 'data_sync', 'customer_accounts', 'channel_resend', 'channel_ses']) {
+    assert.ok(moduleIds.includes(moduleId), `${moduleId} must remain in the standalone static catalog`)
+  }
+  assert.doesNotMatch(templateContent, /OM_SLIM_DEV_MODULES/)
+  assert.match(templateContent, /process\.env\.OM_ENABLE_ENTERPRISE_MODULES/)
+  assert.match(templateContent, /for \(const entry of officialModuleEntries\)/)
 })

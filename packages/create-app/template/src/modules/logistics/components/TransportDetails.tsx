@@ -99,7 +99,7 @@ export function TransportDetails({ transport, candidates, saving, onApproveCarri
         {remaining ? <div className="text-lg font-semibold"><CargoSummary cargo={remaining} /></div> : (
           <p className="text-sm text-muted-foreground">{t('logistics.dispatcher.unknownCapacity')}</p>
         )}
-        {overloaded ? <Alert status="error" style="lighter"><AlertDescription>{t('logistics.dispatcher.overCapacity')}</AlertDescription></Alert> : null}
+        {overloaded ? <Alert status="error"><AlertDescription>{t('logistics.dispatcher.overCapacity')}</AlertDescription></Alert> : null}
       </section>
       <section className="space-y-3 rounded-lg border border-border p-4">
         <SectionHeader title={t('logistics.dispatcher.additionalLoads')} count={transport.additionalLoads.length} />
