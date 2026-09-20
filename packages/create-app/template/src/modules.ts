@@ -73,7 +73,57 @@ export const moduleOverrideExamples: ModuleOverrides = {
 }
 
 export const enabledModules: ModuleEntry[] = [
-  { id: 'logistics', from: '@app' },
+  {
+    id: 'logistics',
+    from: '@app',
+    overrides: {
+      nav: {
+        groupOrder: ['logistics.nav.group'],
+      },
+      routes: {
+        pages: {
+          '/backend/inbox-ops': {
+            metadata: {
+              pageGroup: 'Logistics',
+              pageGroupKey: 'logistics.nav.group',
+              pageOrder: 10,
+              breadcrumb: [{ label: 'Logistics', labelKey: 'logistics.nav.group' }],
+            },
+          },
+          '/backend/inbox-ops/proposals/[id]': {
+            metadata: {
+              pageGroup: 'Logistics',
+              pageGroupKey: 'logistics.nav.group',
+              breadcrumb: [
+                { label: 'Logistics', labelKey: 'logistics.nav.group' },
+                { label: 'Proposal', labelKey: 'inbox_ops.nav.proposal_detail' },
+              ],
+            },
+          },
+          '/backend/inbox-ops/settings': {
+            metadata: {
+              pageGroup: 'Logistics',
+              pageGroupKey: 'logistics.nav.group',
+              breadcrumb: [
+                { label: 'Logistics', labelKey: 'logistics.nav.group' },
+                { label: 'Settings', labelKey: 'inbox_ops.nav.settings' },
+              ],
+            },
+          },
+          '/backend/inbox-ops/log': {
+            metadata: {
+              pageGroup: 'Logistics',
+              pageGroupKey: 'logistics.nav.group',
+              breadcrumb: [
+                { label: 'Logistics', labelKey: 'logistics.nav.group' },
+                { label: 'Processing Log', labelKey: 'inbox_ops.nav.log' },
+              ],
+            },
+          },
+        },
+      },
+    },
+  },
   { id: 'dashboards', from: '@open-mercato/core' },
   { id: 'auth', from: '@open-mercato/core' },
   { id: 'directory', from: '@open-mercato/core' },
@@ -87,7 +137,17 @@ export const enabledModules: ModuleEntry[] = [
   { id: 'configs', from: '@open-mercato/core' },
   { id: 'query_index', from: '@open-mercato/core' },
   { id: 'audit_logs', from: '@open-mercato/core' },
-  { id: 'attachments', from: '@open-mercato/core' },
+  {
+    id: 'attachments',
+    from: '@open-mercato/core',
+    overrides: {
+      routes: {
+        pages: {
+          '/backend/storage/attachments': { metadata: { navHidden: true } },
+        },
+      },
+    },
+  },
   { id: 'dictionaries', from: '@open-mercato/core' },
   { id: 'api_keys', from: '@open-mercato/core' },
   { id: 'content', from: '@open-mercato/content' },
@@ -102,15 +162,68 @@ export const enabledModules: ModuleEntry[] = [
   { id: 'scheduler', from: '@open-mercato/scheduler' },
   { id: 'webhooks', from: '@open-mercato/webhooks' },
   { id: 'trans_inbox', from: '@app' },
-  { id: 'warranty_claims', from: '@open-mercato/core' },
-  { id: 'wms', from: '@open-mercato/core' },
+  // Needed for logistics A2/A3 AiChat + /api/ai_assistant/* even in slim DX mode.
+  { id: 'ai_assistant', from: '@open-mercato/ai-assistant' },
+  {
+    id: 'warranty_claims',
+    from: '@open-mercato/core',
+    overrides: {
+      routes: {
+        pages: {
+          '/backend/warranty_claims': { metadata: { navHidden: true } },
+          '/backend/warranty_claims/create': { metadata: { navHidden: true } },
+          '/backend/warranty_claims/registrations': { metadata: { navHidden: true } },
+          '/backend/warranty_claims/registrations/create': { metadata: { navHidden: true } },
+          '/backend/warranty_claims/settings': { metadata: { navHidden: true } },
+          '/backend/warranty_claims/troubleshooting-guides': { metadata: { navHidden: true } },
+          '/backend/warranty_claims/troubleshooting-guides/create': { metadata: { navHidden: true } },
+          '/backend/warranty_claims/vendor-policies': { metadata: { navHidden: true } },
+          '/backend/warranty_claims/vendor-policies/create': { metadata: { navHidden: true } },
+        },
+      },
+    },
+  },
+  {
+    id: 'wms',
+    from: '@open-mercato/core',
+    overrides: {
+      routes: {
+        pages: {
+          '/backend/wms': { metadata: { navHidden: true } },
+          '/backend/wms/inventory': { metadata: { navHidden: true } },
+          '/backend/wms/locations': { metadata: { navHidden: true } },
+          '/backend/wms/lots': { metadata: { navHidden: true } },
+          '/backend/wms/movements': { metadata: { navHidden: true } },
+          '/backend/wms/reservations': { metadata: { navHidden: true } },
+          '/backend/wms/warehouses': { metadata: { navHidden: true } },
+          '/backend/wms/zones': { metadata: { navHidden: true } },
+        },
+      },
+    },
+  },
   { id: 'devices', from: '@open-mercato/core' },
   { id: 'business_rules', from: '@open-mercato/core' },
   { id: 'workflows', from: '@open-mercato/core' },
   { id: 'search', from: '@open-mercato/search' },
   { id: 'planner', from: '@open-mercato/core' },
   { id: 'resources', from: '@open-mercato/core' },
-  { id: 'staff', from: '@open-mercato/core' },
+  {
+    id: 'staff',
+    from: '@open-mercato/core',
+    overrides: {
+      routes: {
+        pages: {
+          '/backend/staff/time-tracking': { metadata: { navHidden: true } },
+          '/backend/staff/time-tracking/board': { metadata: { navHidden: true } },
+          '/backend/staff/time-tracking/entries': { metadata: { navHidden: true } },
+          '/backend/staff/time-tracking/projects': { metadata: { navHidden: true } },
+          '/backend/staff/time-tracking/reports': { metadata: { navHidden: true } },
+          '/backend/staff/time-tracking/settings': { metadata: { navHidden: true } },
+          '/backend/staff/time-tracking/timesheet': { metadata: { navHidden: true } },
+        },
+      },
+    },
+  },
   { id: 'data_sync', from: '@open-mercato/core' },
   { id: 'sync_excel', from: '@open-mercato/core' },
   { id: 'messages', from: '@open-mercato/core' },
@@ -121,12 +234,33 @@ export const enabledModules: ModuleEntry[] = [
   // Push notification rails — `push` delivery strategy + delivery log + send-push worker.
   // Fans out to `devices` tokens and sends through the `communication_channels` hub.
   { id: 'push_notifications', from: '@open-mercato/core' },
-  { id: 'phone_calls', from: '@open-mercato/core' },
-  { id: 'ai_assistant', from: '@open-mercato/ai-assistant' },
+  {
+    id: 'phone_calls',
+    from: '@open-mercato/core',
+    overrides: {
+      routes: {
+        pages: {
+          '/backend/phone_calls': { metadata: { navHidden: true } },
+        },
+      },
+    },
+  },
   // agent_orchestrator moved to the enterprise catalog — enabled below behind
   // OM_ENABLE_ENTERPRISE_MODULES + OM_ENABLE_ENTERPRISE_MODULES_AGENTS.
   { id: 'payment_gateways', from: '@open-mercato/core' },
-  { id: 'checkout', from: '@open-mercato/checkout' },
+  {
+    id: 'checkout',
+    from: '@open-mercato/checkout',
+    overrides: {
+      routes: {
+        pages: {
+          '/backend/checkout/pay-links': { metadata: { navHidden: true } },
+          '/backend/checkout/templates': { metadata: { navHidden: true } },
+          '/backend/checkout/transactions': { metadata: { navHidden: true } },
+        },
+      },
+    },
+  },
   { id: 'documents', from: '@open-mercato/documents' },
   { id: 'gateway_stripe', from: '@open-mercato/gateway-stripe' },
   // Per-user email channels for the Communications Hub (SPEC-045d / email
@@ -156,7 +290,22 @@ export const enabledModules: ModuleEntry[] = [
   { id: 'sync_akeneo', from: '@open-mercato/sync-akeneo' },
   { id: 'tillio', from: '@open-mercato/tillio' },
   { id: 'shipping_carriers', from: '@open-mercato/core' },
-  { id: 'eudr', from: '@open-mercato/core' },
+  {
+    id: 'eudr',
+    from: '@open-mercato/core',
+    overrides: {
+      routes: {
+        pages: {
+          '/backend/eudr': { metadata: { navHidden: true } },
+          '/backend/eudr/evidence-submissions': { metadata: { navHidden: true } },
+          '/backend/eudr/plots': { metadata: { navHidden: true } },
+          '/backend/eudr/product-mappings': { metadata: { navHidden: true } },
+          '/backend/eudr/risk-assessments': { metadata: { navHidden: true } },
+          '/backend/eudr/statements': { metadata: { navHidden: true } },
+        },
+      },
+    },
+  },
   { id: 'customer_accounts', from: '@open-mercato/core' },
   { id: 'portal', from: '@open-mercato/core' },
   { id: 'ratelimit_probe', from: '@app' },

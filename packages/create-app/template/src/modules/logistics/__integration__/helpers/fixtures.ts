@@ -17,18 +17,18 @@ import en from '../../i18n/en.json' with { type: 'json' }
 export const menuSections = [
   { path: '/backend/logistics/ai-inbox', title: en['logistics.dispatcher.inbox'], tab: 'inbox' },
   { path: '/backend/logistics/transports', title: en['logistics.dispatcher.transports'], tab: 'transports' },
+  { path: '/backend/logistics/transport-jobs', title: en['logistics.transportJobs.title'], tab: 'transport-jobs' },
+  { path: '/backend/logistics/proposals-disruptions', title: en['logistics.proposalsDisruptions.title'], tab: 'proposals-disruptions' },
 ] as const
 
 export const legacySections = [
-  { path: '/backend/logistics/transport-jobs', title: 'Transport jobs' },
   { path: '/backend/logistics/fleet', title: 'Vehicles / drivers' },
   { path: '/backend/logistics/trips', title: 'Trips and routes' },
   { path: '/backend/logistics/map', title: 'Fleet map' },
   { path: '/backend/logistics/statistics', title: 'Statistics' },
-  { path: '/backend/logistics/proposals-disruptions', title: 'Proposals and disruptions' },
 ] as const
 
-export const sections = [menuSections[1], ...legacySections] as const
+export const sections = [menuSections[1], menuSections[2], menuSections[3], ...legacySections] as const
 
 type LogisticsFixture = {
   authorizeApi: () => Promise<void>

@@ -4,6 +4,6 @@ export const metadata: ModuleInfo = {
   name: 'logistics',
   title: 'Logistics',
   version: '0.1.0',
-  description: 'Dispatcher navigation foundation.',
+  description: 'Dispatcher logistics — transport jobs with GraphHopper routes.',
   license: 'MIT',
 }

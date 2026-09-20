@@ -1,12 +1,13 @@
 import { Page, PageBody } from '@open-mercato/ui/backend/Page'
-import { LogisticsPageContent, LogisticsPageHeader } from '../../../components/LogisticsPage'
+import { LogisticsPageHeader } from '../../../components/LogisticsPage'
+import { LogisticsAgentInbox } from '../../../components/LogisticsAgentInbox'
 
 export default function ProposalsDisruptionsPage() {
   return (
     <Page data-testid="logistics-page">
       <LogisticsPageHeader section="proposalsDisruptions" />
       <PageBody>
-        <LogisticsPageContent section="proposalsDisruptions" />
+        <LogisticsAgentInbox />
       </PageBody>
     </Page>
   )

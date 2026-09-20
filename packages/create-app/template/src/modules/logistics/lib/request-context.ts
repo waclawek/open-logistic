@@ -1,8 +1,11 @@
 import type { EntityManager } from '@mikro-orm/postgresql'
 import type { AwilixContainer } from 'awilix'
-import { getAuthFromRequest } from '@open-mercato/shared/lib/auth/server'
+import { getAuthFromRequest, type AuthContext } from '@open-mercato/shared/lib/auth/server'
 import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
-import { resolveOrganizationScopeForRequest } from '@open-mercato/core/modules/directory/utils/organizationScope'
+import {
+  resolveOrganizationScopeForRequest,
+  type OrganizationScope,
+} from '@open-mercato/core/modules/directory/utils/organizationScope'
 import type { TransportScope } from './transports'
 
 export class LogisticsRequestContextError extends Error {
@@ -15,6 +18,8 @@ export class LogisticsRequestContextError extends Error {
 export type LogisticsRequestContext = {
   container: AwilixContainer
   em: EntityManager
+  auth: AuthContext
+  organizationScope: OrganizationScope
   scope: TransportScope
 }
 
@@ -28,6 +33,7 @@ export async function resolveLogisticsRequestContext(request: Request): Promise<
   }
   const organizationId = organizationScope.selectedId ?? auth.orgId ?? null
   if (!organizationId) throw new LogisticsRequestContextError(400, 'organization_required')
+  const tenantId = organizationScope.tenantId ?? auth.tenantId
   const em = container.resolve<EntityManager>('em').fork({
     clear: true,
     freshEventManager: true,
@@ -36,6 +42,8 @@ export async function resolveLogisticsRequestContext(request: Request): Promise<
   return {
     container,
     em,
-    scope: { tenantId: organizationScope.tenantId ?? auth.tenantId, organizationId },
+    auth: tenantId === auth.tenantId ? auth : { ...auth, tenantId },
+    organizationScope,
+    scope: { tenantId, organizationId },
   }
 }

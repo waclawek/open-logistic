@@ -2,6 +2,7 @@ import { salesTransportCommands, assertLoadFits, nextLoadNumber } from '../comma
 import { findOneWithDecryption, findWithDecryption } from '@open-mercato/shared/lib/encryption/find'
 import { enforceCommandOptimisticLockWithGuards } from '@open-mercato/shared/lib/crud/optimistic-lock-command'
 import { executeSales, withSalesTransaction } from '../lib/sales-transaction'
+import { createOrder } from '../lib/sales-orders'
 import { commandScope } from '../lib/server-scope'
 import { loadTransportDetail, lockLinkedSalesOrders } from '../lib/transports'
 import type { TransportDetail } from '../types'
@@ -19,6 +20,12 @@ jest.mock('../data/entities', () => ({ LogisticsOffer: class {} }))
 jest.mock('../lib/server-scope', () => ({ commandScope: jest.fn(async () => ({ tenantId: 'tenant', organizationId: 'org', deletedAt: null })) }))
 jest.mock('../lib/transports', () => ({ loadTransportDetail: jest.fn(), lockLinkedSalesOrders: jest.fn(async () => undefined) }))
 jest.mock('../lib/sales-transaction', () => ({ withSalesTransaction: jest.fn(), executeSales: jest.fn() }))
+jest.mock('../lib/sales-orders', () => ({
+  channelId: jest.fn(async () => 'channel'),
+  createLegacyTransport: jest.fn(),
+  createOrder: jest.fn(async () => 'carrier-order'),
+  requiredStatus: jest.fn(async () => 'status'),
+}))
 jest.mock('../lib/server-offer-guards', () => ({ guardAllocatedOffer: jest.fn() }))
 jest.mock('@open-mercato/shared/lib/i18n/server', () => ({ resolveTranslations: async () => ({ translate: (key: string) => key }) }))
 
@@ -68,4 +75,42 @@ test('deleting a transport includes linked cancelled carrier orders hidden from 
   jest.mocked(enforceCommandOptimisticLockWithGuards).mockResolvedValue(undefined)
   await salesTransportCommands.find((entry) => entry.id === 'logistics.transports.delete')!.execute({ id }, ctx)
   expect(jest.mocked(executeSales).mock.calls.map((call) => [call[1], call[2].id])).toEqual([['delete', hiddenId], ['delete', id]])
+})
+
+test('agent carrier approval creates an approved Order 2 through the Sales command layer', async () => {
+  const ctx = { container: {}, request: new Request('http://localhost') } as CommandRuntimeContext
+  const em = { clear: jest.fn() }
+  const withoutCarrier = { ...detail(), order2: null }
+  jest.mocked(withSalesTransaction).mockImplementation(async (_ctx, run) => run({ em: em as never, ctx, afterCommit: [] }))
+  jest.mocked(findOneWithDecryption).mockResolvedValue({ id, updatedAt: new Date(updatedAt), currencyCode: 'EUR', channelId: null } as never)
+  jest.mocked(enforceCommandOptimisticLockWithGuards).mockResolvedValue(undefined)
+  jest.mocked(loadTransportDetail)
+    .mockResolvedValueOnce(withoutCarrier)
+    .mockResolvedValueOnce(detail())
+
+  await salesTransportCommands
+    .find((entry) => entry.id === 'logistics.transports.approve_agent_carrier')!
+    .execute({
+      id,
+      carrierName: 'Trans-Łódź Sp. z o.o.',
+      carrierCost: 920,
+      vehicleType: 'SEMI_TRAILER',
+      vehicleCapacityPallets: 33,
+      vehicleCapacityKg: 24_000,
+      currencyCode: 'EUR',
+      exchangeSource: 'trans',
+      exchangeRef: 'veh-lodz-1',
+      note: 'Approved by the Agent Inbox operator.',
+    }, ctx)
+
+  expect(createOrder).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({
+    customerName: 'Trans-Łódź Sp. z o.o.',
+    status: 'approved',
+    fields: expect.objectContaining({
+      transport_role: 'carrier',
+      transport_parent_id: id,
+      transport_order_number: 2,
+      exchange_ref: 'veh-lodz-1',
+    }),
+  }))
 })

@@ -13,8 +13,11 @@ The source reference is juliajakubowskabiznes/open-logistic at 6d47e9a1789e714b9
 ## Proposed Solution / Architecture
 
 Keep vertical behavior inside app modules. Extend SalesOrder and customer company profiles
-through ce.ts; invoke the existing Sales command bus for document writes. Reference customers
-for CRUD/security patterns. No production dependency additions. The user explicitly approved
+through ce.ts; invoke the existing Sales command bus for document writes. Transport quotes created
+from Inbox proposals use a versioned `metadata.logistics` envelope that the standard Sales
+Quote → Order conversion copies unchanged. This keeps Sales package code unmodified while the
+Logistics read model supports both the metadata envelope and legacy custom-field-backed transports.
+Reference customers for CRUD/security patterns. No production dependency additions. The user explicitly approved
 an additive CommandRuntimeContext.deferredSideEffects queue and Sales/CommandBus support
 for delaying externally visible effects until the composing transaction commits.
 
@@ -28,6 +31,11 @@ selection and rejection. The diagnostic inbox does not create business offers au
 - Sales transport fields include transport_role/parent_id, pickup and delivery, cargo kg/pallets,
   client price and carrier budget/cost, vehicle type/registration/capacity snapshot, exchange source
   and reference, source offer id, and additional transport order number.
+- Inbox-created client transport quotes add the same client-facing route, window, cargo, price and
+  source values under `metadata.logistics` with `version: 1`, `transportRole: client` and
+  `transportOrderNumber: 1`. The marker is system-assigned; neither users nor the extraction model
+  choose the transport role. Existing `transport_role` custom fields remain supported for backward
+  compatibility and for carrier/additional-load Sales Orders.
 - Every lookup is scoped by tenant and selected organization. Sales reads use decryption helpers.
 - Carrier/load proposals are pending_approval, approved or rejected. The current carrier excludes
   rejected history; replacing a rejected carrier preserves its historical record.
@@ -66,6 +74,9 @@ or apply_pricing decision. Existing order amounts are not changed by this remova
 
 - GET /api/logistics/transports supports pagination, search, carrierStatus, date/update sorting;
   GET /api/logistics/transports/:id returns the rich Sales-backed detail.
+- Inbox transport RFQs continue to use the standard `create_quote` proposal action. The Logistics
+  app augments its extraction guidance and intercepts `sales.quotes.create` to attach the scoped,
+  validated `metadata.logistics` envelope; it does not add a new core Inbox action type.
 - POST /api/logistics/transports/:id/decision accepts approve_carrier, reject_carrier, accept_load
   (offerId or orderId), reject_load (orderId), returning the refreshed detail.
 - Existing offer list/create/delete and reject decision endpoints remain available and scoped.
@@ -97,7 +108,10 @@ main dispatcher panel. Simulators are development tools, not production provider
 
 ## Migration & Backward Compatibility
 
-Legacy logistics_transports rows/table and migration history are retained. Provide a scoped,
+Legacy logistics_transports rows/table and migration history are retained. Existing Sales Orders
+identified by the `transport_role` custom field stay readable; new Inbox-created client transports
+may be identified by the versioned Logistics metadata envelope. No data rewrite is required.
+Provide a scoped,
 idempotent legacy-to-Sales CLI migration with dry-run default and explicit apply. Re-running must
 not duplicate orders or reassign accepted offers. Preserve legacy source identifiers and allocated
 offer references. Do not apply developer database migrations or data conversion in this task.
@@ -160,3 +174,17 @@ Developer database migrations and legacy data conversion were not applied. Graph
 - 2026-09-19: Removed the automatic pricing implementation at user request; pricing will come from a separate feature. Retained vehicle catalogue and existing manually/external-supplied prices.
 
 - 2026-09-19: User requested tests; fixed repeated boolean query validation and verified the Sales-backed dispatcher in an isolated integration environment (31 passed, one development-only skip).
+
+- 2026-09-19: Added the app-level Inbox Proposal → Sales Quote → Sales Order handoff design. New
+  transport quotes carry a versioned `metadata.logistics` envelope copied by the existing Sales
+  conversion; AI Transports remains compatible with legacy `transport_role` custom fields, and no
+  Sales package source changes are required.
+
+- 2026-09-19: Verified the handoff with focused unit coverage (9 tests), app typechecking and lint,
+  plus isolated integration case TC-LOG-012 covering proposal acceptance, quote conversion,
+  metadata propagation and AI Transports visibility.
+
+- 2026-09-20: Fixed the AI Transports collection query for encrypted Sales Order metadata. The
+  read model now selects scoped orders with metadata, decrypts them, and applies the versioned
+  Logistics marker in memory. TC-LOG-012 now asserts visibility through the unfiltered collection
+  endpoint rather than the detail-by-ID shortcut.
