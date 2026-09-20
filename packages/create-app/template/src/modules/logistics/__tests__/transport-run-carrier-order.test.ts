@@ -18,6 +18,7 @@ jest.mock('../lib/request-context', () => ({
 jest.mock('../lib/transport-run', () => ({
   approveCarrierProposal: jest.fn(),
   getTransportRun: jest.fn(),
+  markCarrierOrderApproved: jest.fn(),
   toTransportRunView: jest.fn((run: TransportRun) => run),
   advanceTruck: jest.fn(),
   approveBackloadProposal: jest.fn(),

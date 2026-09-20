@@ -8,6 +8,7 @@ import {
   approveBackloadProposal,
   approveCarrierProposal,
   getTransportRun,
+  markCarrierOrderApproved,
   proposeBackload,
   proposeCarrier,
   publishListingForRun,
@@ -124,6 +125,7 @@ async function mapApprovedCarrierToOrder2(
     'logistics.transports.approve_agent_carrier',
     { input, ctx: commandContext },
   )
+  markCarrierOrderApproved(run.id)
 }
 
 async function mapApprovedBackloadToAdditionalOrder(

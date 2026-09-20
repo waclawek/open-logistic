@@ -271,6 +271,7 @@ export async function startTransportRunFromAgreedOffer(input?: {
     approvedCarrier: null,
     approvedAt: null,
     approvedBy: null,
+    carrierOrderApprovedAt: null,
     truck: null,
     backloadScan: emptyBackloadScan(),
     backloadProposal: null,
@@ -506,6 +507,14 @@ export function approveCarrierProposal(runId: string, approvedBy = 'human2'): Tr
   return run
 }
 
+/** Record that Sales stored Order 2 as approved — the truck stays parked until this lands. */
+export function markCarrierOrderApproved(runId: string): TransportRun {
+  const run = requireRun(runId)
+  run.carrierOrderApprovedAt = new Date().toISOString()
+  run.updatedAt = run.carrierOrderApprovedAt
+  return run
+}
+
 export function rejectCarrierProposal(runId: string, reason?: string): TransportRun {
   const run = requireRun(runId)
   if (run.status !== 'carrier_proposal_pending') {
@@ -522,6 +531,9 @@ export function startDelivery(runId: string): TransportRun {
   const run = requireRun(runId)
   if (run.status !== 'approved' && run.status !== 'in_transit') {
     throw new Error('[internal] Approve carrier first before starting delivery')
+  }
+  if (run.sourceTransportId && !run.carrierOrderApprovedAt) {
+    throw new Error('[internal] Order 2 is not approved in Sales yet — truck stays parked')
   }
   const order = requireOrder(run)
   const from = order.route?.from ?? {

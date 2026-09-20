@@ -98,10 +98,11 @@ async function approveAgentCarrier(
 ) {
   const input = carrierProposalSchema.parse(raw)
   if (detail.order2) {
-    const alreadyMapped = detail.order2.status === 'approved'
-      && input.exchangeRef
-      && detail.order2.fields.exchange_ref === input.exchangeRef
-    if (alreadyMapped) return
+    if (detail.order2.status === 'approved') return
+    if (detail.order2.status === 'pending_approval') {
+      await updateStatus(transaction, scope, detail.order2, 'approved')
+      return
+    }
     return logisticsError(409, 'carrierAlreadyProposed')
   }
   await createOrder(transaction, scope, {
@@ -141,6 +142,10 @@ async function approveAgentBackload(
     : null
   if (existing) {
     if (existing.status === 'approved') return
+    if (existing.status === 'pending_approval') {
+      await updateStatus(transaction, scope, existing, 'approved')
+      return
+    }
     return logisticsError(409, 'offerUnavailable')
   }
   await assertLoadCapacity(detail, input.cargoPallets, input.cargoWeightKg, false)

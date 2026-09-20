@@ -97,8 +97,8 @@ export type BackloadScanState = {
   aheadCandidateIds: string[]
 }
 
-/** Demo trip length: ~2 min at 1 Hz ticks. */
-export const DEMO_TRIP_DURATION_SEC = 120
+/** Demo trip length: ~5 min at 1 Hz ticks. */
+export const DEMO_TRIP_DURATION_SEC = 300
 export const DEMO_TRIP_TICK_MS = 1_000
 export const DEMO_TRIP_STEP_PCT = 100 / DEMO_TRIP_DURATION_SEC
 export const DEMO_BACKLOAD_RADIUS_KM = 45
@@ -129,6 +129,8 @@ export type TransportRun = {
   approvedCarrier: CarrierProposal | null
   approvedAt: string | null
   approvedBy: string | null
+  /** Set once Order 2 is stored as approved in Sales. Gates the truck for transport-backed runs. */
+  carrierOrderApprovedAt: string | null
   truck: TruckPosition | null
   backloadScan: BackloadScanState
   backloadProposal: BackloadProposal | null

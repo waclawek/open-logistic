@@ -115,6 +115,36 @@ test('agent carrier approval creates an approved Order 2 through the Sales comma
   }))
 })
 
+test('agent carrier approval promotes an existing pending Order 2 instead of failing', async () => {
+  const ctx = { container: {}, request: new Request('http://localhost') } as CommandRuntimeContext
+  const em = { clear: jest.fn() }
+  const pending = detail(); pending.order2!.status = 'pending_approval'
+  jest.mocked(withSalesTransaction).mockImplementation(async (_ctx, run) => run({ em: em as never, ctx, afterCommit: [] }))
+  jest.mocked(findOneWithDecryption).mockResolvedValue({ id, updatedAt: new Date(updatedAt), currencyCode: 'EUR', channelId: null } as never)
+  jest.mocked(enforceCommandOptimisticLockWithGuards).mockResolvedValue(undefined)
+  jest.mocked(loadTransportDetail)
+    .mockResolvedValueOnce(pending)
+    .mockResolvedValueOnce(detail())
+
+  await salesTransportCommands
+    .find((entry) => entry.id === 'logistics.transports.approve_agent_carrier')!
+    .execute({
+      id,
+      carrierName: 'Trans-Łódź Sp. z o.o.',
+      carrierCost: 920,
+      vehicleType: 'SEMI_TRAILER',
+      vehicleCapacityPallets: 33,
+      vehicleCapacityKg: 24_000,
+      currencyCode: 'EUR',
+      exchangeSource: 'trans',
+      exchangeRef: 'veh-lodz-1',
+      note: 'Approved by the Agent Inbox operator.',
+    }, ctx)
+
+  expect(createOrder).not.toHaveBeenCalled()
+  expect(jest.mocked(executeSales).mock.calls.some((call) => call[1] === 'update' && (call[2] as { id: string }).id === carrierId)).toBe(true)
+})
+
 test('agent backload approval creates an approved additional load through the Sales command layer', async () => {
   const ctx = { container: {}, request: new Request('http://localhost') } as CommandRuntimeContext
   const em = { clear: jest.fn() }
