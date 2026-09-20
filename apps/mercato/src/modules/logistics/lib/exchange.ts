@@ -3,7 +3,7 @@ import type { LogisticsOrder, LogisticsRoute, OrderCommercials, VehicleCapacity 
 import { deriveCapacity, deriveCommercials } from './types'
 import { getOrder } from './orders-store'
 import { planRoute } from './graphhopper'
-import { placeLabel } from './corridor-cities'
+import { placeLabel, samePlace } from './corridor-cities'
 
 /** Demo loading rules: one Euro pallet is about 0.72 t of general cargo and 0.4 LDM. */
 const TONNES_PER_PALLET = 0.72
@@ -435,11 +435,6 @@ export function searchBackloadsAlongRoute(input: {
     for (let n = 0; n < 2; n++) {
       const jitterLat = sample.lat + (n === 0 ? 0.12 : -0.08)
       const jitterLng = sample.lng + (n === 0 ? 0.15 : -0.1)
-      const load = {
-        name: placeLabel({ lat: jitterLat, lng: jitterLng }, `Punkt @${Math.round(sample.alongKm)} km`),
-        lat: jitterLat,
-        lng: jitterLng,
-      }
       const midpoint = {
         lat: sample.lat + (dest.lat - sample.lat) * 0.35,
         lng: sample.lng + (dest.lng - sample.lng) * 0.35,
@@ -448,10 +443,17 @@ export function searchBackloadsAlongRoute(input: {
         n === 0
           ? dest
           : {
-              name: placeLabel(midpoint, 'Węzeł korytarza'),
+              name: placeLabel(midpoint, 'Węzeł korytarza', dest.name),
               lat: midpoint.lat,
               lng: midpoint.lng,
             }
+      const load = {
+        name: placeLabel({ lat: jitterLat, lng: jitterLng }, `Punkt @${Math.round(sample.alongKm)} km`, unload.name),
+        lat: jitterLat,
+        lng: jitterLng,
+      }
+      // A load that starts where it ends is not a backload, whatever the grid says.
+      if (samePlace(load.name, unload.name)) continue
       const offRoute = haversineKm(sample, load)
       if (offRoute > radiusKm) continue
       const detour = offRoute * 2 + haversineKm(load, unload) * 0.05
@@ -483,7 +485,7 @@ export function searchBackloadsAlongRoute(input: {
     const sample = samples[Math.floor(samples.length / 2)]
     const weightT = Math.round((capacity.freeWeightT + 6) * 10) / 10
     const load = {
-      name: placeLabel({ lat: sample.lat + 0.05, lng: sample.lng + 0.05 }, `Ciężki @${Math.round(sample.alongKm)} km`),
+      name: placeLabel({ lat: sample.lat + 0.05, lng: sample.lng + 0.05 }, `Ciężki @${Math.round(sample.alongKm)} km`, dest.name),
       lat: sample.lat + 0.05,
       lng: sample.lng + 0.05,
     }
@@ -565,7 +567,7 @@ export function searchBackloadsAlongRoute(input: {
     const eco = economics(priceEur, detourKm, weightT)
     const point = { lat: anchor.lat + 0.06, lng: anchor.lng + 0.08 }
     const load = {
-      name: placeLabel(point, `Punkt @${Math.round(anchor.alongKm)} km`),
+      name: placeLabel(point, `Punkt @${Math.round(anchor.alongKm)} km`, dest.name),
       lat: point.lat,
       lng: point.lng,
     }

@@ -70,10 +70,34 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   return 2 * 6371 * Math.asin(Math.min(1, Math.sqrt(h)))
 }
 
-/** Nearest city within MAX_SNAP_KM, or null when the point is out in the open. */
-export function nearestCity(point: { lat: number; lng: number }): CorridorCity | null {
+/** Comparable form of a place name: no diacritics, no country suffix, no case. */
+export function samePlace(left: string | undefined, right: string | undefined): boolean {
+  const normalize = (value: string | undefined) =>
+    (value ?? '')
+      .replace(/\s*\([A-Z]{2}\)\s*$/i, '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLocaleLowerCase()
+  const a = normalize(left)
+  const b = normalize(right)
+  return a.length > 0 && a === b
+}
+
+/**
+ * Nearest city within MAX_SNAP_KM, or null when the point is out in the open.
+ *
+ * `avoid` skips a city the caller already used for the other end of the load.
+ * Without it a sample close to the destination snapped to the destination city
+ * and the dispatcher read "Wrocław → Wrocław", which is not a backload.
+ */
+export function nearestCity(
+  point: { lat: number; lng: number },
+  avoid?: string,
+): CorridorCity | null {
   let best: { city: CorridorCity; km: number } | null = null
   for (const city of CORRIDOR_CITIES) {
+    if (avoid && samePlace(city.name, avoid)) continue
     const km = haversineKm(point, city)
     if (!best || km < best.km) best = { city, km }
   }
@@ -84,7 +108,11 @@ export function nearestCity(point: { lat: number; lng: number }): CorridorCity |
  * The label a backload point carries on screen: a city when one is close
  * enough, and a coordinate pair when none is.
  */
-export function placeLabel(point: { lat: number; lng: number }, fallback: string): string {
-  const city = nearestCity(point)
+export function placeLabel(
+  point: { lat: number; lng: number },
+  fallback: string,
+  avoid?: string,
+): string {
+  const city = nearestCity(point, avoid)
   return city ? `${city.name} (${city.country})` : fallback
 }

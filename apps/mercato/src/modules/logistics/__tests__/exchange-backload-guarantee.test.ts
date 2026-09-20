@@ -54,6 +54,16 @@ test('every freight candidate states pallet spaces, so none reaches a transport 
   for (const candidate of freights) expect(candidate.pallets).toBeGreaterThan(0)
 })
 
+test('no candidate loads and unloads in the same place', () => {
+  const route = straightRoute(40)
+  for (const fromAlongKm of [0, 200, 400, 560]) {
+    const result = searchBackloadsAlongRoute({ route, fromAlongKm, radiusKm: 45, maxResults: 20 })
+    for (const candidate of result.candidates.filter((item) => item.kind === 'freight')) {
+      expect(candidate.from.name).not.toBe(candidate.to.name)
+    }
+  }
+})
+
 test('a pickup point near a corridor city takes the city name, not a kilometre mark', () => {
   const berlinToWarsaw = straightRoute(40)
   const result = searchBackloadsAlongRoute({ route: berlinToWarsaw, fromAlongKm: 0, radiusKm: 45 })
