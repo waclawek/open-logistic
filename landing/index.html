@@ -1,0 +1,1129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenLogistic, ad-hoc freight orders</title>
+<meta name="description" content="OpenLogistic books the one-off urgent shipment that falls outside your contracted lanes. Enter pickup, drop, vehicle class and time window, and the platform finds a carrier.">
+<style>
+/* ---------------------------------------------------------------
+   Airside brand. Pinned palette, do not substitute.
+   Contrast measured (WCAG 2.1):
+     ink       #0C0D0E on paper #F4F2EE .......... 17.40:1
+     secondary #4A4F55 on paper ................... 7.39:1
+     tertiary  #5E646B on paper ................... 5.35:1
+     tertiary  #5E646B on paper-2 #E8E4DC ......... 4.72:1
+     primary   #C2410C on paper ................... 4.63:1
+     white on primary #C2410C ..................... 5.18:1
+     white on primary hover #9A3412 ............... 7.31:1
+     #9A3412 on white (error text) ................ 7.31:1
+     #0C0C0C on hi-vis #F5D90A .................... 13.80:1
+     #2A2200 on hi-vis ............................ 11.16:1
+     #2A2200 on amber #FFB000 ..................... 8.64:1
+     #0C0C0C on signal #FF6A1F .................... 6.83:1
+     white on ink #0C0D0E ......................... 19.45:1
+     warm tint #BCAE97 on ink ..................... 8.93:1
+     hi-vis #F5D90A on ink ........................ 13.72:1
+   --------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('fonts/archivo-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('fonts/archivo-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --primary: #C2410C;
+  --primary-hover: #9A3412;
+  --on-primary: #FFFFFF;
+  --hivis: #F5D90A;
+  --on-hivis: #2A2200;
+  --amber: #FFB000;
+  --signal: #FF6A1F;
+  --ink: #0C0D0E;
+  --ink-2: #4A4F55;
+  --ink-3: #5E646B;
+  --paper: #F4F2EE;
+  --paper-2: #E8E4DC;
+  --plate: #FFFFFF;
+  --tint-on-ink: #BCAE97;
+  --rule: #0C0D0E;
+  --tape: repeating-linear-gradient(45deg, #0C0D0E 0 13px, #F5D90A 13px 26px);
+  --shell: min(1240px, 100% - 3rem);
+
+  /* Motion scale. One easing family, four durations, one stagger step.
+     Every transition and animation on the page reads from these. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-tap: 150ms;     /* controls answering a pointer */
+  --t-swap: 320ms;    /* one value or state replacing another */
+  --t-rise: 520ms;    /* an element entering the viewport */
+  --t-panel: 700ms;   /* the largest single move on the page */
+  --t-step: 70ms;     /* stagger between siblings */
+  --t-spin: 900ms;    /* busy indicator */
+  --loop-tape: 2.4s;  /* hazard tape travel, one tile */
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Browser surfaces theming ------------------------------------- */
+::selection { background: var(--hivis); color: var(--on-hivis); }
+:root { accent-color: var(--primary); caret-color: var(--primary); scrollbar-color: var(--primary) var(--paper-2); }
+::-webkit-scrollbar { width: 13px; height: 13px; }
+::-webkit-scrollbar-track { background: var(--paper-2); }
+::-webkit-scrollbar-thumb { background: var(--primary); border: 3px solid var(--paper-2); }
+::-webkit-scrollbar-thumb:hover { background: var(--primary-hover); }
+
+:where(a, button, input, textarea, summary):focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+.band--hivis :where(a, button, input, textarea):focus-visible { outline-color: var(--ink); }
+.band--ink :where(a, button):focus-visible { outline-color: var(--hivis); }
+
+h1, h2, h3 {
+  margin: 0;
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+p { margin: 0; text-wrap: pretty; }
+
+a { color: var(--primary-hover); text-underline-offset: 0.22em; text-decoration-thickness: 2px; }
+a:hover { color: var(--primary); }
+
+.shell { width: var(--shell); margin-inline: auto; }
+.tape { position: relative; height: 12px; overflow: hidden; }
+.tape::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(100% + 74px);
+  background: var(--tape);
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+.num { font-variant-numeric: tabular-nums lining-nums; }
+
+/* Header -------------------------------------------------------- */
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: 1.15rem;
+}
+.masthead img { display: block; width: 186px; height: auto; }
+.masthead__right { display: flex; align-items: center; gap: 1.25rem; }
+.masthead__note {
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* Buttons ------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1rem 1.6rem;
+  border: 0;
+  background: var(--primary);
+  color: var(--on-primary);
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 6px 18px -8px rgba(12, 13, 14, 0.55);
+  transition: background var(--t-tap) var(--ease-out), transform var(--t-tap) var(--ease-out), box-shadow var(--t-tap) var(--ease-out);
+}
+.btn:hover { background: var(--primary-hover); color: var(--on-primary); transform: translateY(-2px); box-shadow: 0 12px 24px -10px rgba(12, 13, 14, 0.6); }
+.btn:active { transform: translateY(0); }
+.btn[disabled] { cursor: not-allowed; transform: none; background: var(--primary-hover); box-shadow: none; }
+.btn__arrow { width: 18px; height: 18px; flex: none; }
+.btn--ghost {
+  background: transparent;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--ink);
+  padding: 1rem 1.4rem;
+}
+.btn--ghost:hover { background: var(--ink); color: var(--paper); box-shadow: inset 0 0 0 2px var(--ink); }
+
+/* Hero ---------------------------------------------------------- */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  gap: 4rem;
+  align-items: start;
+  padding-block: clamp(3rem, 7vw, 5.5rem) clamp(3.5rem, 7vw, 6rem);
+}
+.hero h1 {
+  font-size: clamp(2.9rem, 6.6vw, 5.4rem);
+  letter-spacing: -0.038em;
+  max-width: 13ch;
+}
+.hero h1 em { font-style: normal; color: var(--primary); display: block; }
+.hero__lead {
+  margin-top: 1.9rem;
+  max-width: 54ch;
+  font-size: clamp(1.0625rem, 1.35vw, 1.25rem);
+  color: var(--ink-2);
+}
+.hero__actions { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-top: 2.4rem; }
+.hero__terms {
+  margin-top: 2.6rem;
+  padding-top: 1.4rem;
+  border-top: 2px solid var(--ink);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.6rem;
+  color: var(--ink-3);
+}
+.hero__terms span { font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.02em; }
+
+/* Docket plate -------------------------------------------------- */
+.docket { background: var(--plate); box-shadow: 0 22px 50px -26px rgba(12, 13, 14, 0.55); }
+.docket__head {
+  background: var(--ink);
+  color: var(--plate);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.15rem;
+}
+.docket__stamp {
+  background: var(--hivis);
+  color: var(--on-hivis);
+  padding: 0.28rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.docket__row {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.95rem 1.15rem;
+  border-bottom: 1px solid var(--paper-2);
+}
+.docket__row dt { color: var(--ink-3); font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.docket__row dd { margin: 0; font-size: 1.0625rem; font-weight: 700; }
+.classes { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.class {
+  padding: 0.3rem 0.55rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--ink-3);
+  box-shadow: inset 0 0 0 1px #C8C3B9;
+}
+.class[data-picked] { background: var(--ink); color: var(--plate); box-shadow: none; }
+.docket__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  background: var(--paper);
+}
+.docket__foot .label { color: var(--ink-2); }
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 0.4rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.pill__dot { width: 8px; height: 8px; background: var(--hivis); flex: none; }
+
+/* Bands --------------------------------------------------------- */
+.band { padding-block: clamp(3.5rem, 7vw, 6rem); }
+.band--paper2 { background: var(--paper-2); }
+.band--ink { background: var(--ink); color: var(--plate); }
+.band--hivis { background: var(--hivis); color: var(--on-hivis); }
+.band h2 { font-size: clamp(2rem, 4vw, 3.25rem); max-width: 20ch; hyphens: none; }
+.nb { white-space: nowrap; }
+.band__intro { margin-top: 1.25rem; max-width: 62ch; color: var(--ink-2); }
+.band--ink .band__intro { color: var(--tint-on-ink); }
+
+/* Run rail ------------------------------------------------------ */
+.rail { --rail-gap: 1.75rem; margin-top: 3.25rem; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--rail-gap); }
+.stop { position: relative; padding-top: 3rem; }
+.stop::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0 calc(-1 * var(--rail-gap));
+  top: 14px;
+  height: 3px;
+  background: var(--ink);
+}
+.stop:first-child::before { inset-inline-start: 14px; }
+.stop:last-child::before { inset-inline-end: calc(100% - 15px); }
+.stop__mark {
+  position: absolute;
+  top: 0;
+  inset-inline-start: 0;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: var(--paper-2);
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+.stop h3 { font-size: 1.1875rem; letter-spacing: -0.02em; }
+.stop p { margin-top: 0.6rem; font-size: 0.9375rem; color: var(--ink-3); }
+
+/* Status board -------------------------------------------------- */
+.board { margin-top: 3rem; background: #141618; box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.9); }
+.board__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 3px solid var(--hivis);
+}
+.board__id { font-size: 1.375rem; font-weight: 800; letter-spacing: -0.01em; }
+.board__route { color: var(--tint-on-ink); font-weight: 700; }
+.board__flag {
+  background: var(--hivis);
+  color: var(--on-hivis);
+  padding: 0.35rem 0.6rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.board__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.board__cell { padding: 1.15rem 1.4rem; border-inline-end: 1px solid #262A2D; }
+.board__cell:last-child { border-inline-end: 0; }
+.board__cell .label { color: var(--tint-on-ink); }
+.board__cell strong { display: block; margin-top: 0.5rem; font-size: 1.0625rem; font-weight: 700; }
+.track { padding: 1.4rem; border-top: 1px solid #262A2D; display: grid; gap: 0.5rem; }
+.track__step {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  color: var(--tint-on-ink);
+  font-weight: 700;
+  transition: background var(--t-swap) var(--ease-out), color var(--t-swap) var(--ease-out);
+}
+.track__dot { width: 14px; height: 14px; background: #3A3F44; transition: background var(--t-swap) var(--ease-out), box-shadow var(--t-swap) var(--ease-out); }
+.track__step[data-state="done"] { color: #FFFFFF; }
+.track__step[data-state="done"] .track__dot { background: var(--tint-on-ink); }
+.track__step[data-state="live"] { background: var(--primary); color: var(--on-primary); }
+.track__step[data-state="live"] .track__dot { background: var(--hivis); box-shadow: 0 0 0 5px rgba(245, 217, 10, 0.25); }
+.board__foot { padding: 1rem 1.4rem; background: #0A0B0C; color: var(--tint-on-ink); font-size: 0.875rem; }
+
+/* Route map ----------------------------------------------------- */
+.routemap { padding: 1.3rem 1.4rem 0.9rem; border-top: 1px solid #262A2D; }
+.routemap .label { color: var(--tint-on-ink); }
+.rt { display: block; width: 100%; height: auto; margin-top: 0.3rem; }
+.rt text { font-family: inherit; font-weight: 800; }
+/* No non-scaling-stroke here: it measures the dash pattern in device
+   pixels, which paints a second dash at the tail of the route. */
+.rt__base, .rt__run { fill: none; stroke-width: 3; stroke-linecap: square; }
+.rt__base { stroke: #3A3F44; }
+.rt__run { stroke: var(--hivis); stroke-linecap: butt; }
+.rt__mark { fill: #3A3F44; }
+.rt__mark--on { fill: var(--hivis); opacity: 0; transform-box: fill-box; transform-origin: 50% 50%; transform: scale(0.45); }
+.rt__mark--on[data-on] { opacity: 1; transform: scale(1); }
+.rt__place { fill: var(--tint-on-ink); font-size: 13px; letter-spacing: 0.06em; }
+.rt__body { fill: var(--hivis); }
+.rt__door { fill: #141618; }
+.rt__wheel { fill: var(--tint-on-ink); }
+.rt__leader { stroke: var(--tint-on-ink); stroke-width: 1.5; }
+.rt__label { fill: #FFFFFF; font-size: 13px; letter-spacing: 0.04em; }
+.rt__rig { transform-box: fill-box; transform-origin: 50% 100%; }
+
+/* Form ---------------------------------------------------------- */
+.funnel { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 3.5rem; align-items: start; }
+.band--hivis h2 { color: var(--ink); }
+.funnel__intro { margin-top: 1.25rem; max-width: 42ch; color: var(--on-hivis); font-weight: 500; }
+.funnel__note { margin-top: 1.6rem; max-width: 42ch; font-size: 0.875rem; color: var(--on-hivis); border-top: 2px solid rgba(42, 34, 0, 0.35); padding-top: 1rem; }
+.plate { background: var(--plate); padding: clamp(1.5rem, 3vw, 2.25rem); box-shadow: 0 24px 50px -28px rgba(12, 13, 14, 0.7); }
+.field { display: block; margin-bottom: 1.5rem; }
+.field__label { display: block; font-size: 0.9375rem; font-weight: 800; letter-spacing: -0.01em; }
+.field__hint { display: block; margin-top: 0.25rem; font-size: 0.8125rem; color: var(--ink-3); }
+.field__control {
+  display: block;
+  width: 100%;
+  margin-top: 0.7rem;
+  padding: 0.85rem 0.95rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid #C8C3B9;
+  border-radius: 0;
+  transition: border-color var(--t-tap) var(--ease-out), background var(--t-tap) var(--ease-out), box-shadow var(--t-tap) var(--ease-out);
+}
+.field__control::placeholder { color: var(--ink-3); }
+.field__control:hover { border-color: var(--ink-3); }
+.field__control:focus { background: var(--plate); border-color: var(--ink); }
+textarea.field__control { min-height: 8.5rem; resize: vertical; line-height: 1.5; }
+.field__control[aria-invalid="true"] { border-color: var(--primary-hover); background: #FDF3EF; }
+.field__error {
+  display: none;
+  margin-top: 0.5rem;
+  color: var(--primary-hover);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.field__error::before { content: "▲ "; }
+.field[data-invalid] .field__error { display: block; }
+
+.submit-row { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+.submit-row .btn { min-width: 14.5rem; justify-content: center; }
+.busy { width: 18px; height: 18px; flex: none; display: none; }
+.btn[data-busy] .busy { display: block; animation: spin var(--t-spin) linear infinite; }
+.btn[data-busy] .btn__arrow { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.formstatus {
+  display: none;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.1rem;
+  background: var(--ink);
+  color: var(--plate);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.formstatus[data-shown] { display: block; }
+.formstatus strong { display: block; margin-bottom: 0.3rem; font-size: 1rem; }
+.formstatus code { background: rgba(255, 255, 255, 0.12); padding: 0.1rem 0.35rem; font-size: 0.875rem; }
+
+.sent { display: none; }
+.sent[data-shown] { display: block; }
+.sent__mark { width: 44px; height: 44px; background: var(--primary); display: grid; place-items: center; }
+.sent h3 { margin-top: 1.25rem; font-size: 1.75rem; }
+.sent p { margin-top: 0.9rem; color: var(--ink-2); max-width: 46ch; }
+.sent__next { margin-top: 1.4rem; padding-top: 1.2rem; border-top: 2px solid var(--paper-2); }
+.sent__next li { margin-bottom: 0.45rem; color: var(--ink-2); }
+.sent ul { margin: 0; padding-left: 1.1rem; }
+.sent .btn { margin-top: 1.6rem; }
+form[data-hidden] { display: none; }
+
+/* Footer -------------------------------------------------------- */
+.footer { background: var(--ink); color: var(--tint-on-ink); padding-block: 2.5rem; }
+.footer__inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem; }
+.footer__plate { background: var(--paper); padding: 0.7rem 0.9rem; }
+.footer__plate img { display: block; width: 160px; height: auto; }
+.footer p { font-size: 0.875rem; max-width: 46ch; }
+
+/* Responsive ---------------------------------------------------- */
+@media (max-width: 1000px) {
+  :root { --shell: min(1240px, 100% - 2rem); }
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 2.75rem; }
+  .hero h1 { max-width: 16ch; }
+  .funnel { grid-template-columns: minmax(0, 1fr); gap: 2.25rem; }
+  .rail { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.25rem var(--rail-gap); }
+  .stop:nth-child(2n)::before { inset-inline-end: calc(100% - 15px); }
+  .board__cell { padding-inline: 1.1rem; }
+}
+@media (max-width: 620px) {
+  body { font-size: 1rem; }
+  .masthead { padding-block: 1rem; }
+  .masthead img { width: 148px; }
+  .masthead__note { display: none; }
+  .hero h1 { max-width: 20ch; letter-spacing: -0.03em; }
+  .hero__actions .btn { width: 100%; justify-content: center; }
+  .rail { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .stop { padding: 0 0 2rem 3.1rem; }
+  .stop::before, .stop:nth-child(2n)::before { inset-inline: 14px auto; top: 0; bottom: 0; width: 3px; height: auto; }
+  .stop:first-child::before { top: 14px; inset-inline-start: 14px; }
+  .stop:last-child::before { bottom: auto; height: 14px; inset-inline-end: auto; }
+  .stop__mark { top: 0; }
+  .board__grid { grid-template-columns: minmax(0, 1fr); }
+  .board__cell { border-inline-end: 0; border-bottom: 1px solid #262A2D; }
+  .masthead .btn { padding: 0.8rem 1.05rem; font-size: 0.9375rem; }
+  .masthead__long { display: none; }
+  .docket__row { grid-template-columns: minmax(0, 1fr); gap: 0.3rem; }
+  .submit-row .btn { width: 100%; }
+}
+
+/* Motion system -------------------------------------------------
+   Every rule below is gated on .motion, which the head script adds only
+   when JavaScript runs and reduced motion is not requested. Without it the
+   page renders in its settled state, so nothing is hidden waiting on JS. */
+
+/* Section entrances: one pattern, staggered by --i inside a section. */
+.motion [data-rise] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity var(--t-rise) var(--ease-out), transform var(--t-rise) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * var(--t-step));
+}
+.motion [data-rise].is-in { opacity: 1; transform: none; }
+
+/* The rail draws itself: the line extends, then each marker lands. */
+.motion [data-rail] .stop::before {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--t-panel) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * var(--t-step));
+}
+.motion [data-rail] .stop__mark {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity var(--t-swap) var(--ease-out), transform var(--t-swap) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * var(--t-step) + var(--t-step));
+}
+.motion [data-rail].is-in .stop::before { transform: scaleX(1); }
+.motion [data-rail].is-in .stop__mark { opacity: 1; transform: none; }
+
+/* Hazard tape travels one tile, so the wrap has nothing to show. */
+.motion .tape::before { animation: tape-run var(--loop-tape) linear infinite; }
+.motion .tape[data-paused]::before { animation-play-state: paused; }
+@keyframes tape-run { to { transform: translateX(-36.7696px); } }
+
+/* Board status swap and route map state. */
+.motion #board-status[data-swap] { animation: status-in var(--t-swap) var(--ease-out); }
+@keyframes status-in { from { opacity: 0; transform: translateY(7px); } }
+.motion .rt__mark--on { transition: opacity var(--t-swap) var(--ease-out), transform var(--t-swap) var(--ease-out); }
+
+/* The success panel arrives once, and the tick draws itself. */
+.motion .sent[data-shown] { animation: sent-in var(--t-panel) var(--ease-out) both; }
+@keyframes sent-in { from { opacity: 0; transform: translateY(14px); } }
+.motion .sent[data-shown] .sent__mark path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw-tick var(--t-swap) var(--ease-out) var(--t-swap) forwards;
+}
+@keyframes draw-tick { to { stroke-dashoffset: 0; } }
+
+@media (max-width: 620px) {
+  /* The rail runs vertically here, so the line grows downward. */
+  .motion [data-rail] .stop::before { transform: scaleY(0); transform-origin: center top; }
+  .motion [data-rail].is-in .stop::before { transform: scaleY(1); }
+  /* The route map is a third of its desktop size, so lift the type and
+     the vehicle, and drop the tag the board already states above. */
+  .rt__base, .rt__run { stroke-width: 9; }
+  .rt__place { font-size: 34px; transform: translateY(16px); }
+  .rt__rig { transform: scale(1.8); }
+  .rt__tag { display: none; }
+  .rt__mark, .rt__mark--on { transform-box: fill-box; transform-origin: 50% 50%; }
+  .rt__mark { transform: scale(1.7); }
+  .rt__mark--on[data-on] { transform: scale(1.7); }
+  .rt__mark--on { transform: scale(0.8); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  /* Settled state, whatever the class list says. */
+  .tape::before, .sent .sent__mark path { animation: none !important; }
+  .motion [data-rise],
+  .motion [data-rail] .stop::before,
+  .motion [data-rail] .stop__mark { opacity: 1 !important; transform: none !important; }
+}
+</style>
+<script>
+// Opt the page into motion before first paint, so no entrance ever flashes.
+// Without this class every animated rule above is inert and the page is settled.
+(function () {
+  if (!('IntersectionObserver' in window)) return;
+  try { if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (e) { return; }
+  var root = document.documentElement;
+  root.className = root.className ? root.className + ' motion' : 'motion';
+}());
+</script>
+</head>
+<body>
+
+<a class="skip" href="#contact" style="position:absolute;left:-9999px;top:0;background:#0C0D0E;color:#fff;padding:.75rem 1rem;z-index:9;" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Skip to the request form</a>
+
+<header class="shell masthead">
+  <img src="logo-airside.webp" width="880" height="178" alt="Airside">
+  <div class="masthead__right">
+    <span class="masthead__note">Ad-hoc freight orders</span>
+    <a class="btn" href="#contact">
+      <span>Send<span class="masthead__long"> an ad-hoc</span> request</span>
+      <svg class="btn__arrow" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 9h12M10 4l5 5-5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"/></svg>
+    </a>
+  </div>
+</header>
+
+<div class="tape" role="presentation"></div>
+
+<main>
+
+  <!-- 1. Opening ------------------------------------------------- -->
+  <section class="shell hero">
+    <div data-rise style="--i:0">
+      <h1>The shipment your contracted lanes <em>do not cover.</em></h1>
+      <p class="hero__lead">OpenLogistic books ad-hoc freight. A dispatcher enters the pickup, the drop, the vehicle class and the time window. The platform finds a carrier and books the order. It is built for the exception, not for running your fleet.</p>
+      <div class="hero__actions">
+        <a class="btn" href="#contact">
+          Send an ad-hoc request
+          <svg class="btn__arrow" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 9h12M10 4l5 5-5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"/></svg>
+        </a>
+        <a class="btn btn--ghost" href="#how">See how an order runs</a>
+      </div>
+      <div class="hero__terms">
+        <span>Ad-hoc order</span>
+        <span>Route</span>
+        <span>Vehicle class</span>
+        <span>Time window</span>
+        <span>Carrier</span>
+        <span>Cut-off</span>
+      </div>
+    </div>
+
+    <div class="docket" data-rise style="--i:2">
+      <div class="docket__head">
+        <span class="label">Ad-hoc order</span>
+        <span class="docket__stamp num">ORD-4471</span>
+      </div>
+      <dl style="margin:0">
+        <div class="docket__row"><dt>Pickup</dt><dd>Kraków</dd></div>
+        <div class="docket__row"><dt>Drop</dt><dd>Brno</dd></div>
+        <div class="docket__row">
+          <dt>Vehicle class</dt>
+          <dd class="classes">
+            <span class="class" data-picked>Van 3.5 t</span>
+            <span class="class">Box 12 t</span>
+            <span class="class">Curtain 24 t</span>
+          </dd>
+        </div>
+        <div class="docket__row"><dt>Time window</dt><dd class="num">14:00–16:00</dd></div>
+      </dl>
+      <div class="docket__foot">
+        <span class="label">Status</span>
+        <span class="pill"><span class="pill__dot" aria-hidden="true"></span>Quote requested</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. How an order runs ---------------------------------------- -->
+  <section class="band band--paper2" id="how">
+    <div class="shell">
+      <h2 data-rise style="--i:0">How an <span class="nb">ad-hoc</span> order runs</h2>
+      <p class="band__intro" data-rise style="--i:1">Five stations. The dispatcher works the first one, and the order carries its own status through the rest.</p>
+
+      <ol class="rail" data-rail style="list-style:none;margin:0;padding:0">
+        <li class="stop" style="--i:0">
+          <span class="stop__mark num" aria-hidden="true">1</span>
+          <h3>Enter the order</h3>
+          <p>Pickup, drop, vehicle class and the time window the load has to run in.</p>
+        </li>
+        <li class="stop" style="--i:1">
+          <span class="stop__mark num" aria-hidden="true">2</span>
+          <h3>Quote requested</h3>
+          <p>The order goes out to carriers who run that route and hold that vehicle class.</p>
+        </li>
+        <li class="stop" style="--i:2">
+          <span class="stop__mark num" aria-hidden="true">3</span>
+          <h3>Awaiting carrier</h3>
+          <p>Offers come back. Accept one before the cut-off and the order is booked.</p>
+        </li>
+        <li class="stop" style="--i:3">
+          <span class="stop__mark num" aria-hidden="true">4</span>
+          <h3>In transit</h3>
+          <p>The carrier is on the route. The status moves without anyone making a call.</p>
+        </li>
+        <li class="stop" style="--i:4">
+          <span class="stop__mark num" aria-hidden="true">5</span>
+          <h3>Delivered</h3>
+          <p>The route closes. The order keeps its times and its carrier on file.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3. The board ------------------------------------------------ -->
+  <section class="band band--ink">
+    <div class="shell">
+      <h2 data-rise style="--i:0">One order, from request to delivered</h2>
+      <p class="band__intro" data-rise style="--i:1">This is the board a dispatcher watches. The order keeps its route, its vehicle class and its time window in one place, and the status moves as the run does. Nobody has to ring the carrier to ask where the van is.</p>
+
+      <div class="board" data-rise style="--i:2">
+        <div class="board__head">
+          <div>
+            <div class="board__id num">ORD-4471</div>
+            <div class="board__route">Kraków → Brno</div>
+          </div>
+          <span class="board__flag">Dispatcher view</span>
+        </div>
+
+        <div class="board__grid">
+          <div class="board__cell"><span class="label">Vehicle class</span><strong>Van 3.5 t</strong></div>
+          <div class="board__cell"><span class="label">Time window</span><strong class="num">14:00–16:00</strong></div>
+          <div class="board__cell"><span class="label">Status</span><strong id="board-status">In transit</strong></div>
+        </div>
+
+        <div class="routemap" id="routemap">
+          <span class="label">Route</span>
+          <svg class="rt" viewBox="0 0 1000 132" role="img" aria-label="Route from Kraków to Brno, five stations, a van 3.5 t travelling between them.">
+            <path id="rt-path" class="rt__base" d="M40 84 H280 L330 70 H670 L720 84 H960"/>
+            <g>
+              <rect class="rt__mark" x="33" y="77" width="14" height="14"/>
+              <rect class="rt__mark" x="264" y="77" width="14" height="14"/>
+              <rect class="rt__mark" x="493" y="63" width="14" height="14"/>
+              <rect class="rt__mark" x="722" y="77" width="14" height="14"/>
+              <rect class="rt__mark" x="953" y="77" width="14" height="14"/>
+            </g>
+            <text class="rt__place" x="40" y="114">Kraków</text>
+            <text class="rt__place" x="960" y="114" text-anchor="end">Brno</text>
+            <g id="rt-live">
+              <path id="rt-run" class="rt__run" d="M40 84 H280 L330 70 H670 L720 84 H960" stroke-dasharray="924" stroke-dashoffset="407"/>
+              <g>
+                <rect class="rt__mark rt__mark--on" data-at="0" data-on x="33" y="77" width="14" height="14"/>
+                <rect class="rt__mark rt__mark--on" data-at="0.25" data-on x="264" y="77" width="14" height="14"/>
+                <rect class="rt__mark rt__mark--on" data-at="0.5" data-on x="493" y="63" width="14" height="14"/>
+                <rect class="rt__mark rt__mark--on" data-at="0.75" x="722" y="77" width="14" height="14"/>
+                <rect class="rt__mark rt__mark--on" data-at="1" x="953" y="77" width="14" height="14"/>
+              </g>
+              <g id="rt-van" transform="translate(555,70)">
+                <g class="rt__rig">
+                  <path class="rt__body" d="M-26,-26 H6 V-18 H21 L26,-8 V-4 H-26 Z"/>
+                  <rect class="rt__door" x="-21" y="-22" width="3" height="14"/>
+                  <rect class="rt__wheel" x="-20" y="-5" width="9" height="6"/>
+                  <rect class="rt__wheel" x="9" y="-5" width="9" height="6"/>
+                </g>
+                <g class="rt__tag">
+                  <path class="rt__leader" d="M0,-30 V-41"/>
+                  <text class="rt__label" x="0" y="-48" text-anchor="middle">Van 3.5 t</text>
+                </g>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <ol class="track" id="track" style="list-style:none;margin:0;padding:1.4rem">
+          <li class="track__step" data-state="done"><span class="track__dot" aria-hidden="true"></span><span>Quote requested</span></li>
+          <li class="track__step" data-state="done"><span class="track__dot" aria-hidden="true"></span><span>Awaiting carrier</span></li>
+          <li class="track__step" data-state="live"><span class="track__dot" aria-hidden="true"></span><span>In transit</span></li>
+          <li class="track__step" data-state="next"><span class="track__dot" aria-hidden="true"></span><span>Delivered</span></li>
+        </ol>
+
+        <p class="board__foot">The cut-off is the last moment a carrier can be accepted and still make the time window.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. The funnel ------------------------------------------------ -->
+  <div class="tape" role="presentation"></div>
+  <section class="band band--hivis" id="contact">
+    <div class="shell funnel">
+      <div data-rise style="--i:0">
+        <h2>Tell us what needs moving</h2>
+        <p class="funnel__intro">Two fields. Describe the shipment and leave an email. We read it and come back with a quote or a question.</p>
+        <p class="funnel__note">Write it the way you would say it down the phone. Route, vehicle class, time window, and the part of the load that makes it awkward. We book the one-off run. Moving your contracted lanes across is a different conversation.</p>
+      </div>
+
+      <div class="plate" data-rise style="--i:1">
+        <div class="formstatus" id="formstatus" role="alert" aria-live="assertive"></div>
+
+        <form id="contact-form" novalidate>
+          <label class="field" id="field-message">
+            <span class="field__label">What needs moving</span>
+            <span class="field__hint">Route, vehicle class, time window, and anything unusual about the load.</span>
+            <textarea class="field__control" id="message" name="message" required
+              placeholder="Two pallets from Kraków to Brno, van 3.5 t, pickup between 14:00 and 16:00 tomorrow."
+              aria-describedby="err-message"></textarea>
+            <span class="field__error" id="err-message"></span>
+          </label>
+
+          <label class="field" id="field-email">
+            <span class="field__label">Email</span>
+            <span class="field__hint">We reply to this address.</span>
+            <input class="field__control" id="email" name="email" type="email" required
+              autocomplete="email" placeholder="dispatch@yourcompany.com" aria-describedby="err-email">
+            <span class="field__error" id="err-email"></span>
+          </label>
+
+          <div class="submit-row">
+            <button class="btn" type="submit" id="submit">
+              <svg class="busy" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-opacity="0.35" stroke-width="2.6"/><path d="M9 2a7 7 0 0 1 7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg>
+              <span id="submit-text">Send ad-hoc request</span>
+              <svg class="btn__arrow" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 9h12M10 4l5 5-5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"/></svg>
+            </button>
+          </div>
+        </form>
+
+        <div class="sent" id="sent">
+          <span class="sent__mark" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path pathLength="1" d="M4 12.5l5 5L20 6.5" stroke="#FFFFFF" stroke-width="3" stroke-linecap="square"/></svg>
+          </span>
+          <h3>Request logged</h3>
+          <p>Your request is in. Here is what happens next.</p>
+          <div class="sent__next">
+            <ul>
+              <li>A dispatcher reads the route, the vehicle class and the time window you gave.</li>
+              <li>The order goes out to carriers who run that route and hold that class.</li>
+              <li>The answer comes back to <strong id="sent-email"></strong>, with a quote or the one question we need first.</li>
+            </ul>
+          </div>
+          <button class="btn btn--ghost" type="button" id="again">Send another request</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="shell footer__inner">
+    <span class="footer__plate"><img src="logo-airside.webp" width="880" height="178" alt="Airside"></span>
+    <p>OpenLogistic books ad-hoc freight orders. Pickup, drop, vehicle class, time window, then a carrier who runs that route and holds that class.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // Change this one line to point the form somewhere else. It is a same-origin
+  // path served by serve.mjs next to this file, so there is no CORS preflight
+  // and the page works from whatever host and port the server was given.
+  var WEBHOOK_URL = '/contact';
+
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+
+  var form = document.getElementById('contact-form');
+  var sent = document.getElementById('sent');
+  var banner = document.getElementById('formstatus');
+  var button = document.getElementById('submit');
+  var buttonText = document.getElementById('submit-text');
+  var fields = {
+    message: { input: document.getElementById('message'), wrap: document.getElementById('field-message'), out: document.getElementById('err-message') },
+    email: { input: document.getElementById('email'), wrap: document.getElementById('field-email'), out: document.getElementById('err-email') }
+  };
+
+  function setFieldError(name, text) {
+    var f = fields[name];
+    if (!f) return;
+    if (text) {
+      f.wrap.setAttribute('data-invalid', '');
+      f.input.setAttribute('aria-invalid', 'true');
+      f.out.textContent = text;
+    } else {
+      f.wrap.removeAttribute('data-invalid');
+      f.input.removeAttribute('aria-invalid');
+      f.out.textContent = '';
+    }
+  }
+
+  function clearErrors() {
+    setFieldError('message', '');
+    setFieldError('email', '');
+    banner.removeAttribute('data-shown');
+    banner.innerHTML = '';
+  }
+
+  function showBanner(title, detail) {
+    banner.innerHTML = '';
+    var strong = document.createElement('strong');
+    strong.textContent = title;
+    banner.appendChild(strong);
+    banner.appendChild(document.createTextNode(detail));
+    banner.setAttribute('data-shown', '');
+  }
+
+  function validate() {
+    var message = fields.message.input.value.trim();
+    var email = fields.email.input.value.trim();
+    var problems = [];
+    if (!message) problems.push(['message', 'Tell us what needs moving.']);
+    if (!email) problems.push(['email', 'Add an email address so we can reply.']);
+    else if (!EMAIL_RE.test(email)) problems.push(['email', 'That email address does not look right.']);
+    return problems;
+  }
+
+  function setBusy(busy) {
+    button.disabled = busy;
+    if (busy) {
+      button.setAttribute('data-busy', '');
+      button.setAttribute('aria-busy', 'true');
+      buttonText.textContent = 'Sending request';
+    } else {
+      button.removeAttribute('data-busy');
+      button.removeAttribute('aria-busy');
+      buttonText.textContent = 'Send ad-hoc request';
+    }
+  }
+
+  // Clear a field error as soon as the reader fixes it.
+  Object.keys(fields).forEach(function (name) {
+    fields[name].input.addEventListener('input', function () {
+      if (fields[name].wrap.hasAttribute('data-invalid')) setFieldError(name, '');
+    });
+  });
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    clearErrors();
+
+    var problems = validate();
+    if (problems.length) {
+      problems.forEach(function (p) { setFieldError(p[0], p[1]); });
+      fields[problems[0][0]].input.focus();
+      return;
+    }
+
+    var payload = {
+      message: fields.message.input.value.trim(),
+      email: fields.email.input.value.trim()
+    };
+
+    setBusy(true);
+
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (response) {
+      return response.json().catch(function () {
+        throw new Error('The receiver answered with something that is not JSON.');
+      }).then(function (data) {
+        if (!response.ok || !data.ok) {
+          var err = new Error(data.error || ('The receiver rejected the request with status ' + response.status + '.'));
+          err.field = data.field;
+          throw err;
+        }
+        return data;
+      });
+    }).then(function () {
+      // The typed values stay in the form until the reader asks for a new one.
+      document.getElementById('sent-email').textContent = payload.email;
+      form.setAttribute('data-hidden', '');
+      sent.setAttribute('data-shown', '');
+      sent.setAttribute('tabindex', '-1');
+      sent.focus();
+      setBusy(false);
+    }).catch(function (error) {
+      setBusy(false);
+      if (error instanceof TypeError) {
+        // fetch itself failed, so the receiver is not answering on this port.
+        showBanner(
+          'The request did not reach us.',
+          'Nothing was sent, and every word you typed is still here. Check the connection and send it again.'
+        );
+      } else {
+        showBanner('The request was not accepted.', ' ' + error.message);
+        if (error.field && fields[error.field]) {
+          setFieldError(error.field, error.message);
+          fields[error.field].input.focus();
+        }
+      }
+    });
+  });
+
+  document.getElementById('again').addEventListener('click', function () {
+    form.reset();
+    clearErrors();
+    sent.removeAttribute('data-shown');
+    form.removeAttribute('data-hidden');
+    fields.message.input.focus();
+  });
+
+  /* Motion ------------------------------------------------------- *
+   * The head script decides whether the page moves at all. Everything
+   * below reads that decision, pauses on leaving the viewport, and can be
+   * put back to its settled state at any time.                        */
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var moving = document.documentElement.className.indexOf('motion') !== -1;
+  var settle = [];
+
+  // Run a callback whenever the element enters or leaves the viewport.
+  function whileVisible(el, onEnter, onLeave) {
+    if (!el) return;
+    if (!('IntersectionObserver' in window)) { onEnter(); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) onEnter(); else onLeave();
+      });
+    }, { threshold: 0 });
+    io.observe(el);
+    settle.push(function () { io.disconnect(); });
+  }
+
+  /* 1. Section entrances. One pattern, staggered by --i, once each. */
+  if (moving && 'IntersectionObserver' in window) {
+    var entering = Array.prototype.slice.call(document.querySelectorAll('[data-rise], [data-rail]'));
+    var riseObserver = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-in');
+        obs.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -5% 0px' });
+    entering.forEach(function (el) { riseObserver.observe(el); });
+  }
+
+  /* 2. Hazard tape. Pause the travel when the band is off screen. */
+  if (moving) {
+    Array.prototype.slice.call(document.querySelectorAll('.tape')).forEach(function (tape) {
+      whileVisible(tape,
+        function () { tape.removeAttribute('data-paused'); },
+        function () { tape.setAttribute('data-paused', ''); });
+    });
+  }
+
+  /* 3. The status board stepping through the order's statuses. */
+  var steps = Array.prototype.slice.call(document.querySelectorAll('#track .track__step'));
+  var statusOut = document.getElementById('board-status');
+  var statusTimer = null;
+
+  function paint(live) {
+    steps.forEach(function (step, i) {
+      step.setAttribute('data-state', i < live ? 'done' : i === live ? 'live' : 'next');
+    });
+    var next = steps[live].children[1].textContent;
+    if (statusOut.textContent !== next) {
+      statusOut.textContent = next;
+      if (moving) {
+        statusOut.removeAttribute('data-swap');
+        void statusOut.offsetWidth;
+        statusOut.setAttribute('data-swap', '');
+      }
+    }
+  }
+
+  if (moving && steps.length) {
+    var liveStep = 0;
+    paint(liveStep);
+    whileVisible(document.getElementById('track'), function () {
+      if (statusTimer) return;
+      statusTimer = setInterval(function () {
+        liveStep = (liveStep + 1) % steps.length;
+        paint(liveStep);
+      }, 3200);
+    }, function () {
+      if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
+    });
+  }
+
+  /* 4. The centrepiece: the van running the route. */
+  var routeBase = document.getElementById('rt-path');
+  var routeRun = document.getElementById('rt-run');
+  var routeLive = document.getElementById('rt-live');
+  var van = document.getElementById('rt-van');
+  var marks = Array.prototype.slice.call(document.querySelectorAll('.rt__mark--on'));
+
+  // One full run takes fifteen seconds, then the van holds at the drop and
+  // the route dims out before the next order picks it up. The dim covers
+  // the reset, so the loop never jumps.
+  var TRAVEL = 15000, HOLD = 1400, DIM = 700, LIFT = 700;
+  var CYCLE = TRAVEL + HOLD + DIM + LIFT;
+  var SETTLED = 0.56;
+  var routeLength = 0;
+  var routeFrame = null;
+  var lastFrame = 0;
+  var routeClock = 0;
+
+  function placeVan(progress, alpha) {
+    var at = routeLength * progress;
+    var here = routeBase.getPointAtLength(at);
+    var ahead = routeBase.getPointAtLength(Math.min(routeLength, at + 1));
+    var back = routeBase.getPointAtLength(Math.max(0, at - 1));
+    var tilt = Math.atan2(ahead.y - back.y, ahead.x - back.x) * 180 / Math.PI;
+    van.setAttribute('transform',
+      'translate(' + here.x.toFixed(2) + ',' + here.y.toFixed(2) + ') rotate(' + tilt.toFixed(2) + ')');
+    // Stop just short of a full offset: at exactly one dash length the
+    // pattern wraps and paints the tail of the route instead of nothing.
+    routeRun.setAttribute('stroke-dasharray', routeLength.toFixed(2));
+    routeRun.setAttribute('stroke-dashoffset',
+      Math.min(routeLength - 0.01, routeLength * (1 - progress)).toFixed(2));
+    routeLive.setAttribute('opacity', alpha.toFixed(3));
+    marks.forEach(function (mark) {
+      var station = parseFloat(mark.getAttribute('data-at'));
+      if (progress + 0.0005 >= station) mark.setAttribute('data-on', '');
+      else mark.removeAttribute('data-on');
+    });
+  }
+
+  function routeTick(now) {
+    if (lastFrame) routeClock += now - lastFrame;
+    lastFrame = now;
+    var m = routeClock % CYCLE;
+    var progress, alpha;
+    if (m < TRAVEL) { progress = m / TRAVEL; alpha = 1; }
+    else if (m < TRAVEL + HOLD) { progress = 1; alpha = 1; }
+    else if (m < TRAVEL + HOLD + DIM) { progress = 1; alpha = 1 - (m - TRAVEL - HOLD) / DIM; }
+    else { progress = 0; alpha = (m - TRAVEL - HOLD - DIM) / LIFT; }
+    placeVan(progress, alpha);
+    routeFrame = requestAnimationFrame(routeTick);
+  }
+
+  function stopRoute() {
+    if (routeFrame) { cancelAnimationFrame(routeFrame); routeFrame = null; }
+    lastFrame = 0;
+  }
+
+  if (moving && routeBase && routeRun && van && routeLive) {
+    routeLength = routeBase.getTotalLength();
+    whileVisible(document.getElementById('routemap'), function () {
+      if (!routeFrame) routeFrame = requestAnimationFrame(routeTick);
+    }, stopRoute);
+  }
+
+  /* 5. Asked for stillness at any point, the page goes still. */
+  function goStill() {
+    if (!reduced.matches) return;
+    stopRoute();
+    if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
+    settle.forEach(function (off) { off(); });
+    settle = [];
+    moving = false;
+    document.documentElement.className =
+      document.documentElement.className.replace(/\bmotion\b/g, '').trim();
+    if (routeBase && routeRun && van && routeLive) {
+      routeLength = routeLength || routeBase.getTotalLength();
+      placeVan(SETTLED, 1);
+    }
+  }
+  if (reduced.addEventListener) reduced.addEventListener('change', goStill);
+  else if (reduced.addListener) reduced.addListener(goStill);
+})();
+</script>
+</body>
+</html>
