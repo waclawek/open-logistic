@@ -5,6 +5,7 @@ import { createLogger } from '@open-mercato/shared/lib/logger'
 // `InboxEmail` row is READ here to find out who won the claim. No entity of
 // ours is involved and nothing is written outside core's own extraction path.
 import { InboxEmail } from '@open-mercato/core/modules/inbox_ops/data/entities'
+import { createMessageRecordForEmail } from '@open-mercato/core/modules/inbox_ops/lib/messagesIntegration'
 import { EXTRACTION_FAILURE_PREFIX, runFreightExtraction } from '../lib/offer-automation/freightExtraction'
 import { POLL_INTERVAL_MS, sleep } from '../lib/offer-automation/poll'
 
@@ -56,6 +57,12 @@ import { POLL_INTERVAL_MS, sleep } from '../lib/offer-automation/poll'
  *  3. our own refusal is marked on `processing_error` with
  *     `EXTRACTION_FAILURE_PREFIX`, so a re-delivery cannot take the email over
  *     a second time and spend another model call on an email we already judged.
+ *
+ * THE MESSAGES COPY
+ * -----------------
+ * Disabling core's worker also drops the ONE call that puts an inbound email in
+ * the Messages inbox. `recordInboxMessage` below restores it. See its own note
+ * for the ordering and why it can never fail the extraction.
  */
 export const metadata = {
   event: 'inbox_ops.email.received',
@@ -77,6 +84,13 @@ const logger = createLogger('logistics').child({ component: 'inbound-email-extra
 
 /** How long to wait for the other runner's verdict before giving up. */
 const TAKEOVER_TIMEOUT_MS = 120_000
+
+/**
+ * Actor recorded on the message record. Same zero UUID core's worker passes
+ * (`inbox_ops/subscribers/extractionWorker.ts`); the helper resolves a real
+ * sender itself and only falls back to this.
+ */
+const SYSTEM_USER_ID = '00000000-0000-0000-0000-000000000000'
 
 /** Statuses that mean nobody is working on the email any more. */
 const SETTLED_STATUSES = new Set(['processed', 'needs_review', 'failed'])
@@ -202,5 +216,83 @@ async function tryExtract(
     model: outcome.llmModel,
     processingError: outcome.processingError,
   })
+
+  if (outcome.proposalId) await recordInboxMessage(container, emailId, scope)
+
   return true
+}
+
+/**
+ * Puts the email in the Messages inbox, the way core's worker does.
+ *
+ * WHY IT IS HERE AT ALL. `createMessageRecordForEmail` is called by core's
+ * extraction worker (`inbox_ops/subscribers/extractionWorker.ts`, step 8c), and
+ * this app disables that worker (`apps/mercato/src/modules.ts`). Without this
+ * call the flow writes `inbox_emails` and `inbox_proposals` rows and the
+ * Messages screen stays empty, so the operator sees the proposal but not the
+ * enquiry it came from.
+ *
+ * WHERE IN THE LIFECYCLE. Core calls it after the email status is flushed and
+ * before it emits its events. `runFreightExtraction` flushes the status and
+ * emits `inbox_ops.proposal.created` in one go and is not ours to split, so
+ * this is the first point after the flush that this module owns. The one
+ * ordering difference from core is that the proposal event has already gone out
+ * by the time the message row is written.
+ *
+ * ONLY ON A PROPOSAL, also like core: a run that ended on `failed` takes core's
+ * catch path, which writes no message record.
+ *
+ * NEVER FATAL. The helper swallows its own errors and returns null, and this
+ * catch keeps that property at the call site: a missing courtesy copy in the
+ * inbox is not worth losing a proposal that already exists in the database.
+ */
+async function recordInboxMessage(
+  container: AwilixContainer,
+  emailId: string,
+  scope: { tenantId: string; organizationId: string },
+): Promise<void> {
+  try {
+    // Forked and cleared for the same reason as the takeover loop above: the
+    // row was just rewritten by another fork, and a stale identity map would
+    // hand the helper the pre-extraction status.
+    const em = (container.resolve('em') as EntityManager).fork({ clear: true })
+    const email = (await em.findOne(InboxEmail, {
+      id: emailId,
+      tenantId: scope.tenantId,
+      organizationId: scope.organizationId,
+    } as never)) as {
+      id: string
+      subject?: string | null
+      cleanedText?: string | null
+      rawText?: string | null
+      forwardedByAddress: string
+      forwardedByName?: string | null
+      status: string
+    } | null
+    if (!email) return
+
+    const messageId = await createMessageRecordForEmail(
+      {
+        id: email.id,
+        subject: email.subject ?? '',
+        cleanedText: email.cleanedText,
+        rawText: email.rawText,
+        forwardedByAddress: email.forwardedByAddress,
+        forwardedByName: email.forwardedByName,
+        status: email.status,
+      },
+      {
+        container,
+        scope: {
+          tenantId: scope.tenantId,
+          organizationId: scope.organizationId,
+          userId: SYSTEM_USER_ID,
+        },
+      },
+    )
+
+    logger.info('Message record for the enquiry', { emailId, messageId })
+  } catch (err) {
+    logger.error('Messages integration failed (non-fatal)', { emailId, err })
+  }
 }
