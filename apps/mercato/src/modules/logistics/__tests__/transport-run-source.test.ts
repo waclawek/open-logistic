@@ -37,8 +37,8 @@ function detail(overrides: Partial<TransportDetail['order1']['fields']> = {}): T
 }
 
 describe('agreedOfferFromTransport', () => {
-  test('keeps the random seed shape but overlays the real transport commercial and lane data', () => {
-    const offer = agreedOfferFromTransport(detail())
+  test('keeps the random seed shape but overlays the real transport commercial and lane data', async () => {
+    const offer = await agreedOfferFromTransport(detail())
 
     expect(offer).toMatchObject({
       offerId: 'transport-11111111-1111-4111-8111-111111111111',
@@ -58,8 +58,9 @@ describe('agreedOfferFromTransport', () => {
     expect(offer.notes).not.toContain('Demo map uses')
   })
 
-  test('retains a valid random demo corridor when saved addresses cannot be geocoded', () => {
-    const offer = agreedOfferFromTransport(detail({ pickup_address: 'Unknown A', delivery_address: 'Unknown B' }))
+  test('retains a valid random demo corridor when saved addresses cannot be geocoded', async () => {
+    globalThis.fetch = (() => Promise.reject(new Error('offline'))) as typeof fetch
+    const offer = await agreedOfferFromTransport(detail({ pickup_address: 'Unknown A', delivery_address: 'Unknown B' }))
 
     expect(Number.isFinite(offer.lane.from.lat)).toBe(true)
     expect(Number.isFinite(offer.lane.to.lng)).toBe(true)

@@ -1,5 +1,6 @@
 import { DEMO_LANE_SEEDS, seedAgreedOffer, type AgreedClientOffer, type FreightLane } from './agreed-offer'
 import { findTransportRunForSource, startTransportRunFromAgreedOffer, type TransportRunScope } from './transport-run'
+import { geocodeAddress } from './geocode'
 import type { TransportDetail, TransportFields } from '../types'
 import { WAW_POZ } from './types'
 
@@ -50,18 +51,30 @@ function knownLocation(address: string): FreightLane['from'] | null {
   return null
 }
 
-function transportLane(
+/**
+ * The demo city table first, because it is instant and offline. Anything it
+ * does not know goes to the geocoder, so an address the email actually carried
+ * lands on the map instead of a random demo corridor.
+ */
+async function resolveLocation(address: string | null): Promise<FreightLane['from'] | null> {
+  if (!address) return null
+  return knownLocation(address) ?? (await geocodeAddress(address))
+}
+
+async function transportLane(
   detail: TransportDetail,
   fallback: FreightLane,
-): {
+): Promise<{
   lane: FreightLane
   usedFallback: boolean
-} {
+}> {
   const fields = detail.order1.fields
   const pickupAddress = text(fields, 'pickup_address')
   const deliveryAddress = text(fields, 'delivery_address')
-  const from = pickupAddress ? knownLocation(pickupAddress) : null
-  const to = deliveryAddress ? knownLocation(deliveryAddress) : null
+  const [from, to] = await Promise.all([
+    resolveLocation(pickupAddress),
+    resolveLocation(deliveryAddress),
+  ])
   const cargoWeightKg = number(fields, 'cargo_weight_kg')
   const cargoPallets = number(fields, 'cargo_pallets')
   const laneValues = {
@@ -84,7 +97,7 @@ function transportLane(
   }
 }
 
-export function agreedOfferFromTransport(detail: TransportDetail): AgreedClientOffer {
+export async function agreedOfferFromTransport(detail: TransportDetail): Promise<AgreedClientOffer> {
   const seed = seedAgreedOffer()
   const fields = detail.order1.fields
   const clientPrice = number(fields, 'client_price')
@@ -92,7 +105,7 @@ export function agreedOfferFromTransport(detail: TransportDetail): AgreedClientO
   const deliveryAddress = text(fields, 'delivery_address')
   const pickupWindow = text(fields, 'pickup_window_start')
   const deliveryWindow = text(fields, 'delivery_window_start')
-  const { lane, usedFallback } = transportLane(detail, seed.lane)
+  const { lane, usedFallback } = await transportLane(detail, seed.lane)
   const routeNote =
     pickupAddress && deliveryAddress
       ? `Transport ${pickupAddress} → ${deliveryAddress}.`
@@ -147,7 +160,7 @@ export async function startTransportRunForTransport(detail: TransportDetail, sco
   const pending = inFlight.get(key)
   if (pending) return pending
   const start = startTransportRunFromAgreedOffer({
-    offer: agreedOfferFromTransport(detail),
+    offer: await agreedOfferFromTransport(detail),
     withOrder: true,
     scope,
     sourceTransportId: detail.order1.id,

@@ -20,6 +20,7 @@ import {
   draftOfferPayloadSchema,
   inboxActions,
 } from '../../inbox-actions'
+import { logisticsQuoteTransportSchema } from '../transport-quote'
 import type { FreightExtractionOutcome } from './extractionOutcome'
 
 /**
@@ -103,6 +104,19 @@ export const freightExtractionSchema = z.object({
       description: z.string().describe("Route, weights and constraints, in the sender's words."),
     }),
   ),
+  pickupAddress: z.string().describe('Where the goods are collected. Empty string if not stated.'),
+  deliveryAddress: z.string().describe('Where the goods are delivered. Empty string if not stated.'),
+  pickupWindowStart: z
+    .string()
+    .describe('Earliest loading moment, ISO 8601 date or date-time. Empty string if not stated.'),
+  pickupWindowEnd: z
+    .string()
+    .describe('Latest loading moment, ISO 8601 date or date-time. Empty string if not stated.'),
+  deliveryWindowStart: z
+    .string()
+    .describe('Requested unloading moment, ISO 8601 date or date-time. Empty string if not stated.'),
+  cargoPallets: z.number().describe('Euro pallets on the load. 0 when the email does not say.'),
+  cargoWeightKg: z.number().describe('Total cargo weight in kilograms. 0 when the email does not say.'),
   confidence: z.number().describe('0.0 to 1.0.'),
 })
 
@@ -176,13 +190,16 @@ ${emailText}
  * engine will validate and our handler will price.
  *
  * Note what is NOT carried across: nothing. There is no price in the source
- * object to drop, because the schema has no field for one.
+ * object to drop, because the schema has no field for one. `transport.clientPrice`
+ * is likewise never written here; it is a catalogue number, not a model number.
  */
 export function toDraftOfferPayload(
   extraction: FreightExtraction,
   sender: { email: string; name: string },
 ): Record<string, unknown> {
+  const transport = toTransportBlock(extraction)
   return draftOfferPayloadSchema.parse({
+    ...(transport && { transport }),
     customerName: extraction.customerName.trim() || sender.name,
     customerEmail: sender.email,
     currencyCode: (extraction.currencyCode.trim() || 'EUR').toUpperCase(),
@@ -198,6 +215,55 @@ export function toDraftOfferPayload(
     }),
     ...(extraction.notes.trim() && { notes: extraction.notes.trim() }),
   }) as unknown as Record<string, unknown>
+}
+
+/**
+ * Normalises a model date token to the ISO date-time the transport schema
+ * demands. A bare `2026-09-22` becomes midnight UTC; anything unparseable is
+ * dropped rather than passed on, because the command interceptor REFUSES the
+ * whole accept (422) when the transport block fails its schema.
+ */
+function toIsoDateTime(value: string): string | undefined {
+  const trimmed = value.trim()
+  if (!trimmed) return undefined
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? `${trimmed}T00:00:00Z` : trimmed
+  const parsed = new Date(normalized)
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString()
+}
+
+function positiveNumber(value: number): number | undefined {
+  return Number.isFinite(value) && value > 0 ? value : undefined
+}
+
+/**
+ * Builds the `transport` block the Logistics command interceptor looks for on
+ * the stored action row (`commands/interceptors.ts`). No block means no
+ * `metadata.logistics` on the quote, which means the converted order never
+ * reaches the AI Transports list.
+ *
+ * Returns undefined when the email carried no transport facts at all, so a
+ * non-freight draft keeps the payload it always had.
+ */
+function toTransportBlock(extraction: FreightExtraction): Record<string, unknown> | undefined {
+  const candidate = {
+    pickupAddress: extraction.pickupAddress.trim() || undefined,
+    deliveryAddress: extraction.deliveryAddress.trim() || undefined,
+    pickupWindowStart: toIsoDateTime(extraction.pickupWindowStart),
+    pickupWindowEnd: toIsoDateTime(extraction.pickupWindowEnd),
+    deliveryWindowStart: toIsoDateTime(extraction.deliveryWindowStart),
+    cargoPallets: positiveNumber(extraction.cargoPallets),
+    cargoWeightKg: positiveNumber(extraction.cargoWeightKg),
+    exchangeSource: 'manual' as const,
+    dispatchNote: extraction.notes.trim() || undefined,
+  }
+  const present = Object.fromEntries(
+    Object.entries(candidate).filter(([, value]) => value !== undefined),
+  )
+  const facts = Object.keys(present).filter((key) => key !== 'exchangeSource')
+  if (facts.length === 0) return undefined
+
+  const parsed = logisticsQuoteTransportSchema.safeParse(present)
+  return parsed.success ? parsed.data : undefined
 }
 
 function resolveConfidenceThreshold(): number {

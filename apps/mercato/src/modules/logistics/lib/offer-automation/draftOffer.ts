@@ -5,8 +5,8 @@ import { findOneWithDecryption } from '@open-mercato/shared/lib/encryption/find'
 import type { AuthContext } from '@open-mercato/shared/lib/auth/server'
 // Reuse the installed payload contract instead of inventing a parallel one.
 // See the comment on the same import in `../inbox-actions.ts`.
-import { orderPayloadSchema } from '@open-mercato/core/modules/inbox_ops/data/validators'
 import type { OrderPayload } from '@open-mercato/core/modules/inbox_ops/data/validators'
+import { logisticsQuotePayloadSchema, type LogisticsQuoteTransport } from '../transport-quote'
 import {
   executeCommand,
   ExecutionError,
@@ -43,10 +43,15 @@ import {
  *   `discountPercent` or a promotion code.
  */
 
-/** The payload contract is core's. Re-exported so every caller shares one shape. */
-export const draftOfferPayloadSchema = orderPayloadSchema
+/**
+ * The payload contract is core's, plus the optional `transport` block the
+ * Logistics command interceptor reads off the stored action row to stamp
+ * `metadata.logistics` on the created quote. Without that block the quote (and
+ * the order it converts into) never appears in AI Transports.
+ */
+export const draftOfferPayloadSchema = logisticsQuotePayloadSchema
 
-export type DraftOfferPayload = OrderPayload
+export type DraftOfferPayload = OrderPayload & { transport?: LogisticsQuoteTransport }
 
 /**
  * Grep marker printed on a successful draft. Kept as a single opaque token so an
