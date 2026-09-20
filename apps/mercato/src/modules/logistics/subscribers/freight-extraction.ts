@@ -6,6 +6,10 @@ import { createLogger } from '@open-mercato/shared/lib/logger'
 // ours is involved and nothing is written outside core's own extraction path.
 import { InboxEmail } from '@open-mercato/core/modules/inbox_ops/data/entities'
 import { createMessageRecordForEmail } from '@open-mercato/core/modules/inbox_ops/lib/messagesIntegration'
+import {
+  getMessageObjectType,
+  registerMessageObjectTypes,
+} from '@open-mercato/core/modules/messages/lib/message-objects-registry'
 import { EXTRACTION_FAILURE_PREFIX, runFreightExtraction } from '../lib/offer-automation/freightExtraction'
 import { POLL_INTERVAL_MS, sleep } from '../lib/offer-automation/poll'
 
@@ -252,6 +256,8 @@ async function recordInboxMessage(
   scope: { tenantId: string; organizationId: string },
 ): Promise<void> {
   try {
+    ensureInboxEmailMessageObjectType()
+
     // Forked and cleared for the same reason as the takeover loop above: the
     // row was just rewritten by another fork, and a stale identity map would
     // hand the helper the pre-extraction status.
@@ -295,4 +301,43 @@ async function recordInboxMessage(
   } catch (err) {
     logger.error('Messages integration failed (non-fatal)', { emailId, err })
   }
+}
+
+/**
+ * Teaches the message-object registry about `inbox_ops:inbox_email`, in
+ * processes where nothing else has.
+ *
+ * WHY IT IS NEEDED. `messages.messages.compose` validates every object against
+ * `message-objects-registry.ts`, and that registry is filled by the APP
+ * bootstrap (`apps/mercato/src/bootstrap-common.ts`, from the generated
+ * aggregate). A queue worker never runs that bootstrap, so the registry falls
+ * back to core's own defaults, which are an empty array. Without this, the
+ * compose call fails with `Unsupported message object type:
+ * inbox_ops:inbox_email` and no message is written. Observed live, on this
+ * branch, before this function existed.
+ *
+ * Core's own extraction worker has the same gap; it is upstream's to fix, and
+ * nothing in this repo may patch a core file, so the repair sits here.
+ *
+ * NOT a copy of core's definition. Only what the server-side validation reads:
+ * the key and the message types it is allowed on. The preview component and the
+ * row actions belong to the browser registry, which the app bootstrap fills
+ * from `inbox_ops/message-objects.ts` as before. Importing that module here
+ * would drag a React component into a node worker.
+ *
+ * Idempotent, and never overwrites: a process that already has the real
+ * definition keeps it.
+ */
+function ensureInboxEmailMessageObjectType(): void {
+  if (getMessageObjectType('inbox_ops', 'inbox_email')) return
+  registerMessageObjectTypes([
+    {
+      module: 'inbox_ops',
+      entityType: 'inbox_email',
+      messageTypes: ['inbox_ops.email', 'inbox_ops.reply'],
+      labelKey: 'inbox_ops.title',
+      icon: 'mail-open',
+      actions: [],
+    },
+  ])
 }

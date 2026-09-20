@@ -6,6 +6,7 @@
 // happens on a successful extraction, and it can never take the extraction down
 // with it.
 import { afterEach, describe, expect, it, jest } from '@jest/globals'
+import { getMessageObjectType } from '@open-mercato/core/modules/messages/lib/message-objects-registry'
 import handle from '../subscribers/freight-extraction'
 import type { FreightExtractionOutcome } from '../lib/offer-automation/extractionOutcome'
 
@@ -106,6 +107,21 @@ describe('the freight extraction subscriber records the enquiry as a message', (
       organizationId: 'org-1',
       userId: '00000000-0000-0000-0000-000000000000',
     })
+  })
+
+  /**
+   * The live failure this covers: a queue worker never runs the app bootstrap
+   * that fills the message-object registry, so `messages.messages.compose`
+   * rejected the email with "Unsupported message object type".
+   */
+  it('registers the inbox_email object type the compose command validates against', async () => {
+    runFreightExtraction.mockResolvedValue(successOutcome())
+    const { ctx } = fakeContainer()
+
+    await handle(PAYLOAD, ctx)
+
+    const objectType = getMessageObjectType('inbox_ops', 'inbox_email')
+    expect(objectType?.messageTypes).toContain('inbox_ops.email')
   })
 
   it('does not fail the extraction when the helper throws', async () => {
