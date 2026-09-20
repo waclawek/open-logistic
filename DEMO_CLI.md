@@ -31,7 +31,7 @@ organization ids it prints and use those instead.
 yarn mercato logistics offers-prepare --tenant $T --org $O
 yarn mercato auth sync-role-acls --tenant $T
 yarn mercato logistics offers-check-ai
-yarn mercato logistics offers-send-email --tenant $T --org $O --note "Ref demo-1"
+yarn mercato logistics offers-send-email --tenant $T --org $O --note "Ref demo-123"
 ```
 
 `offers-prepare` seeds the four services, the inbox address and the automation account, and is
