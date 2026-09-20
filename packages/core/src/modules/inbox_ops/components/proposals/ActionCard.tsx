@@ -3,6 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { Button } from '@open-mercato/ui/primitives/button'
+import { apiCall } from '@open-mercato/ui/backend/utils/apiCall'
 import { useT } from '@open-mercato/shared/lib/i18n/context'
 import {
   CheckCircle,
@@ -116,6 +117,79 @@ export function ConfidenceBadge({ value }: { value: string }) {
       <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
         <div className={`h-full ${bgColor} rounded-full`} style={{ width: `${width}%` }} />
       </div>
+    </div>
+  )
+}
+
+type QuoteTotals = {
+  currencyCode: string | null
+  grandTotalNetAmount: number | null
+  grandTotalGrossAmount: number | null
+}
+
+function readQuoteTotals(value: unknown): QuoteTotals | null {
+  if (!value || typeof value !== 'object') return null
+  const items = (value as { items?: unknown }).items
+  if (!Array.isArray(items) || items.length === 0) return null
+  const first = items[0]
+  if (!first || typeof first !== 'object') return null
+  const row = first as Record<string, unknown>
+  const net = typeof row.grandTotalNetAmount === 'number' ? row.grandTotalNetAmount : null
+  const gross = typeof row.grandTotalGrossAmount === 'number' ? row.grandTotalGrossAmount : null
+  if (net === null && gross === null) return null
+  return {
+    currencyCode: typeof row.currencyCode === 'string' ? row.currencyCode : null,
+    grandTotalNetAmount: net,
+    grandTotalGrossAmount: gross,
+  }
+}
+
+function formatAmount(amount: number, currencyCode: string | null): string {
+  const value = amount.toFixed(2)
+  return currencyCode ? `${value} ${currencyCode}` : value
+}
+
+/**
+ * Grand totals of the quote an accepted action created.
+ *
+ * Read from the sales quotes list endpoint filtered to one id, which is the
+ * same call the quote detail page makes. A failed or empty read renders
+ * nothing: the card's existing link must keep working regardless.
+ */
+function ExecutedQuoteTotals({ quoteId }: { quoteId: string }) {
+  const t = useT()
+  const [totals, setTotals] = React.useState<QuoteTotals | null>(null)
+
+  React.useEffect(() => {
+    let active = true
+    const params = new URLSearchParams({ id: quoteId, page: '1', pageSize: '1' })
+    apiCall(`/api/sales/quotes?${params.toString()}`)
+      .then((result) => {
+        if (!active || !result.ok) return
+        setTotals(readQuoteTotals(result.result))
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [quoteId])
+
+  if (!totals) return null
+
+  return (
+    <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+      {totals.grandTotalNetAmount !== null && (
+        <div className="flex items-baseline gap-1">
+          <span className="text-xs text-muted-foreground">{t('inbox_ops.quote.total_net', 'Total net')}:</span>
+          <span className="text-sm font-medium">{formatAmount(totals.grandTotalNetAmount, totals.currencyCode)}</span>
+        </div>
+      )}
+      {totals.grandTotalGrossAmount !== null && (
+        <div className="flex items-baseline gap-1">
+          <span className="text-xs text-muted-foreground">{t('inbox_ops.quote.total_gross', 'Total gross')}:</span>
+          <span className="text-sm font-medium">{formatAmount(totals.grandTotalGrossAmount, totals.currencyCode)}</span>
+        </div>
+      )}
     </div>
   )
 }
@@ -260,6 +334,9 @@ export function ActionCard({
             <span className="text-xs text-status-success-text">
               {t('inbox_ops.action.created_entity', 'Created {type}').replace('{type}', action.createdEntityType || '')} · {action.executedAt && new Date(action.executedAt).toLocaleString()}
             </span>
+            {(action.actionType === 'create_quote' || action.createdEntityType === 'sales_quote') && (
+              <ExecutedQuoteTotals quoteId={action.createdEntityId} />
+            )}
             {(action.actionType === 'create_quote' || action.createdEntityType === 'sales_quote') && (
               <div>
                 <Button asChild type="button" variant="outline" size="sm" className="h-11 md:h-9">

@@ -1,0 +1,358 @@
+Demonstracyjne zapytania transportowe dla inbox_ops
+Endpoint: /api/inbox_ops/webhook/inbound
+Adres odbiorcy (wybiera tenanta): quotes@logistics.example
+Zrodlo: tools/inbox-demo/emails-pl.json
+Same tresci, gotowe pod --body-file: tools/inbox-demo/txt/body/
+
+Uwaga na dedup: core liczy hash z subject|from|pierwsze 500 znakow tresci,
+bez okna czasowego. Ten sam mail wejdzie tylko raz. Zmien temat lub dopisz
+linie z numerem referencyjnym, zeby wyslac ponownie.
+==============================================================================
+01. wroclaw-krakow-ltl-winda
+oczekiwane: draft_offer: FRT-LTL-PALLET x6 + FRT-ACC-TAILLIFT x1
+==============================================================================
+From:    Anna Kowalska <a.kowalska@dolnoslaskie-meble.example>
+To:      quotes@logistics.example
+Subject: Zapytanie o transport: 6 palet Wrocław - Kraków
+
+Dzień dobry,
+
+Proszę o wycenę przewozu 6 palet EUR z naszego magazynu przy ul. Fabrycznej we Wrocławiu do sklepu w Krakowie (ul. Wielicka 28).
+Każda paleta ma ok. 1,5 m wysokości i waży 380 kg. Odbiorca nie ma rampy, potrzebna winda załadowcza.
+Załadunek najchętniej w przyszły wtorek rano, rozładunek następnego dnia.
+
+Pozdrawiam,
+Anna Kowalska
+Dolnośląskie Meble Sp. z o.o.
+tel. +48 601 112 334
+
+==============================================================================
+02. gdansk-katowice-ftl
+oczekiwane: draft_offer: FRT-FTL-SHIPMENT x1
+==============================================================================
+From:    Marek Zieliński <m.zielinski@baltic-steel.example>
+To:      quotes@logistics.example
+Subject: Całopojazdowy Gdańsk - Katowice, 22 tony
+
+Witam,
+
+Potrzebujemy całopojazdowego transportu z portu w Gdańsku (terminal DCT) do naszej hali w Katowicach.
+Ładunek: 22 tony wyrobów stalowych na 26 paletach, plandeka 13,6 m, załadunek boczny.
+Załadunek 12.10 między 6:00 a 14:00, rozładunek 13.10 do południa.
+Proszę o cenę netto w EUR oraz o informację, czy macie wolny pojazd w tym terminie.
+
+Marek Zieliński
+Baltic Steel Trade
+
+==============================================================================
+03. lodz-szczecin-drobnica
+oczekiwane: draft_offer: FRT-LTL-PALLET x3
+==============================================================================
+From:    Katarzyna Wójcik <k.wojcik@textil-lodz.example>
+To:      quotes@logistics.example
+Subject: Drobnica Łódź - Szczecin, 3 palety
+
+Dzień dobry,
+
+Mamy 3 palety tkanin do wysłania z Łodzi do Szczecina. Waga łączna 900 kg, wysokość palety 1,2 m.
+Towar gotowy do odbioru od czwartku, dostawa może być dowolnego dnia do końca tygodnia.
+Czy dowozicie pod adres w centrum Szczecina? Ulica jest wąska, wjazd tylko autem do 12 ton.
+
+Pozdrawiam
+Katarzyna Wójcik
+
+==============================================================================
+04. rzeszow-poznan-ponadgabaryt
+oczekiwane: draft_offer: FRT-ROAD-KM (ładunek niestandardowy, rozliczenie za km)
+==============================================================================
+From:    Tomasz Lis <t.lis@podkarpacka-maszyna.example>
+To:      quotes@logistics.example
+Subject: Przewóz obrabiarki Rzeszów - Poznań
+
+Dzień dobry,
+
+Chcemy przewieźć obrabiarkę CNC z Rzeszowa do Poznania. Wymiary 4,2 x 2,1 x 2,6 m, waga 7 800 kg, ładunek nie na palecie.
+Załadunek u nas suwnicą, rozładunek po stronie odbiorcy też suwnicą, więc winda nie jest potrzebna.
+Termin: pierwszy tydzień listopada, data do uzgodnienia.
+Proszę o wycenę za kilometr oraz szacowaną trasę.
+
+Tomasz Lis
+Podkarpacka Maszyna S.A.
+
+==============================================================================
+05. bydgoszcz-lublin-adr
+oczekiwane: draft_offer z ograniczeniem ADR w notes
+==============================================================================
+From:    Paweł Nowak <p.nowak@chemia-bydgoszcz.example>
+To:      quotes@logistics.example
+Subject: Transport Bydgoszcz - Lublin, ADR ilości ograniczone
+
+Witam,
+
+Proszę o ofertę na przewóz 8 palet chemii gospodarczej z Bydgoszczy do Lublina.
+Towar w ilościach ograniczonych ADR (LQ), waga 4 400 kg, palety standardowe 1,1 m.
+Kierowca musi mieć podstawowe przeszkolenie ADR i gaśnicę zgodną z umową.
+Załadunek 21.10, dostawa 22.10 przed 12:00.
+
+Paweł Nowak
+Chemia Bydgoszcz
+
+==============================================================================
+06. bialystok-warszawa-usd
+oczekiwane: fail-closed: klient prosi o USD, katalog ma tylko EUR
+==============================================================================
+From:    Ewa Sawicka <e.sawicka@podlasie-export.example>
+To:      quotes@logistics.example
+Subject: Wycena Białystok - Warszawa (prosimy o USD)
+
+Dzień dobry,
+
+Potrzebujemy przewozu 10 palet z Białegostoku do Warszawy, waga 5 200 kg, odbiór w poniedziałek.
+Nasza centrala rozlicza się w dolarach, więc proszę o wycenę w USD.
+
+Ewa Sawicka
+Podlasie Export
+
+==============================================================================
+07. kielce-gdynia-przekazany-watek
+oczekiwane: possiblyIncomplete=true (urwany, przekazany wątek)
+==============================================================================
+From:    Biuro Spedycji <spedycja@kielce-logistyka.example>
+To:      quotes@logistics.example
+Subject: FW: RE: pilna wysyłka Kielce - Gdynia
+In-Reply-To: <watek-kielce-gdynia-1@kielce-parts.example>
+
+Przekazuję dalej, proszę o wycenę.
+
+---------- Wiadomość przekazana ----------
+From: Robert Adamczyk <r.adamczyk@kielce-parts.example>
+Subject: RE: pilna wysyłka Kielce - Gdynia
+
+> ... tak jak rozmawialiśmy, 4 palety do portu w Gdyni, odbiór jeszcze w tym tygodniu.
+> Kontener wychodzi w poniedziałek, więc towar musi być na terminalu w piątek do 14:00.
+
+Robert
+
+==============================================================================
+08. olsztyn-torun-chlodnia
+oczekiwane: linia bez pozycji w katalogu (chłodnia) - cena nie do policzenia, akcja powinna upaść w całości
+==============================================================================
+From:    Janusz Mazur <j.mazur@warminskie-nabial.example>
+To:      quotes@logistics.example
+Subject: Chłodnia Olsztyn - Toruń, 12 palet
+
+Dzień dobry,
+
+Szukamy przewoźnika na stałą trasę Olsztyn - Toruń, 12 palet nabiału w temperaturze 2-6 stopni.
+Potrzebna naczepa chłodnicza z rejestratorem temperatury i mycie po każdym kursie.
+Załadunek codziennie o 4:00, dostawa do 8:00.
+
+Janusz Mazur
+Warmińskie Nabiał Sp. z o.o.
+
+==============================================================================
+09. czestochowa-opole-cykliczne
+oczekiwane: draft_offer: FRT-LTL-PALLET x12, powtarzalność w notes
+==============================================================================
+From:    Sylwia Kaczmarek <s.kaczmarek@jura-ceramika.example>
+To:      quotes@logistics.example
+Subject: Stała trasa Częstochowa - Opole, co tydzień 12 palet
+
+Dzień dobry,
+
+Chcemy ustalić stawkę na cykliczny przewóz: każda środa, 12 palet ceramiki z Częstochowy do Opola.
+Waga jednej palety 620 kg, palety nie piętrujemy. Rozładunek w magazynie z rampą.
+Prosimy o stawkę za paletę oraz za cały kurs, żebyśmy mogli porównać.
+
+Sylwia Kaczmarek
+Jura Ceramika
+
+==============================================================================
+10. zielona-gora-radom-nie-zapytanie
+oczekiwane: isFreightEnquiry=false (pytanie o fakturę, nie o wycenę)
+==============================================================================
+From:    Księgowość <ksiegowosc@lubuskie-drewno.example>
+To:      quotes@logistics.example
+Subject: Faktura FV/2026/0912 - brak potwierdzenia dostawy
+
+Dzień dobry,
+
+Do faktury FV/2026/0912 za kurs Zielona Góra - Radom brakuje nam podpisanego listu przewozowego.
+Proszę o skan CMR, wtedy zwolnimy płatność. Terminu nie zmieniamy, ale bez dokumentu przelew się nie uruchomi.
+
+Pozdrawiam
+Dział Księgowości
+Lubuskie Drewno
+
+==============================================================================
+11. krakow-wroclaw-powrot
+oczekiwane: draft_offer: FRT-LTL-PALLET x5, ładunek powrotny
+==============================================================================
+From:    Grzegorz Pawlak <g.pawlak@malopolskie-opakowania.example>
+To:      quotes@logistics.example
+Subject: Ładunek powrotny Kraków - Wrocław, 5 palet
+
+Dzień dobry,
+
+Mamy 5 palet opakowań kartonowych do zabrania z Krakowa do Wrocławia.
+Waga łączna 1 600 kg, palety lekkie, można piętrować po dwie.
+Jeśli macie auto wracające tą trasą, chętnie skorzystamy z niższej stawki.
+Odbiór w dowolny dzień w przyszłym tygodniu.
+
+Grzegorz Pawlak
+Małopolskie Opakowania
+
+==============================================================================
+12. warszawa-gdansk-express
+oczekiwane: draft_offer: pilny termin, 1 paleta
+==============================================================================
+From:    Monika Dąbrowska <m.dabrowska@medtech-warszawa.example>
+To:      quotes@logistics.example
+Subject: PILNE: 1 paleta Warszawa - Gdańsk na jutro rano
+
+Dzień dobry,
+
+Potrzebujemy przewiezienia jednej palety sprzętu medycznego z Warszawy (Mokotów) do szpitala w Gdańsku.
+Waga 240 kg, wysokość 1,1 m, towar delikatny, proszę o auto z pasami.
+Odbiór dziś do 18:00, dostawa jutro do 9:00. To dostawa awaryjna, cena mniej istotna niż termin.
+
+Monika Dąbrowska
+MedTech Warszawa
+
+==============================================================================
+13. szczecin-poznan-dwa-rozladunki
+oczekiwane: draft_offer: FTL z dwoma punktami rozładunku
+==============================================================================
+From:    Rafał Górski <r.gorski@pomorska-dystrybucja.example>
+To:      quotes@logistics.example
+Subject: Szczecin - Poznań, 18 palet, dwa punkty rozładunku
+
+Witam,
+
+Proszę o wycenę kursu ze Szczecina do Poznania, 18 palet napojów, waga 14 200 kg.
+Rozładunek w dwóch miejscach: 12 palet w magazynie na Franowie, 6 palet w sklepie przy Głogowskiej.
+Załadunek 15.10 o 7:00. Czy drugi punkt rozładunku jest dodatkowo płatny?
+
+Rafał Górski
+Pomorska Dystrybucja
+
+==============================================================================
+14. lublin-kielce-big-bagi
+oczekiwane: draft_offer: ładunek sypki w big bagach
+==============================================================================
+From:    Adam Sikora <a.sikora@lubelskie-kruszywa.example>
+To:      quotes@logistics.example
+Subject: Przewóz kruszywa w big bagach, Lublin - Kielce
+
+Dzień dobry,
+
+Chcemy wysłać 24 big bagi kruszywa z Lublina do Kielc. Każdy worek to 1 000 kg, razem 24 tony.
+Załadunek wózkiem widłowym z naszego placu, rozładunek u klienta też widlakiem.
+Potrzebna plandeka z możliwością zdjęcia dachu. Termin: 18 lub 19 października.
+
+Adam Sikora
+Lubelskie Kruszywa
+
+==============================================================================
+15. torun-bydgoszcz-krotki-dystans
+oczekiwane: draft_offer: krótka trasa, 2 palety
+==============================================================================
+From:    Beata Krawczyk <b.krawczyk@kujawska-poligrafia.example>
+To:      quotes@logistics.example
+Subject: Dwie palety Toruń - Bydgoszcz
+
+Dzień dobry,
+
+Dwie palety druków z Torunia do Bydgoszczy, razem 700 kg. Trasa krótka, około 50 km.
+Odbiór jutro po 10:00, dostawa tego samego dnia. Rampa jest po obu stronach.
+Proszę o stawkę za kurs, nie za paletę.
+
+Beata Krawczyk
+Kujawska Poligrafia
+
+==============================================================================
+16. gliwice-legnica-palety-niestandardowe
+oczekiwane: draft_offer: palety poza standardem EUR
+==============================================================================
+From:    Krzysztof Wieczorek <k.wieczorek@slaskie-czesci.example>
+To:      quotes@logistics.example
+Subject: Gliwice - Legnica, palety 1200x1200
+
+Witam,
+
+Mamy 9 palet części samochodowych w wymiarze 1200x1200 mm, więc to nie są standardowe EUR.
+Waga jednej palety 540 kg, wysokość 1,8 m, nie piętrujemy.
+Trasa Gliwice - Legnica, załadunek 20.10 rano.
+Proszę o wycenę i informację, czy taki wymiar wchodzi w waszą stawkę paletową.
+
+Krzysztof Wieczorek
+Śląskie Części
+
+==============================================================================
+17. plock-elblag-zaladunek-gora
+oczekiwane: draft_offer: wymagany zdejmowany dach
+==============================================================================
+From:    Michał Baran <m.baran@mazowieckie-konstrukcje.example>
+To:      quotes@logistics.example
+Subject: Konstrukcje stalowe Płock - Elbląg
+
+Dzień dobry,
+
+Do przewiezienia mamy konstrukcje stalowe o długości 11 m, waga 9 400 kg.
+Załadunek odbywa się suwnicą od góry, więc naczepa musi mieć zdejmowany dach i kłonice.
+Trasa Płock - Elbląg, termin do uzgodnienia w ciągu dwóch tygodni.
+Proszę o wycenę oraz o potwierdzenie, że macie taki pojazd.
+
+Michał Baran
+Mazowieckie Konstrukcje
+
+==============================================================================
+18. tarnow-nowy-sacz-sobota
+oczekiwane: konflikt terminu: odbiór i dostawa tego samego dnia w sobotę
+==============================================================================
+From:    Justyna Michalska <j.michalska@karpacka-zywnosc.example>
+To:      quotes@logistics.example
+Subject: Dostawa sobotnia Tarnów - Nowy Sącz
+
+Dzień dobry,
+
+Potrzebujemy przewozu 7 palet żywności suchej z Tarnowa do Nowego Sącza.
+Odbiór w sobotę po 14:00, a dostawa musi być tej samej soboty do 12:00, bo w niedzielę magazyn jest zamknięty.
+Waga 3 100 kg. Proszę o wycenę i potwierdzenie terminu.
+
+Justyna Michalska
+Karpacka Żywność
+
+==============================================================================
+19. koszalin-slupsk-platnosc-60
+oczekiwane: zapytanie z warunkiem płatności 60 dni
+==============================================================================
+From:    Piotr Szymański <p.szymanski@baltyk-handel.example>
+To:      quotes@logistics.example
+Subject: Koszalin - Słupsk, 4 palety, płatność 60 dni
+
+Dzień dobry,
+
+Proszę o stawkę na przewóz 4 palet z Koszalina do Słupska, waga 1 900 kg, odbiór w środę.
+Nasz standard zakupowy to płatność przelewem 60 dni od faktury. Czy akceptujecie taki termin?
+Jeśli nie, proszę podać, jaka stawka obowiązuje przy płatności 14 dni.
+
+Piotr Szymański
+Bałtyk Handel
+
+==============================================================================
+20. sosnowiec-rybnik-reklamacja
+oczekiwane: complaint: uszkodzona paleta, nie zapytanie o wycenę
+==============================================================================
+From:    Dorota Lewandowska <d.lewandowska@zaglebie-agd.example>
+To:      quotes@logistics.example
+Subject: Reklamacja: uszkodzona paleta w dostawie Sosnowiec - Rybnik
+
+Dzień dobry,
+
+W dostawie z Sosnowca do Rybnika z 12.10 jedna z 6 palet dotarła uszkodzona.
+Kierowca potwierdził uszkodzenie na CMR, zdjęcia w załączniku u odbiorcy.
+Wartość towaru na tej palecie to 4 200 zł. Proszę o informację, jak zgłosić szkodę i w jakim terminie ją rozpatrzycie.
+
+Dorota Lewandowska
+Zagłębie AGD

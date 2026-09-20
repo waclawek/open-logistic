@@ -194,5 +194,7 @@
   "inbox_ops.translate.translate": "Przet\u0142umacz",
   "inbox_ops.untitled_proposal": "Propozycja bez tytu\u0142u",
   "inbox_ops.view_in_messages": "Zobacz w wiadomo\u015bciach",
-  "notifications.categories.inbox_ops": "Skrzynka"
+  "notifications.categories.inbox_ops": "Skrzynka",
+  "inbox_ops.quote.total_net": "Warto\u015b\u0107 netto",
+  "inbox_ops.quote.total_gross": "Warto\u015b\u0107 brutto"
 }

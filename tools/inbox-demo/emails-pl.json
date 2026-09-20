@@ -1,0 +1,229 @@
+{
+  "endpoint": "/api/inbox_ops/webhook/inbound",
+  "note": "Ladunek dla custom-provider webhooka inbox_ops. Kazdy element tablicy to cale body POST-a. Naglowki x-webhook-timestamp i x-webhook-signature liczy sender (HMAC SHA256 z 'timestamp.rawBody', sekret INBOX_OPS_WEBHOOK_SECRET). Adres 'to' wybiera tenanta, wiec musi byc rowny inbox_settings.inbox_address.",
+  "toAddress": "quotes@logistics.example",
+  "emails": [
+    {
+      "key": "wroclaw-krakow-ltl-winda",
+      "expect": "draft_offer: FRT-LTL-PALLET x6 + FRT-ACC-TAILLIFT x1",
+      "payload": {
+        "from": "Anna Kowalska <a.kowalska@dolnoslaskie-meble.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Zapytanie o transport: 6 palet Wrocław - Kraków",
+        "text": "Dzień dobry,\n\nProszę o wycenę przewozu 6 palet EUR z naszego magazynu przy ul. Fabrycznej we Wrocławiu do sklepu w Krakowie (ul. Wielicka 28).\nKażda paleta ma ok. 1,5 m wysokości i waży 380 kg. Odbiorca nie ma rampy, potrzebna winda załadowcza.\nZaładunek najchętniej w przyszły wtorek rano, rozładunek następnego dnia.\n\nPozdrawiam,\nAnna Kowalska\nDolnośląskie Meble Sp. z o.o.\ntel. +48 601 112 334",
+        "messageId": "<demo-pl-01-wroclaw-krakow@dolnoslaskie-meble.example>"
+      }
+    },
+    {
+      "key": "gdansk-katowice-ftl",
+      "expect": "draft_offer: FRT-FTL-SHIPMENT x1",
+      "payload": {
+        "from": "Marek Zieliński <m.zielinski@baltic-steel.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Całopojazdowy Gdańsk - Katowice, 22 tony",
+        "text": "Witam,\n\nPotrzebujemy całopojazdowego transportu z portu w Gdańsku (terminal DCT) do naszej hali w Katowicach.\nŁadunek: 22 tony wyrobów stalowych na 26 paletach, plandeka 13,6 m, załadunek boczny.\nZaładunek 12.10 między 6:00 a 14:00, rozładunek 13.10 do południa.\nProszę o cenę netto w EUR oraz o informację, czy macie wolny pojazd w tym terminie.\n\nMarek Zieliński\nBaltic Steel Trade",
+        "messageId": "<demo-pl-02-gdansk-katowice@baltic-steel.example>"
+      }
+    },
+    {
+      "key": "lodz-szczecin-drobnica",
+      "expect": "draft_offer: FRT-LTL-PALLET x3",
+      "payload": {
+        "from": "Katarzyna Wójcik <k.wojcik@textil-lodz.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Drobnica Łódź - Szczecin, 3 palety",
+        "text": "Dzień dobry,\n\nMamy 3 palety tkanin do wysłania z Łodzi do Szczecina. Waga łączna 900 kg, wysokość palety 1,2 m.\nTowar gotowy do odbioru od czwartku, dostawa może być dowolnego dnia do końca tygodnia.\nCzy dowozicie pod adres w centrum Szczecina? Ulica jest wąska, wjazd tylko autem do 12 ton.\n\nPozdrawiam\nKatarzyna Wójcik",
+        "messageId": "<demo-pl-03-lodz-szczecin@textil-lodz.example>"
+      }
+    },
+    {
+      "key": "rzeszow-poznan-ponadgabaryt",
+      "expect": "draft_offer: FRT-ROAD-KM (ładunek niestandardowy, rozliczenie za km)",
+      "payload": {
+        "from": "Tomasz Lis <t.lis@podkarpacka-maszyna.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Przewóz obrabiarki Rzeszów - Poznań",
+        "text": "Dzień dobry,\n\nChcemy przewieźć obrabiarkę CNC z Rzeszowa do Poznania. Wymiary 4,2 x 2,1 x 2,6 m, waga 7 800 kg, ładunek nie na palecie.\nZaładunek u nas suwnicą, rozładunek po stronie odbiorcy też suwnicą, więc winda nie jest potrzebna.\nTermin: pierwszy tydzień listopada, data do uzgodnienia.\nProszę o wycenę za kilometr oraz szacowaną trasę.\n\nTomasz Lis\nPodkarpacka Maszyna S.A.",
+        "messageId": "<demo-pl-04-rzeszow-poznan@podkarpacka-maszyna.example>"
+      }
+    },
+    {
+      "key": "bydgoszcz-lublin-adr",
+      "expect": "draft_offer z ograniczeniem ADR w notes",
+      "payload": {
+        "from": "Paweł Nowak <p.nowak@chemia-bydgoszcz.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Transport Bydgoszcz - Lublin, ADR ilości ograniczone",
+        "text": "Witam,\n\nProszę o ofertę na przewóz 8 palet chemii gospodarczej z Bydgoszczy do Lublina.\nTowar w ilościach ograniczonych ADR (LQ), waga 4 400 kg, palety standardowe 1,1 m.\nKierowca musi mieć podstawowe przeszkolenie ADR i gaśnicę zgodną z umową.\nZaładunek 21.10, dostawa 22.10 przed 12:00.\n\nPaweł Nowak\nChemia Bydgoszcz",
+        "messageId": "<demo-pl-05-bydgoszcz-lublin@chemia-bydgoszcz.example>"
+      }
+    },
+    {
+      "key": "bialystok-warszawa-usd",
+      "expect": "fail-closed: klient prosi o USD, katalog ma tylko EUR",
+      "payload": {
+        "from": "Ewa Sawicka <e.sawicka@podlasie-export.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Wycena Białystok - Warszawa (prosimy o USD)",
+        "text": "Dzień dobry,\n\nPotrzebujemy przewozu 10 palet z Białegostoku do Warszawy, waga 5 200 kg, odbiór w poniedziałek.\nNasza centrala rozlicza się w dolarach, więc proszę o wycenę w USD.\n\nEwa Sawicka\nPodlasie Export",
+        "messageId": "<demo-pl-06-bialystok-warszawa@podlasie-export.example>"
+      }
+    },
+    {
+      "key": "kielce-gdynia-przekazany-watek",
+      "expect": "possiblyIncomplete=true (urwany, przekazany wątek)",
+      "payload": {
+        "from": "Biuro Spedycji <spedycja@kielce-logistyka.example>",
+        "to": "quotes@logistics.example",
+        "subject": "FW: RE: pilna wysyłka Kielce - Gdynia",
+        "text": "Przekazuję dalej, proszę o wycenę.\n\n---------- Wiadomość przekazana ----------\nFrom: Robert Adamczyk <r.adamczyk@kielce-parts.example>\nSubject: RE: pilna wysyłka Kielce - Gdynia\n\n> ... tak jak rozmawialiśmy, 4 palety do portu w Gdyni, odbiór jeszcze w tym tygodniu.\n> Kontener wychodzi w poniedziałek, więc towar musi być na terminalu w piątek do 14:00.\n\nRobert",
+        "messageId": "<demo-pl-07-kielce-gdynia@kielce-logistyka.example>",
+        "references": ["<watek-kielce-gdynia-1@kielce-parts.example>"],
+        "inReplyTo": "<watek-kielce-gdynia-1@kielce-parts.example>"
+      }
+    },
+    {
+      "key": "olsztyn-torun-chlodnia",
+      "expect": "linia bez pozycji w katalogu (chłodnia) - cena nie do policzenia, akcja powinna upaść w całości",
+      "payload": {
+        "from": "Janusz Mazur <j.mazur@warminskie-nabial.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Chłodnia Olsztyn - Toruń, 12 palet",
+        "text": "Dzień dobry,\n\nSzukamy przewoźnika na stałą trasę Olsztyn - Toruń, 12 palet nabiału w temperaturze 2-6 stopni.\nPotrzebna naczepa chłodnicza z rejestratorem temperatury i mycie po każdym kursie.\nZaładunek codziennie o 4:00, dostawa do 8:00.\n\nJanusz Mazur\nWarmińskie Nabiał Sp. z o.o.",
+        "messageId": "<demo-pl-08-olsztyn-torun@warminskie-nabial.example>"
+      }
+    },
+    {
+      "key": "czestochowa-opole-cykliczne",
+      "expect": "draft_offer: FRT-LTL-PALLET x12, powtarzalność w notes",
+      "payload": {
+        "from": "Sylwia Kaczmarek <s.kaczmarek@jura-ceramika.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Stała trasa Częstochowa - Opole, co tydzień 12 palet",
+        "text": "Dzień dobry,\n\nChcemy ustalić stawkę na cykliczny przewóz: każda środa, 12 palet ceramiki z Częstochowy do Opola.\nWaga jednej palety 620 kg, palety nie piętrujemy. Rozładunek w magazynie z rampą.\nProsimy o stawkę za paletę oraz za cały kurs, żebyśmy mogli porównać.\n\nSylwia Kaczmarek\nJura Ceramika",
+        "messageId": "<demo-pl-09-czestochowa-opole@jura-ceramika.example>"
+      }
+    },
+    {
+      "key": "zielona-gora-radom-nie-zapytanie",
+      "expect": "isFreightEnquiry=false (pytanie o fakturę, nie o wycenę)",
+      "payload": {
+        "from": "Księgowość <ksiegowosc@lubuskie-drewno.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Faktura FV/2026/0912 - brak potwierdzenia dostawy",
+        "text": "Dzień dobry,\n\nDo faktury FV/2026/0912 za kurs Zielona Góra - Radom brakuje nam podpisanego listu przewozowego.\nProszę o skan CMR, wtedy zwolnimy płatność. Terminu nie zmieniamy, ale bez dokumentu przelew się nie uruchomi.\n\nPozdrawiam\nDział Księgowości\nLubuskie Drewno",
+        "messageId": "<demo-pl-10-zielona-gora-radom@lubuskie-drewno.example>"
+      }
+    },
+    {
+      "key": "krakow-wroclaw-powrot",
+      "expect": "draft_offer: FRT-LTL-PALLET x5, ładunek powrotny",
+      "payload": {
+        "from": "Grzegorz Pawlak <g.pawlak@malopolskie-opakowania.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Ładunek powrotny Kraków - Wrocław, 5 palet",
+        "text": "Dzień dobry,\n\nMamy 5 palet opakowań kartonowych do zabrania z Krakowa do Wrocławia.\nWaga łączna 1 600 kg, palety lekkie, można piętrować po dwie.\nJeśli macie auto wracające tą trasą, chętnie skorzystamy z niższej stawki.\nOdbiór w dowolny dzień w przyszłym tygodniu.\n\nGrzegorz Pawlak\nMałopolskie Opakowania",
+        "messageId": "<demo-pl-11-krakow-wroclaw@malopolskie-opakowania.example>"
+      }
+    },
+    {
+      "key": "warszawa-gdansk-express",
+      "expect": "draft_offer: pilny termin, 1 paleta",
+      "payload": {
+        "from": "Monika Dąbrowska <m.dabrowska@medtech-warszawa.example>",
+        "to": "quotes@logistics.example",
+        "subject": "PILNE: 1 paleta Warszawa - Gdańsk na jutro rano",
+        "text": "Dzień dobry,\n\nPotrzebujemy przewiezienia jednej palety sprzętu medycznego z Warszawy (Mokotów) do szpitala w Gdańsku.\nWaga 240 kg, wysokość 1,1 m, towar delikatny, proszę o auto z pasami.\nOdbiór dziś do 18:00, dostawa jutro do 9:00. To dostawa awaryjna, cena mniej istotna niż termin.\n\nMonika Dąbrowska\nMedTech Warszawa",
+        "messageId": "<demo-pl-12-warszawa-gdansk@medtech-warszawa.example>"
+      }
+    },
+    {
+      "key": "szczecin-poznan-dwa-rozladunki",
+      "expect": "draft_offer: FTL z dwoma punktami rozładunku",
+      "payload": {
+        "from": "Rafał Górski <r.gorski@pomorska-dystrybucja.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Szczecin - Poznań, 18 palet, dwa punkty rozładunku",
+        "text": "Witam,\n\nProszę o wycenę kursu ze Szczecina do Poznania, 18 palet napojów, waga 14 200 kg.\nRozładunek w dwóch miejscach: 12 palet w magazynie na Franowie, 6 palet w sklepie przy Głogowskiej.\nZaładunek 15.10 o 7:00. Czy drugi punkt rozładunku jest dodatkowo płatny?\n\nRafał Górski\nPomorska Dystrybucja",
+        "messageId": "<demo-pl-13-szczecin-poznan@pomorska-dystrybucja.example>"
+      }
+    },
+    {
+      "key": "lublin-kielce-big-bagi",
+      "expect": "draft_offer: ładunek sypki w big bagach",
+      "payload": {
+        "from": "Adam Sikora <a.sikora@lubelskie-kruszywa.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Przewóz kruszywa w big bagach, Lublin - Kielce",
+        "text": "Dzień dobry,\n\nChcemy wysłać 24 big bagi kruszywa z Lublina do Kielc. Każdy worek to 1 000 kg, razem 24 tony.\nZaładunek wózkiem widłowym z naszego placu, rozładunek u klienta też widlakiem.\nPotrzebna plandeka z możliwością zdjęcia dachu. Termin: 18 lub 19 października.\n\nAdam Sikora\nLubelskie Kruszywa",
+        "messageId": "<demo-pl-14-lublin-kielce@lubelskie-kruszywa.example>"
+      }
+    },
+    {
+      "key": "torun-bydgoszcz-krotki-dystans",
+      "expect": "draft_offer: krótka trasa, 2 palety",
+      "payload": {
+        "from": "Beata Krawczyk <b.krawczyk@kujawska-poligrafia.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Dwie palety Toruń - Bydgoszcz",
+        "text": "Dzień dobry,\n\nDwie palety druków z Torunia do Bydgoszczy, razem 700 kg. Trasa krótka, około 50 km.\nOdbiór jutro po 10:00, dostawa tego samego dnia. Rampa jest po obu stronach.\nProszę o stawkę za kurs, nie za paletę.\n\nBeata Krawczyk\nKujawska Poligrafia",
+        "messageId": "<demo-pl-15-torun-bydgoszcz@kujawska-poligrafia.example>"
+      }
+    },
+    {
+      "key": "gliwice-legnica-palety-niestandardowe",
+      "expect": "draft_offer: palety poza standardem EUR",
+      "payload": {
+        "from": "Krzysztof Wieczorek <k.wieczorek@slaskie-czesci.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Gliwice - Legnica, palety 1200x1200",
+        "text": "Witam,\n\nMamy 9 palet części samochodowych w wymiarze 1200x1200 mm, więc to nie są standardowe EUR.\nWaga jednej palety 540 kg, wysokość 1,8 m, nie piętrujemy.\nTrasa Gliwice - Legnica, załadunek 20.10 rano.\nProszę o wycenę i informację, czy taki wymiar wchodzi w waszą stawkę paletową.\n\nKrzysztof Wieczorek\nŚląskie Części",
+        "messageId": "<demo-pl-16-gliwice-legnica@slaskie-czesci.example>"
+      }
+    },
+    {
+      "key": "plock-elblag-zaladunek-gora",
+      "expect": "draft_offer: wymagany zdejmowany dach",
+      "payload": {
+        "from": "Michał Baran <m.baran@mazowieckie-konstrukcje.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Konstrukcje stalowe Płock - Elbląg",
+        "text": "Dzień dobry,\n\nDo przewiezienia mamy konstrukcje stalowe o długości 11 m, waga 9 400 kg.\nZaładunek odbywa się suwnicą od góry, więc naczepa musi mieć zdejmowany dach i kłonice.\nTrasa Płock - Elbląg, termin do uzgodnienia w ciągu dwóch tygodni.\nProszę o wycenę oraz o potwierdzenie, że macie taki pojazd.\n\nMichał Baran\nMazowieckie Konstrukcje",
+        "messageId": "<demo-pl-17-plock-elblag@mazowieckie-konstrukcje.example>"
+      }
+    },
+    {
+      "key": "tarnow-nowy-sacz-sobota",
+      "expect": "konflikt terminu: odbiór i dostawa tego samego dnia w sobotę",
+      "payload": {
+        "from": "Justyna Michalska <j.michalska@karpacka-zywnosc.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Dostawa sobotnia Tarnów - Nowy Sącz",
+        "text": "Dzień dobry,\n\nPotrzebujemy przewozu 7 palet żywności suchej z Tarnowa do Nowego Sącza.\nOdbiór w sobotę po 14:00, a dostawa musi być tej samej soboty do 12:00, bo w niedzielę magazyn jest zamknięty.\nWaga 3 100 kg. Proszę o wycenę i potwierdzenie terminu.\n\nJustyna Michalska\nKarpacka Żywność",
+        "messageId": "<demo-pl-18-tarnow-nowy-sacz@karpacka-zywnosc.example>"
+      }
+    },
+    {
+      "key": "koszalin-slupsk-platnosc-60",
+      "expect": "zapytanie z warunkiem płatności 60 dni",
+      "payload": {
+        "from": "Piotr Szymański <p.szymanski@baltyk-handel.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Koszalin - Słupsk, 4 palety, płatność 60 dni",
+        "text": "Dzień dobry,\n\nProszę o stawkę na przewóz 4 palet z Koszalina do Słupska, waga 1 900 kg, odbiór w środę.\nNasz standard zakupowy to płatność przelewem 60 dni od faktury. Czy akceptujecie taki termin?\nJeśli nie, proszę podać, jaka stawka obowiązuje przy płatności 14 dni.\n\nPiotr Szymański\nBałtyk Handel",
+        "messageId": "<demo-pl-19-koszalin-slupsk@baltyk-handel.example>"
+      }
+    },
+    {
+      "key": "sosnowiec-rybnik-reklamacja",
+      "expect": "complaint: uszkodzona paleta, nie zapytanie o wycenę",
+      "payload": {
+        "from": "Dorota Lewandowska <d.lewandowska@zaglebie-agd.example>",
+        "to": "quotes@logistics.example",
+        "subject": "Reklamacja: uszkodzona paleta w dostawie Sosnowiec - Rybnik",
+        "text": "Dzień dobry,\n\nW dostawie z Sosnowca do Rybnika z 12.10 jedna z 6 palet dotarła uszkodzona.\nKierowca potwierdził uszkodzenie na CMR, zdjęcia w załączniku u odbiorcy.\nWartość towaru na tej palecie to 4 200 zł. Proszę o informację, jak zgłosić szkodę i w jakim terminie ją rozpatrzycie.\n\nDorota Lewandowska\nZagłębie AGD",
+        "messageId": "<demo-pl-20-sosnowiec-rybnik@zaglebie-agd.example>"
+      }
+    }
+  ]
+}
