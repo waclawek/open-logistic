@@ -3,6 +3,22 @@ import type { LogisticsOrder, LogisticsRoute, OrderCommercials, VehicleCapacity 
 import { deriveCapacity, deriveCommercials } from './types'
 import { getOrder } from './orders-store'
 import { planRoute } from './graphhopper'
+import { placeLabel } from './corridor-cities'
+
+/** Demo loading rules: one Euro pallet is about 0.72 t of general cargo and 0.4 LDM. */
+const TONNES_PER_PALLET = 0.72
+const LDM_PER_PALLET = 0.4
+
+/**
+ * Every freight a dispatcher can take has pallet spaces, so every candidate
+ * states them. The exchange feed gives tonnes only, and a load that reached the
+ * transport as `0 EP` made the remaining-capacity panel unreadable.
+ */
+function palletsForWeight(weightT: number, capacity: VehicleCapacity): number {
+  const deckPallets = Math.max(1, Math.round(capacity.maxLdm / LDM_PER_PALLET))
+  if (!Number.isFinite(weightT) || weightT <= 0) return 1
+  return Math.max(1, Math.min(deckPallets, Math.round(weightT / TONNES_PER_PALLET)))
+}
 
 export type ExchangeOffer = {
   id: string
@@ -58,6 +74,8 @@ export type BackloadCandidate = {
   to: { name: string; lat: number; lng: number }
   price: { amount: number; currency: string }
   weightT: number
+  /** Euro pallet spaces the load occupies. Never zero for a freight candidate. */
+  pallets: number
   summary: string
   samplePointIndex: number
   /** Economics for agent judgment — not a hard decision */
@@ -418,17 +436,21 @@ export function searchBackloadsAlongRoute(input: {
       const jitterLat = sample.lat + (n === 0 ? 0.12 : -0.08)
       const jitterLng = sample.lng + (n === 0 ? 0.15 : -0.1)
       const load = {
-        name: `Doładunek@${Math.round(sample.alongKm)}km`,
+        name: placeLabel({ lat: jitterLat, lng: jitterLng }, `Punkt @${Math.round(sample.alongKm)} km`),
         lat: jitterLat,
         lng: jitterLng,
+      }
+      const midpoint = {
+        lat: sample.lat + (dest.lat - sample.lat) * 0.35,
+        lng: sample.lng + (dest.lng - sample.lng) * 0.35,
       }
       const unload =
         n === 0
           ? dest
           : {
-              name: 'Węzeł korytarza',
-              lat: sample.lat + (dest.lat - sample.lat) * 0.35,
-              lng: sample.lng + (dest.lng - sample.lng) * 0.35,
+              name: placeLabel(midpoint, 'Węzeł korytarza'),
+              lat: midpoint.lat,
+              lng: midpoint.lng,
             }
       const offRoute = haversineKm(sample, load)
       if (offRoute > radiusKm) continue
@@ -448,7 +470,8 @@ export function searchBackloadsAlongRoute(input: {
         to: unload,
         price: { amount: price, currency: 'EUR' },
         weightT,
-        summary: `${load.name} → ${unload.name} · net ~${eco.netEur} EUR · free ${capacity.freeWeightT}t`,
+        pallets: palletsForWeight(weightT, capacity),
+        summary: `${load.name} → ${unload.name} · ${palletsForWeight(weightT, capacity)} EP · net ~${eco.netEur} EUR · free ${capacity.freeWeightT}t`,
         samplePointIndex: sample.index,
         economics: eco,
       })
@@ -459,7 +482,11 @@ export function searchBackloadsAlongRoute(input: {
   if (samples.length > 2) {
     const sample = samples[Math.floor(samples.length / 2)]
     const weightT = Math.round((capacity.freeWeightT + 6) * 10) / 10
-    const load = { name: `Ciężki@${sample.alongKm}km`, lat: sample.lat + 0.05, lng: sample.lng + 0.05 }
+    const load = {
+      name: placeLabel({ lat: sample.lat + 0.05, lng: sample.lng + 0.05 }, `Ciężki @${Math.round(sample.alongKm)} km`),
+      lat: sample.lat + 0.05,
+      lng: sample.lng + 0.05,
+    }
     const detour = 18
     const price = 700
     const eco = economics(price, detour, weightT)
@@ -474,6 +501,7 @@ export function searchBackloadsAlongRoute(input: {
       to: dest,
       price: { amount: price, currency: 'EUR' },
       weightT,
+      pallets: palletsForWeight(weightT, capacity),
       summary: `${load.name} → ${dest.name} · OVERWEIGHT vs free ${capacity.freeWeightT}t`,
       samplePointIndex: sample.index,
       economics: eco,
@@ -501,6 +529,7 @@ export function searchBackloadsAlongRoute(input: {
         to: dest,
         price: { amount: 0, currency: 'EUR' },
         weightT: v.capacityT,
+        pallets: 0,
         summary: `Wolny pojazd ${v.locality} (${v.vehicleType}) — capacity signal only`,
         samplePointIndex: nearest.s.index,
         economics: {
@@ -534,7 +563,12 @@ export function searchBackloadsAlongRoute(input: {
     const detourKm = 12
     const priceEur = 480
     const eco = economics(priceEur, detourKm, weightT)
-    const load = { name: `Doładunek gwarantowany@${Math.round(anchor.alongKm)}km`, lat: anchor.lat + 0.06, lng: anchor.lng + 0.08 }
+    const point = { lat: anchor.lat + 0.06, lng: anchor.lng + 0.08 }
+    const load = {
+      name: placeLabel(point, `Punkt @${Math.round(anchor.alongKm)} km`),
+      lat: point.lat,
+      lng: point.lng,
+    }
     candidates.push({
       id: `bl-demo-${anchor.index}-${Math.round(anchor.alongKm)}`,
       provider: 'timocom',
@@ -545,6 +579,7 @@ export function searchBackloadsAlongRoute(input: {
       from: load,
       to: dest,
       price: { amount: priceEur, currency: 'EUR' },
+      pallets: palletsForWeight(weightT, capacity),
       weightT,
       summary: `${load.name} → ${dest.name} · net ~${eco.netEur} EUR · free ${capacity.freeWeightT}t`,
       samplePointIndex: anchor.index,

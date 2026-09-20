@@ -116,7 +116,7 @@ export const freightExtractionSchema = z.object({
     .string()
     .describe('Requested unloading moment, ISO 8601 date or date-time. Empty string if not stated.'),
   cargoPallets: z.number().describe('Euro pallets on the load. 0 when the email does not say.'),
-  cargoWeightKg: z.number().describe('Total cargo weight in kilograms. 0 when the email does not say.'),
+  cargoWeightKg: z.number().describe('Cargo weight in kilograms, every pallet together. 0 when the email does not say.'),
   confidence: z.number().describe('0.0 to 1.0.'),
 })
 
@@ -197,7 +197,7 @@ export function toDraftOfferPayload(
   extraction: FreightExtraction,
   sender: { email: string; name: string },
 ): Record<string, unknown> {
-  const transport = toTransportBlock(extraction)
+  const transport = toTransportBlock(extraction, sender.email)
   return draftOfferPayloadSchema.parse({
     ...(transport && { transport }),
     customerName: extraction.customerName.trim() || sender.name,
@@ -223,16 +223,16 @@ export function toDraftOfferPayload(
  * dropped rather than passed on, because the command interceptor REFUSES the
  * whole accept (422) when the transport block fails its schema.
  */
-function toIsoDateTime(value: string): string | undefined {
-  const trimmed = value.trim()
+function toIsoDateTime(value: string | undefined): string | undefined {
+  const trimmed = value?.trim()
   if (!trimmed) return undefined
   const normalized = /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? `${trimmed}T00:00:00Z` : trimmed
   const parsed = new Date(normalized)
   return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString()
 }
 
-function positiveNumber(value: number): number | undefined {
-  return Number.isFinite(value) && value > 0 ? value : undefined
+function positiveNumber(value: number | undefined): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined
 }
 
 /**
@@ -244,22 +244,27 @@ function positiveNumber(value: number): number | undefined {
  * Returns undefined when the email carried no transport facts at all, so a
  * non-freight draft keeps the payload it always had.
  */
-function toTransportBlock(extraction: FreightExtraction): Record<string, unknown> | undefined {
+function toTransportBlock(extraction: FreightExtraction, senderEmail?: string): Record<string, unknown> | undefined {
+  const note = extraction.notes?.trim()
+  const trail = senderEmail?.trim() ? `Zapytanie z maila: ${senderEmail.trim()}` : ''
+  const dispatchNote = [note, trail].filter(Boolean).join(' · ') || undefined
   const candidate = {
-    pickupAddress: extraction.pickupAddress.trim() || undefined,
-    deliveryAddress: extraction.deliveryAddress.trim() || undefined,
+    pickupAddress: extraction.pickupAddress?.trim() || undefined,
+    deliveryAddress: extraction.deliveryAddress?.trim() || undefined,
     pickupWindowStart: toIsoDateTime(extraction.pickupWindowStart),
     pickupWindowEnd: toIsoDateTime(extraction.pickupWindowEnd),
     deliveryWindowStart: toIsoDateTime(extraction.deliveryWindowStart),
     cargoPallets: positiveNumber(extraction.cargoPallets),
     cargoWeightKg: positiveNumber(extraction.cargoWeightKg),
     exchangeSource: 'manual' as const,
-    dispatchNote: extraction.notes.trim() || undefined,
+    dispatchNote,
   }
   const present = Object.fromEntries(
     Object.entries(candidate).filter(([, value]) => value !== undefined),
   )
-  const facts = Object.keys(present).filter((key) => key !== 'exchangeSource')
+  // A note alone is not a transport fact. The sender trail rides along with real
+  // freight data; on its own it must never turn a non-freight draft into one.
+  const facts = Object.keys(present).filter((key) => key !== 'exchangeSource' && key !== 'dispatchNote')
   if (facts.length === 0) return undefined
 
   const parsed = logisticsQuoteTransportSchema.safeParse(present)

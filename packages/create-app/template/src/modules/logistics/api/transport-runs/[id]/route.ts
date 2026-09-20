@@ -141,7 +141,7 @@ async function mapApprovedBackloadToAdditionalOrder(
     customerName: `${candidate.provider.toUpperCase()} · ${candidate.id}`,
     pickupAddress: candidate.from.name,
     deliveryAddress: candidate.to.name,
-    cargoPallets: 0,
+    cargoPallets: candidate.pallets > 0 ? candidate.pallets : 1,
     cargoWeightKg: Math.round(candidate.weightT * 1_000),
     clientPrice: candidate.price.amount,
     currencyCode: candidate.price.currency.toUpperCase(),

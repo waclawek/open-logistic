@@ -126,6 +126,7 @@ function backloadCandidate(): BackloadCandidate {
     to: { name: 'Szczecin', lat: 53.4, lng: 14.5 },
     price: { amount: 480, currency: 'EUR' },
     weightT: 8,
+    pallets: 11,
     summary: 'Doładunek@55km → Szczecin',
     samplePointIndex: 1,
     economics: {
@@ -309,7 +310,7 @@ test('approving a backload persists an approved additional order before advancin
         customerName: 'TIMOCOM · bl-1-0-55',
         pickupAddress: 'Doładunek@55km',
         deliveryAddress: 'Szczecin',
-        cargoPallets: 0,
+        cargoPallets: 11,
         cargoWeightKg: 8_000,
         clientPrice: 480,
         exchangeSource: 'timocom',

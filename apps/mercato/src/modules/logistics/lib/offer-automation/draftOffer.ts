@@ -193,6 +193,63 @@ async function resolveDraftStatusEntryId(ctx: DraftOfferExecutionContext): Promi
 }
 
 /**
+ * Puts the sender's address in the quote comments.
+ *
+ * The address is the only handle a salesperson has on an enquiry that arrived
+ * by email, and the quote carries it nowhere else once a customer record is
+ * linked and the snapshot is dropped. Appended, never substituted, so whatever
+ * the model wrote about the load survives.
+ */
+function withSenderTrail(notes: string | undefined, senderEmail: string | undefined): string | undefined {
+  const trimmedEmail = senderEmail?.trim()
+  if (!trimmedEmail) return notes
+  const trail = `Zapytanie z maila: ${trimmedEmail}`
+  const body = notes?.trim()
+  if (!body) return trail
+  if (body.includes(trimmedEmail)) return body
+  return `${body}\n\n${trail}`
+}
+
+/**
+ * Upserts the sender as a company customer so the quote links a real record
+ * instead of a throwaway snapshot.
+ *
+ * Only ever runs after a lookup by email found nothing, so it cannot produce a
+ * duplicate for an address already on file. A failure here is not fatal: the
+ * caller falls back to the snapshot it always wrote, and the quote still names
+ * who asked.
+ */
+async function createCustomerFromSender(
+  ctx: DraftOfferExecutionContext,
+  displayName: string,
+  senderEmail: string,
+): Promise<string | undefined> {
+  const primaryEmail = senderEmail.trim().toLowerCase()
+  if (!primaryEmail) return undefined
+  try {
+    const created = await executeCommand<Record<string, unknown>, { entityId?: string }>(
+      ctx as ExecutionHelperContext,
+      'customers.companies.create',
+      {
+        tenantId: ctx.tenantId,
+        organizationId: ctx.organizationId,
+        displayName: displayName.trim() || primaryEmail,
+        primaryEmail,
+        source: 'inbox_ops',
+      },
+    )
+    return created.entityId ?? undefined
+  } catch (error) {
+    logger.warn('Customer upsert from inbound enquiry failed; keeping the snapshot', {
+      tenantId: ctx.tenantId,
+      organizationId: ctx.organizationId,
+      reason: error instanceof Error ? error.message : String(error),
+    })
+    return undefined
+  }
+}
+
+/**
  * Smallest equivalent of core's `resolveFirstChannelId`.
  *
  * Core's public helper picks the first non-deleted channel by name and ignores
@@ -361,6 +418,7 @@ export async function createDraftOfferQuote(
   if (!customerEntityId && parsed.customerEmail) {
     customerEntityId =
       (await resolveCustomerEntityIdByEmail(ctx as ExecutionHelperContext, parsed.customerEmail)) ??
+      (await createCustomerFromSender(ctx, parsed.customerName, parsed.customerEmail)) ??
       undefined
   }
 
@@ -372,13 +430,13 @@ export async function createDraftOfferQuote(
     channelId,
     currencyCode,
     taxRateId: parsed.taxRateId,
-    comments: parsed.notes,
+    comments: withSenderTrail(parsed.notes, parsed.customerEmail),
     ...(options.metadata ? { metadata: options.metadata } : {}),
     lines,
   }
 
-  // No customer record yet: keep the sender on the quote as a snapshot so the
-  // salesperson still knows who asked, exactly as core does.
+  // The upsert above failed, or the email carried no address: keep the sender on
+  // the quote as a snapshot so the salesperson still knows who asked.
   if (!customerEntityId) {
     createInput.customerSnapshot = {
       displayName: parsed.customerName,
