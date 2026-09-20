@@ -1,5 +1,8 @@
 import { z } from 'zod'
 import type { OpenApiRouteDoc } from '@open-mercato/shared/lib/openapi'
+import type { CommandBus, CommandRuntimeContext } from '@open-mercato/shared/lib/commands'
+import { getCommandInterceptorHttpRejection } from '@open-mercato/shared/lib/commands/errors'
+import { isCrudHttpError } from '@open-mercato/shared/lib/crud/errors'
 import {
   advanceTruck,
   approveBackloadProposal,
@@ -21,10 +24,13 @@ import {
 import { resolveLogisticsRequestContext } from '../../../lib/request-context'
 import { logisticsResponse } from '../../response'
 import { readJsonSafe } from '@open-mercato/shared/lib/http/readJsonSafe'
+import type { TransportDetail } from '../../../types'
+import type { LogisticsRequestContext } from '../../../lib/request-context'
+import type { TransportRun } from '../../../lib/transport-run-model'
 
 export const metadata = {
   GET: { requireAuth: true, requireFeatures: ['logistics.view'] },
-  POST: { requireAuth: true, requireFeatures: ['logistics.view'] },
+  POST: { requireAuth: true, requireFeatures: ['logistics.manage'] },
 }
 
 type Ctx = { params: Promise<{ id: string }> }
@@ -81,11 +87,51 @@ const postSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('reject-backload'), reason: z.string().optional() }),
 ])
 
+async function mapApprovedCarrierToOrder2(
+  req: Request,
+  requestContext: LogisticsRequestContext,
+  run: TransportRun,
+): Promise<void> {
+  const proposal = run.approvedCarrier ?? run.carrierProposal
+  if (!run.sourceTransportId || !proposal) return
+  const vehicleCapacityKg = Math.max(
+    Math.round((proposal.vehicle?.capacityT ?? 24) * 1_000),
+    Math.round(run.agreedOffer.lane.weightT * 1_000),
+  )
+  const input = {
+    id: run.sourceTransportId,
+    carrierName: proposal.party.companyName,
+    carrierCost: proposal.priceEur ?? Math.round(run.agreedOffer.quoteNetEur * 0.72),
+    vehicleType: proposal.vehicle?.vehicleType ?? 'CURTAINSIDER',
+    vehicleCapacityPallets: Math.max(33, run.agreedOffer.lane.pallets ?? 0),
+    vehicleCapacityKg,
+    currencyCode: run.agreedOffer.currencyCode,
+    exchangeSource: proposal.provider,
+    exchangeRef: proposal.vehicle?.id ?? proposal.offerId ?? proposal.listingId ?? proposal.id,
+    note: proposal.rationale,
+  }
+  const commandContext: CommandRuntimeContext = {
+    container: requestContext.container,
+    auth: requestContext.auth,
+    organizationScope: requestContext.organizationScope,
+    selectedOrganizationId: requestContext.scope.organizationId,
+    organizationIds: requestContext.organizationScope.filterIds ?? [requestContext.scope.organizationId],
+    request: req,
+  }
+  const bus = requestContext.container.resolve<CommandBus>('commandBus')
+  await bus.execute<unknown, { item: TransportDetail }>(
+    'logistics.transports.approve_agent_carrier',
+    { input, ctx: commandContext },
+  )
+}
+
 export async function POST(req: Request, ctx: Ctx) {
   return logisticsResponse(async () => {
-    const { scope } = await resolveLogisticsRequestContext(req)
+    const requestContext = await resolveLogisticsRequestContext(req)
+    const { scope } = requestContext
     const { id } = await ctx.params
-    if (!getTransportRun(id, scope)) return Response.json({ error: 'not_found' }, { status: 404 })
+    const currentRun = getTransportRun(id, scope)
+    if (!currentRun) return Response.json({ error: 'not_found' }, { status: 404 })
 
     try {
       const body = await readJsonSafe(req, {})
@@ -117,6 +163,11 @@ export async function POST(req: Request, ctx: Ctx) {
             humanGate: 'carrier_proposal_pending — human2 must approve',
           })
         case 'approve-carrier':
+          if (currentRun.approvedCarrier) {
+            await mapApprovedCarrierToOrder2(req, requestContext, currentRun)
+            return Response.json({ run: toTransportRunView(currentRun) })
+          }
+          await mapApprovedCarrierToOrder2(req, requestContext, currentRun)
           return Response.json({
             run: toTransportRunView(approveCarrierProposal(id, a.approvedBy ?? 'human2')),
           })
@@ -163,6 +214,7 @@ export async function POST(req: Request, ctx: Ctx) {
           return Response.json({ error: 'unsupported_action' }, { status: 400 })
       }
     } catch (err) {
+      if (isCrudHttpError(err) || getCommandInterceptorHttpRejection(err)) throw err
       return Response.json(
         { error: 'action_failed', message: err instanceof Error ? err.message : String(err) },
         { status: 422 },

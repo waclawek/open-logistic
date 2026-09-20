@@ -39,6 +39,9 @@ scoped, which makes directly connecting the event unsafe.
   are ignored because they do not load as Logistics client transports.
 - Emit the additive `logistics.transport_run.started` lifecycle event after a run is created and
   refresh Agent Inbox through `useAppEvent`, not a new polling loop.
+- When a human approves an Agent Inbox carrier proposal for a Sales-backed run, execute one
+  Logistics transport command that atomically creates the approved Sales carrier child as Order 2.
+  Persist first; only then advance the process-local run. Manual demo runs remain in-memory only.
 - Keep the existing button as a demo/manual fallback, but scope its run to the current request.
 
 ## Architecture
@@ -98,6 +101,15 @@ continues, now with request scope. No migration or backfill is required.
 3. Refresh the Agent Inbox when the event arrives.
 4. Mirror app-module changes into the create-app template.
 
+### Phase 3: Persist an approved carrier as Order 2
+
+1. Map the selected carrier company, price, exchange reference, vehicle type, and capacity to the
+   existing Sales-backed carrier order fields.
+2. Create the child with `transport_role=carrier`, `transport_order_number=2`, parent transport ID,
+   and `approved` status through the Logistics command layer.
+3. Advance the in-memory run only after the Sales transaction succeeds; make a repeated command
+   harmless when the same exchange reference is already mapped.
+
 ### Deferred production hardening
 
 1. Persist transport-run snapshots with optimistic locking and encrypted sensitive fields.
@@ -116,6 +128,9 @@ continues, now with request scope. No migration or backfill is required.
 - Agent Inbox refreshes after the browser receives `logistics.transport_run.started`.
 - Converted Sales transports show their source order number and are distinguishable from random
   demo jobs and random carrier candidates.
+- Approving a real run persists the selected carrier as approved Order 2 before the agent run moves
+  past the human gate; a persistence failure leaves the proposal pending.
+- Approving a manual demo run does not create a Sales order.
 
 ## Risks & Impact Review
 
@@ -198,8 +213,9 @@ deferred and is not represented as complete.
 - `yarn generate` — passed; subscriber registries include both new handlers. OpenAPI generation
   used its documented fallback after a Windows `spawn EPERM`.
 - `yarn tsc --noEmit --incremental false -p apps/mercato/tsconfig.json` — passed.
-- Focused Logistics Jest suite (mapping, scope/idempotency, both source events, quote conversion
-  interceptor, and visible source-order identity) — 5 suites and 13 tests passed.
+- Focused Logistics Jest suites cover mapping, scope/idempotency, both source events, quote
+  conversion, visible source-order identity, command persistence, and endpoint ordering — 7 suites
+  and 21 tests passed.
 - `yarn template:sync` — passed after mirroring the app module.
 - Targeted create-app `template-modules-parity.test.ts` — 3 tests passed (the sandboxed
   invocation hit Windows `spawn EPERM`; the approved retry passed).
@@ -218,3 +234,5 @@ deferred and is not represented as complete.
   because the core conversion command does not emit the normal Sales order-created event.
 - Labeled converted runs with their Sales order number and auto-selected newly broadcast runs so
   operators do not confuse the source order with intentionally random carrier proposals.
+- Persisted approved Agent Inbox carriers as approved Sales-backed Order 2 records through an
+  idempotent Logistics transport command, before changing the in-memory run state.

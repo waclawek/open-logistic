@@ -20,7 +20,7 @@ import { logisticsError, nextVersion } from '../lib/server-domain'
 import type { TransportDetail, TransportOrder } from '../types'
 
 type Result = { item: TransportDetail; before?: TransportDetail; relatedBefore?: unknown; relatedAfter?: unknown }
-type SalesAction = 'create' | 'delete' | 'decide' | 'propose_carrier' | 'propose_load'
+type SalesAction = 'create' | 'delete' | 'decide' | 'propose_carrier' | 'propose_load' | 'approve_agent_carrier'
 
 async function lockOrder(transaction: SalesTransaction, scope: TransportScope, id: string, expected?: string | null) {
   const order = await findOneWithDecryption(transaction.em, SalesOrder, { ...scope, id, deletedAt: null }, { lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true }, scope)
@@ -83,6 +83,45 @@ async function propose(transaction: SalesTransaction, scope: TransportScope, par
         cargo_pallets: input.cargoPallets, cargo_weight_kg: input.cargoWeightKg, client_price: input.clientPrice, exchange_source: input.exchangeSource, exchange_ref: input.exchangeRef ?? null, dispatch_note: input.note ?? null },
     })
   }
+}
+
+async function approveAgentCarrier(
+  transaction: SalesTransaction,
+  scope: TransportScope,
+  parent: SalesOrder,
+  detail: TransportDetail,
+  raw: unknown,
+) {
+  const input = carrierProposalSchema.parse(raw)
+  if (detail.order2) {
+    const alreadyMapped = detail.order2.status === 'approved'
+      && input.exchangeRef
+      && detail.order2.fields.exchange_ref === input.exchangeRef
+    if (alreadyMapped) return
+    return logisticsError(409, 'carrierAlreadyProposed')
+  }
+  await createOrder(transaction, scope, {
+    name: detail.order1.orderNumber,
+    customerId: input.carrierCustomerId,
+    customerName: input.carrierName,
+    currencyCode: input.currencyCode ?? parent.currencyCode,
+    price: input.carrierCost,
+    status: 'approved',
+    channelId: parent.channelId ?? await channelId(transaction.em, scope),
+    fields: {
+      transport_role: 'carrier',
+      transport_parent_id: parent.id,
+      transport_order_number: 2,
+      vehicle_type: input.vehicleType,
+      vehicle_plate: input.vehiclePlate ?? null,
+      vehicle_capacity_pallets: input.vehicleCapacityPallets,
+      vehicle_capacity_kg: input.vehicleCapacityKg,
+      carrier_cost: input.carrierCost,
+      exchange_source: input.exchangeSource,
+      exchange_ref: input.exchangeRef ?? null,
+      dispatch_note: input.note ?? null,
+    },
+  })
 }
 
 async function decide(transaction: SalesTransaction, scope: TransportScope, parent: SalesOrder, detail: TransportDetail, raw: unknown) {
@@ -177,6 +216,7 @@ function handler(action: SalesAction): CommandHandler<unknown, Result> {
           return { item: before, before }
         }
         if (action === 'decide') await decide(transaction, scope, parent, before, raw)
+        else if (action === 'approve_agent_carrier') await approveAgentCarrier(transaction, scope, parent, before, raw)
         else await propose(transaction, scope, parent, before, action, raw)
         await touchParent(transaction, scope, parent)
         transaction.em.clear()
@@ -192,7 +232,7 @@ function handler(action: SalesAction): CommandHandler<unknown, Result> {
   }
 }
 
-export const salesTransportCommands = (['create', 'delete', 'decide', 'propose_carrier', 'propose_load'] as const).map(handler)
+export const salesTransportCommands = (['create', 'delete', 'decide', 'propose_carrier', 'propose_load', 'approve_agent_carrier'] as const).map(handler)
 for (const command of salesTransportCommands) registerCommand(command)
 
 registerCommand({
