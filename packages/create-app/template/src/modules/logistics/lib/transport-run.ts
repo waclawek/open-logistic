@@ -493,6 +493,14 @@ export function approveCarrierProposal(runId: string, approvedBy = 'human2'): Tr
   run.approvedCarrier = run.carrierProposal
   run.approvedAt = new Date().toISOString()
   run.approvedBy = approvedBy
+  const vehicleCapacityT = run.carrierProposal.vehicle?.capacityT
+  if (run.orderId && vehicleCapacityT != null) {
+    const order = getOrder(run.orderId)
+    if (order) {
+      order.capacity = deriveCapacity({ ...order.capacity, maxWeightT: vehicleCapacityT })
+      order.updatedAt = new Date().toISOString()
+    }
+  }
   enterStage(run, 'approved')
   touch(run, 'carrier_approved', `by ${approvedBy}`)
   return run

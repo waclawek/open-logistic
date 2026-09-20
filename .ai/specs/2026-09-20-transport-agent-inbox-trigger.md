@@ -42,6 +42,11 @@ scoped, which makes directly connecting the event unsafe.
 - When a human approves an Agent Inbox carrier proposal for a Sales-backed run, execute one
   Logistics transport command that atomically creates the approved Sales carrier child as Order 2.
   Persist first; only then advance the process-local run. Manual demo runs remain in-memory only.
+- When a human approves an Agent Inbox backload for a Sales-backed run, map the freight candidate
+  into an approved additional Sales child order. Use its exchange candidate ID for idempotency and
+  persist before advancing the process-local run.
+- Apply the approved carrier vehicle's weight capacity to the in-memory trip before searching for
+  backloads, so a proposal that fits the Agent Inbox also fits the persisted transport.
 - Keep the existing button as a demo/manual fallback, but scope its run to the current request.
 
 ## Architecture
@@ -110,6 +115,18 @@ continues, now with request scope. No migration or backfill is required.
 3. Advance the in-memory run only after the Sales transaction succeeds; make a repeated command
    harmless when the same exchange reference is already mapped.
 
+### Phase 4: Persist an approved backload as an additional order
+
+1. Map the selected freight route, weight, revenue, provider, exchange reference, and agent
+   evaluation onto the existing additional-load Sales fields.
+2. Apply the selected carrier vehicle capacity to the demo trip before candidate search.
+3. Create the child with `transport_role=additional_load`, the next transport order number, parent
+   transport ID, and `approved` status through the Logistics command layer.
+4. Validate the approved carrier and remaining capacity, but treat the Inbox's agreed client offer
+   as the client commitment even when the converted Sales order lacks a resolved status value.
+5. Advance the in-memory run only after persistence succeeds; make replay and repair idempotent by
+   exchange candidate ID. Manual demo runs remain in-memory only.
+
 ### Deferred production hardening
 
 1. Persist transport-run snapshots with optimistic locking and encrypted sensitive fields.
@@ -131,6 +148,10 @@ continues, now with request scope. No migration or backfill is required.
 - Approving a real run persists the selected carrier as approved Order 2 before the agent run moves
   past the human gate; a persistence failure leaves the proposal pending.
 - Approving a manual demo run does not create a Sales order.
+- Approving a real backload persists it as an approved additional load before the run advances.
+- Backload search uses the approved carrier vehicle capacity rather than the default demo capacity.
+- Repeating approval repairs a missing latest accepted load without creating duplicates.
+- Capacity-only exchange signals cannot be persisted as freight loads.
 
 ## Risks & Impact Review
 
@@ -215,7 +236,7 @@ deferred and is not represented as complete.
 - `yarn tsc --noEmit --incremental false -p apps/mercato/tsconfig.json` — passed.
 - Focused Logistics Jest suites cover mapping, scope/idempotency, both source events, quote
   conversion, visible source-order identity, command persistence, and endpoint ordering — 7 suites
-  and 21 tests passed.
+  and 27 tests passed.
 - `yarn template:sync` — passed after mirroring the app module.
 - Targeted create-app `template-modules-parity.test.ts` — 3 tests passed (the sandboxed
   invocation hit Windows `spawn EPERM`; the approved retry passed).
@@ -236,3 +257,7 @@ deferred and is not represented as complete.
   operators do not confuse the source order with intentionally random carrier proposals.
 - Persisted approved Agent Inbox carriers as approved Sales-backed Order 2 records through an
   idempotent Logistics transport command, before changing the in-memory run state.
+- Persisted approved Agent Inbox freight backloads as approved Sales-backed additional orders,
+  retaining the provider candidate reference for idempotency and repair.
+- Aligned the in-memory trip capacity with the approved carrier vehicle so newly proposed loads fit
+  the same capacity enforced by the persistent transport.

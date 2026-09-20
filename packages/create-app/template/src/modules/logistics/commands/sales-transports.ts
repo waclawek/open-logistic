@@ -20,7 +20,7 @@ import { logisticsError, nextVersion } from '../lib/server-domain'
 import type { TransportDetail, TransportOrder } from '../types'
 
 type Result = { item: TransportDetail; before?: TransportDetail; relatedBefore?: unknown; relatedAfter?: unknown }
-type SalesAction = 'create' | 'delete' | 'decide' | 'propose_carrier' | 'propose_load' | 'approve_agent_carrier'
+type SalesAction = 'create' | 'delete' | 'decide' | 'propose_carrier' | 'propose_load' | 'approve_agent_carrier' | 'approve_agent_backload'
 
 async function lockOrder(transaction: SalesTransaction, scope: TransportScope, id: string, expected?: string | null) {
   const order = await findOneWithDecryption(transaction.em, SalesOrder, { ...scope, id, deletedAt: null }, { lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true }, scope)
@@ -42,13 +42,17 @@ export function nextLoadNumber(detail: TransportDetail): number {
   return Math.max(2, ...detail.additionalLoads.map((order) => typeof order.fields.transport_order_number === 'number' ? order.fields.transport_order_number : 2)) + 1
 }
 
-export async function assertLoadFits(detail: TransportDetail, pallets: number, kg: number): Promise<void> {
-  if (detail.order1.status !== 'confirmed' || detail.order2?.status !== 'approved') return logisticsError(409, 'carrierNotConfirmed')
+async function assertLoadCapacity(detail: TransportDetail, pallets: number, kg: number, requireConfirmedClient: boolean): Promise<void> {
+  if ((requireConfirmedClient && detail.order1.status !== 'confirmed') || detail.order2?.status !== 'approved') return logisticsError(409, 'carrierNotConfirmed')
   const cargoOrders = [detail.order1, ...detail.additionalLoads.filter((order) => order.status === 'approved')]
   const hasValidCargo = cargoOrders.every((order) => cargoSchema.safeParse({ palletSpaces: order.fields.cargo_pallets, weightKg: order.fields.cargo_weight_kg }).success)
   const hasValidCapacity = cargoSchema.safeParse({ palletSpaces: detail.order2.fields.vehicle_capacity_pallets, weightKg: detail.order2.fields.vehicle_capacity_kg }).success
   if (!hasValidCargo || !hasValidCapacity) return logisticsError(400, 'invalidCargo')
   if (!detail.freeSpace || detail.freeSpace.kg === null || detail.freeSpace.pallets === null || kg > detail.freeSpace.kg || pallets > detail.freeSpace.pallets) return logisticsError(409, 'insufficientCapacity')
+}
+
+export async function assertLoadFits(detail: TransportDetail, pallets: number, kg: number): Promise<void> {
+  return assertLoadCapacity(detail, pallets, kg, true)
 }
 
 async function updateStatus(transaction: SalesTransaction, scope: TransportScope, order: TransportOrder, status: string) {
@@ -117,6 +121,48 @@ async function approveAgentCarrier(
       vehicle_capacity_pallets: input.vehicleCapacityPallets,
       vehicle_capacity_kg: input.vehicleCapacityKg,
       carrier_cost: input.carrierCost,
+      exchange_source: input.exchangeSource,
+      exchange_ref: input.exchangeRef ?? null,
+      dispatch_note: input.note ?? null,
+    },
+  })
+}
+
+async function approveAgentBackload(
+  transaction: SalesTransaction,
+  scope: TransportScope,
+  parent: SalesOrder,
+  detail: TransportDetail,
+  raw: unknown,
+) {
+  const input = additionalLoadProposalSchema.parse(raw)
+  const existing = input.exchangeRef
+    ? detail.additionalLoads.find((order) => order.fields.exchange_ref === input.exchangeRef)
+    : null
+  if (existing) {
+    if (existing.status === 'approved') return
+    return logisticsError(409, 'offerUnavailable')
+  }
+  await assertLoadCapacity(detail, input.cargoPallets, input.cargoWeightKg, false)
+  await createOrder(transaction, scope, {
+    name: detail.order1.orderNumber,
+    customerId: input.customerId,
+    customerName: input.customerName,
+    currencyCode: input.currencyCode ?? parent.currencyCode,
+    price: input.clientPrice,
+    status: 'approved',
+    channelId: parent.channelId ?? await channelId(transaction.em, scope),
+    fields: {
+      transport_role: 'additional_load',
+      transport_parent_id: parent.id,
+      transport_order_number: nextLoadNumber(detail),
+      pickup_address: input.pickupAddress,
+      delivery_address: input.deliveryAddress,
+      pickup_window_start: input.pickupWindowStart ?? null,
+      pickup_window_end: input.pickupWindowEnd ?? null,
+      cargo_pallets: input.cargoPallets,
+      cargo_weight_kg: input.cargoWeightKg,
+      client_price: input.clientPrice,
       exchange_source: input.exchangeSource,
       exchange_ref: input.exchangeRef ?? null,
       dispatch_note: input.note ?? null,
@@ -217,6 +263,7 @@ function handler(action: SalesAction): CommandHandler<unknown, Result> {
         }
         if (action === 'decide') await decide(transaction, scope, parent, before, raw)
         else if (action === 'approve_agent_carrier') await approveAgentCarrier(transaction, scope, parent, before, raw)
+        else if (action === 'approve_agent_backload') await approveAgentBackload(transaction, scope, parent, before, raw)
         else await propose(transaction, scope, parent, before, action, raw)
         await touchParent(transaction, scope, parent)
         transaction.em.clear()
@@ -232,7 +279,7 @@ function handler(action: SalesAction): CommandHandler<unknown, Result> {
   }
 }
 
-export const salesTransportCommands = (['create', 'delete', 'decide', 'propose_carrier', 'propose_load', 'approve_agent_carrier'] as const).map(handler)
+export const salesTransportCommands = (['create', 'delete', 'decide', 'propose_carrier', 'propose_load', 'approve_agent_carrier', 'approve_agent_backload'] as const).map(handler)
 for (const command of salesTransportCommands) registerCommand(command)
 
 registerCommand({

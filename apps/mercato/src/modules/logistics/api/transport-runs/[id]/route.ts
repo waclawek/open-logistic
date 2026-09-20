@@ -27,6 +27,7 @@ import { readJsonSafe } from '@open-mercato/shared/lib/http/readJsonSafe'
 import type { TransportDetail } from '../../../types'
 import type { LogisticsRequestContext } from '../../../lib/request-context'
 import type { TransportRun } from '../../../lib/transport-run-model'
+import { logisticsError } from '../../../lib/server-domain'
 
 export const metadata = {
   GET: { requireAuth: true, requireFeatures: ['logistics.view'] },
@@ -125,6 +126,42 @@ async function mapApprovedCarrierToOrder2(
   )
 }
 
+async function mapApprovedBackloadToAdditionalOrder(
+  req: Request,
+  requestContext: LogisticsRequestContext,
+  run: TransportRun,
+): Promise<void> {
+  const candidate = run.backloadProposal?.candidate ?? run.acceptedBackloads.at(-1)
+  if (!run.sourceTransportId || !candidate) return
+  if (candidate.kind !== 'freight') return logisticsError(409, 'invalidInput')
+  const input = {
+    id: run.sourceTransportId,
+    customerName: `${candidate.provider.toUpperCase()} · ${candidate.id}`,
+    pickupAddress: candidate.from.name,
+    deliveryAddress: candidate.to.name,
+    cargoPallets: 0,
+    cargoWeightKg: Math.round(candidate.weightT * 1_000),
+    clientPrice: candidate.price.amount,
+    currencyCode: candidate.price.currency.toUpperCase(),
+    exchangeSource: candidate.provider,
+    exchangeRef: candidate.id,
+    note: run.backloadProposal?.evaluation ?? candidate.economics.rationale,
+  }
+  const commandContext: CommandRuntimeContext = {
+    container: requestContext.container,
+    auth: requestContext.auth,
+    organizationScope: requestContext.organizationScope,
+    selectedOrganizationId: requestContext.scope.organizationId,
+    organizationIds: requestContext.organizationScope.filterIds ?? [requestContext.scope.organizationId],
+    request: req,
+  }
+  const bus = requestContext.container.resolve<CommandBus>('commandBus')
+  await bus.execute<unknown, { item: TransportDetail }>(
+    'logistics.transports.approve_agent_backload',
+    { input, ctx: commandContext },
+  )
+}
+
 export async function POST(req: Request, ctx: Ctx) {
   return logisticsResponse(async () => {
     const requestContext = await resolveLogisticsRequestContext(req)
@@ -203,6 +240,11 @@ export async function POST(req: Request, ctx: Ctx) {
             humanGate: 'backload_proposal_pending — human2 must approve',
           })
         case 'approve-backload':
+          if (!currentRun.backloadProposal && currentRun.acceptedBackloads.length) {
+            await mapApprovedBackloadToAdditionalOrder(req, requestContext, currentRun)
+            return Response.json({ run: toTransportRunView(currentRun) })
+          }
+          await mapApprovedBackloadToAdditionalOrder(req, requestContext, currentRun)
           return Response.json({
             run: toTransportRunView(approveBackloadProposal(id, a.approvedBy ?? 'human2')),
           })
