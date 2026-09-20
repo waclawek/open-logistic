@@ -31,7 +31,16 @@ import { metadata as proposalsDisruptionsMetadata } from '../backend/logistics/p
 
 jest.mock('next/navigation', () => ({ redirect: jest.fn() }))
 jest.mock('../components/TransportsTable', () => ({ TransportsTable: () => <div data-testid="transports-table" /> }))
-
+jest.mock('../components/TransportOrderRouteMap', () => ({
+  TransportOrderRouteMap: () => <div data-testid="transport-order-route-map" />,
+}))
+jest.mock('../components/LogisticsAgentInbox', () => ({
+  LogisticsAgentInbox: () => <div data-testid="logistics-agent-inbox" />,
+}))
+jest.mock('@open-mercato/ui/backend/utils/apiCall', () => ({
+  readApiResultOrThrow: jest.fn(async () => ({ items: [], total: 0 })),
+  apiCallOrThrow: jest.fn(async () => ({ ok: true, result: { order: null }, status: 200 })),
+}))
 
 const pages = [
   { id: 'dashboard', path: '/backend/logistics', Component: DashboardPage, metadata: dashboardMetadata },
@@ -59,13 +68,16 @@ describe('Logistics navigation foundation', () => {
     expect(setup.defaultRoleFeatures?.admin).toContain('logistics.view')
   })
 
-  test('shows exactly the inbox and transports routes in the sidebar', () => {
+  test('shows the two logistics-owned operational routes in the sidebar', () => {
     const visiblePages = pages.filter(({ metadata }) => !('navHidden' in metadata && metadata.navHidden))
-    expect(visiblePages.map(({ path }) => path)).toEqual(['/backend/logistics/ai-inbox', '/backend/logistics/transports'])
-    expect(visiblePages.map(({ metadata }) => metadata.pageOrder)).toEqual([10, 20])
+    expect(visiblePages.map(({ path }) => path)).toEqual([
+      '/backend/logistics/transports',
+      '/backend/logistics/proposals-disruptions',
+    ])
+    expect(visiblePages.map(({ metadata }) => metadata.pageOrder)).toEqual([20, 40])
     expect(visiblePages.map(({ metadata }) => metadata.pageTitleKey)).toEqual([
-      'logistics.dispatcher.inbox',
       'logistics.dispatcher.transports',
+      'logistics.proposalsDisruptions.title',
     ])
   })
 
@@ -83,7 +95,7 @@ describe('Logistics navigation foundation', () => {
 
   describe.each(['en', 'pl', 'de', 'es', 'ko'] as const)('%s locale', (locale) => {
     const dict = dictionaries[locale]
-    test.each(pages.slice(3))('$path displays its translated purpose and honest availability', ({ id, Component }) => {
+    test.each(pages.slice(4, 8))('$path displays its translated purpose and honest availability', ({ id, Component }) => {
       const { container } = render(
         <I18nProvider locale={locale} dict={dict}>
           <Component />
@@ -103,6 +115,31 @@ describe('Logistics navigation foundation', () => {
     test('translates both sidebar entries', () => {
       expect(dict[dashboardMetadata.pageTitleKey]).toBeTruthy()
       expect(dict[transportsMetadata.pageTitleKey]).toBeTruthy()
+    })
+
+    test('transport-jobs page exposes demo order actions', () => {
+      const TransportJobsPage = transportJobsPage
+      render(
+        <I18nProvider locale={locale} dict={dict}>
+          <TransportJobsPage />
+        </I18nProvider>,
+      )
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(dict['logistics.transportJobs.title'])
+      expect(screen.getByText(dict['logistics.transportJobs.description'])).toBeVisible()
+      expect(screen.getByTestId('logistics-orders-demo')).toHaveTextContent(dict['logistics.orders.createWawPoz'])
+      expect(screen.getByTestId('logistics-orders-from-inbox')).toHaveTextContent(dict['logistics.orders.importInbox'])
+      expect(screen.getByRole('link', { name: dict['logistics.back'] })).toHaveAttribute('href', '/backend/logistics')
+    })
+
+    test('proposals page exposes the agent inbox', () => {
+      const ProposalsDisruptionsPage = proposalsDisruptionsPage
+      render(
+        <I18nProvider locale={locale} dict={dict}>
+          <ProposalsDisruptionsPage />
+        </I18nProvider>,
+      )
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(dict['logistics.proposalsDisruptions.title'])
+      expect(screen.getByTestId('logistics-agent-inbox')).toBeInTheDocument()
     })
   })
 })

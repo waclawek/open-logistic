@@ -17,6 +17,10 @@ import type {
   TransportRole,
   TransportRow,
 } from '../types'
+import {
+  transportFieldsFromMetadata,
+  transportRoleFromMetadata,
+} from './transport-metadata'
 
 export const SALES_ORDER_ENTITY_ID = 'sales:sales_order'
 export const COMPANY_PROFILE_ENTITY_ID = 'customers:customer_company_profile'
@@ -249,27 +253,48 @@ async function loadReadModel(em: EntityManager, scope: TransportScope, transport
     fieldKey: 'transport_role',
     deletedAt: null,
   })
-  const roleByOrderId = new Map<string, TransportRole>()
+  const legacyRoleByOrderId = new Map<string, TransportRole>()
   for (const row of roleRows) {
     const value = fieldValue(row)
     if (value === 'client' || value === 'carrier' || value === 'additional_load') {
-      roleByOrderId.set(row.recordId, value)
+      legacyRoleByOrderId.set(row.recordId, value)
     }
   }
-  const clientOrderIds = [...roleByOrderId.entries()]
-    .filter(([, role]) => role === 'client')
-    .map(([orderId]) => orderId)
-
-  const transportOrderIds = transportId ? [...new Set([transportId, ...parentRows.map((row) => row.recordId)])] : [...roleByOrderId.keys()]
-  const orders = transportOrderIds.length > 0
+  const metadataCandidates = await findWithDecryption(em, SalesOrder, {
+    ...(transportId
+      ? { id: transportId }
+      : { metadata: { $ne: null } }),
+    tenantId: scope.tenantId,
+    organizationId: scope.organizationId,
+    deletedAt: null,
+  })
+  const metadataOrders = transportId
+    ? metadataCandidates
+    : metadataCandidates.filter((order) => transportRoleFromMetadata(order.metadata) !== null)
+  const metadataOrderById = new Map(metadataOrders.map((order) => [order.id, order]))
+  const legacyTransportOrderIds = transportId
+    ? [...new Set([transportId, ...parentRows.map((row) => row.recordId)])]
+    : [...legacyRoleByOrderId.keys()]
+  const missingLegacyOrderIds = legacyTransportOrderIds.filter((orderId) => !metadataOrderById.has(orderId))
+  const legacyOrders = missingLegacyOrderIds.length > 0
     ? await findWithDecryption(em, SalesOrder, {
-        id: { $in: transportOrderIds },
+        id: { $in: missingLegacyOrderIds },
         tenantId: scope.tenantId,
         organizationId: scope.organizationId,
         deletedAt: null,
       })
     : []
+  const orders = [...metadataOrders, ...legacyOrders]
   const orderById = new Map(orders.map((order) => [order.id, order]))
+  const transportOrderIds = [...orderById.keys()]
+  const roleByOrderId = new Map(legacyRoleByOrderId)
+  for (const order of orders) {
+    const metadataRole = transportRoleFromMetadata(order.metadata)
+    if (metadataRole) roleByOrderId.set(order.id, metadataRole)
+  }
+  const clientOrderIds = [...roleByOrderId.entries()]
+    .filter(([, role]) => role === 'client')
+    .map(([orderId]) => orderId)
   const liveClientOrderIds = clientOrderIds.filter((orderId) => orderById.has(orderId))
   if (!transportId && liveClientOrderIds.length > MAX_TRANSPORTS_PER_ORGANIZATION) throw new TooManyTransportsError(liveClientOrderIds.length)
   const customerIds = Array.from(new Set(
@@ -309,10 +334,14 @@ async function loadReadModel(em: EntityManager, scope: TransportScope, transport
   }
   const fieldsByOrderId = await fieldsFor(SALES_ORDER_ENTITY_ID, transportOrderIds)
   const companyFieldsByProfileId = await fieldsFor(COMPANY_PROFILE_ENTITY_ID, profileIds)
-  for (const [orderId, role] of roleByOrderId) {
-    const fields = fieldsByOrderId.get(orderId) ?? {}
-    fields.transport_role = role
-    fieldsByOrderId.set(orderId, fields)
+  for (const order of orders) {
+    const fields = {
+      ...(fieldsByOrderId.get(order.id) ?? {}),
+      ...transportFieldsFromMetadata(order.metadata),
+    }
+    const role = roleByOrderId.get(order.id)
+    if (role) fields.transport_role = role
+    fieldsByOrderId.set(order.id, fields)
   }
   const companyById = new Map<string, CompanyView>()
   for (const company of companies) {

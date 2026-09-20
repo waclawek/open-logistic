@@ -7,11 +7,14 @@
 | Transport details and decisions | `/backend/logistics/transports/:id` | `logistics.view`; decisions also `logistics.manage` |
 | Development webhook diagnostics | `/backend/trans_inbox` | `trans_inbox.view` |
 
-The transport source is Sales orders with logistics custom fields. Order 1 is the
-customer order, Order 2 is the current carrier order, and Order 3 onward are
-additional-load orders linked by `transport_parent_id`. Carrier replacements retain
-rejected history. Offers remain persistent LogisticsOffer records. Accepted offers
-produce Sales additional-load orders; rejected offers cannot be allocated.
+The transport source is Sales orders. Existing records use Logistics custom fields;
+Inbox-created client quotes use a versioned `metadata.logistics` envelope that the
+standard Sales Quote → Order conversion copies unchanged. AI Transports reads both
+forms. Order 1 is the customer order, Order 2 is the current carrier order, and
+Order 3 onward are additional-load orders linked by `transport_parent_id`. Carrier
+replacements retain rejected history. Offers remain persistent LogisticsOffer
+records. Accepted offers produce Sales additional-load orders; rejected offers
+cannot be allocated.
 
 The detail page shows customer/carrier prices, vehicle, kg and pallet capacity,
 pickup/delivery, source, carrier history and additional loads. Approval/rejection and
@@ -27,12 +30,24 @@ notifications and indexing are released after commit and discarded after rollbac
 The prices are transport custom fields; the panel does not create invoice lines or
 settlement documents.
 
-The two visible navigation entries use `/backend/logistics/ai-inbox` and
-`/backend/logistics/transports`; the root URL remains a hidden redirect alias.
+The Logistics group contains the canonical Inbox Ops **Proposals** page at
+`/backend/inbox-ops`, plus `/backend/logistics/transports` and
+`/backend/logistics/proposals-disruptions`. An app-level route metadata override
+places Inbox Ops list, detail, settings, and log pages in the Logistics group without
+coupling the reusable core module to Logistics. The root URL and
+`/backend/logistics/ai-inbox` remain hidden redirect aliases.
 
-Legacy URLs `transport-jobs`, `fleet`, `trips`, `map`, `statistics` and
-`proposals-disruptions` remain accessible under `/backend/logistics` and continue to
-show planned capabilities. They are hidden from navigation.
+Transport RFQs keep the standard Inbox `create_quote` action. The Logistics app
+adds extraction guidance for pickup/delivery, windows, cargo and customer price,
+then a command interceptor attaches `metadata.logistics` before the existing
+`sales.quotes.create` command runs. The internal version, kind and client role are
+system-assigned; they are not inferred from customer text. No Sales package source
+or separate transport entity is required.
+
+Legacy URLs `fleet`, `trips`, `map`, and `statistics` remain accessible under
+`/backend/logistics` and continue to show planned capabilities. They are hidden from
+navigation. `/backend/logistics/transport-jobs` hosts a separate process-local
+GraphHopper and Trans inbox demonstration and does not create Sales-backed transports.
 
 ## Enable and configure
 
@@ -96,6 +111,33 @@ Trans.eu, TIMOCOM and Eurodebt simulator traffic. It does not turn webhook bodie
 business orders. See [the simulator playbook](../../../../../.ai/docs/exchange-simulators-agent-playbook.md)
 and `tools/` for commands. GraphHopper is an independent car-routing demonstration,
 not a production truck-routing integration.
+
+The transport-jobs demo uses the live GraphHopper service on port 8989 when available
+and falls back to the committed Warszawa-to-Poznań route fixture. Creating a demo
+order also posts it to the development Trans inbox. The matching simulator scenario
+can be sent with:
+
+```sh
+TARGET_BASE_URL=http://127.0.0.1:3000 \
+TRANS_INBOX_TOKEN=<same-random-token-as-the-server> \
+yarn trans:sim run tools/trans-api-simulator/scenarios/waw-poz-order.yaml
+```
+
+The demo API is `GET|POST|DELETE /api/logistics/orders` and requires
+`logistics.view`.
+
+The prototype exchange API under `/api/logistics/exchange/*` provides an endpoint
+catalog, offer acceptance, carrier searches, nearby vehicles and route-corridor
+backloads for the process-local demo. The Carrier Finder
+(`logistics.carrier_finder`) and Load Optimizer (`logistics.load_optimizer`) agents
+use the same demo model. Their background transport runs and human-approval cards are
+available at `/backend/logistics/proposals-disruptions` through
+`/api/logistics/transport-runs/*`. This prototype is separate from the persisted
+Sales-backed transport and decision workflow described above.
+
+See [the simulator playbook](../../../../../.ai/docs/exchange-simulators-agent-playbook.md)
+and [the agent evaluation inputs](../../../../../.ai/docs/logistics-agent-evaluation-inputs.md)
+for the endpoint map, scenarios, model configuration and known production gaps.
 
 ## Verification
 

@@ -6,6 +6,6 @@ export const metadata = {
   pageTitleKey: 'logistics.transportJobs.title',
   pageGroup: 'Logistics',
   pageGroupKey: 'logistics.nav.group',
-  pageOrder: 20,
+  pageOrder: 30,
   icon: 'clipboard-list',
 }

@@ -19,7 +19,7 @@ test.describe('Logistics page navigation', () => {
       await link.click()
       await expect(page).toHaveURL(section.tab === 'inbox' ? '/backend/inbox-ops' : section.path)
       await expectPlannedPage(page, section)
-      await expect(sidebar.locator('a[href="/backend/logistics"], a[href^="/backend/logistics/"]')).toHaveCount(2)
+      await expect(sidebar.locator('a[href="/backend/logistics"], a[href^="/backend/logistics/"]')).toHaveCount(4)
     })
   }
 

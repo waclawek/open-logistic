@@ -1,6 +1,6 @@
 import { expect, expectPlannedPage, menuSections, test } from './helpers/fixtures'
 
-test('the standard mobile menu and keyboard links reach both logistics screens', async ({ page, logistics }) => {
+test('the standard mobile menu and keyboard links reach all logistics screens', async ({ page, logistics }) => {
   expect(logistics.organizationId).toBeTruthy()
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto(menuSections[0].path)
