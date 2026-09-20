@@ -88,12 +88,25 @@ const postSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('reject-backload'), reason: z.string().optional() }),
 ])
 
-async function mapApprovedCarrierToOrder2(
+type PersistMode = 'propose' | 'approve'
+
+/** A Sales 409 means the child already exists in another state; the in-memory run must still continue. */
+async function ignoreConflict(work: () => Promise<unknown>): Promise<void> {
+  try {
+    await work()
+  } catch (error) {
+    if (isCrudHttpError(error) && error.status === 409) return
+    throw error
+  }
+}
+
+async function mapCarrierToOrder2(
   req: Request,
   requestContext: LogisticsRequestContext,
   run: TransportRun,
+  mode: PersistMode,
 ): Promise<void> {
-  const proposal = run.approvedCarrier ?? run.carrierProposal
+  const proposal = mode === 'approve' ? run.approvedCarrier ?? run.carrierProposal : run.carrierProposal
   if (!run.sourceTransportId || !proposal) return
   const vehicleCapacityKg = Math.max(
     Math.round((proposal.vehicle?.capacityT ?? 24) * 1_000),
@@ -120,18 +133,26 @@ async function mapApprovedCarrierToOrder2(
     request: req,
   }
   const bus = requestContext.container.resolve<CommandBus>('commandBus')
+  if (mode === 'propose') {
+    await ignoreConflict(() => bus.execute<unknown, { item: TransportDetail }>(
+      'logistics.transports.propose_carrier',
+      { input, ctx: commandContext },
+    ))
+    return
+  }
   await bus.execute<unknown, { item: TransportDetail }>(
     'logistics.transports.approve_agent_carrier',
     { input, ctx: commandContext },
   )
 }
 
-async function mapApprovedBackloadToAdditionalOrder(
+async function mapBackloadToAdditionalOrder(
   req: Request,
   requestContext: LogisticsRequestContext,
   run: TransportRun,
+  mode: PersistMode,
 ): Promise<void> {
-  const candidate = run.backloadProposal?.candidate ?? run.acceptedBackloads.at(-1)
+  const candidate = mode === 'approve' ? run.backloadProposal?.candidate ?? run.acceptedBackloads.at(-1) : run.backloadProposal?.candidate
   if (!run.sourceTransportId || !candidate) return
   if (candidate.kind !== 'freight') return logisticsError(409, 'invalidInput')
   const input = {
@@ -156,6 +177,13 @@ async function mapApprovedBackloadToAdditionalOrder(
     request: req,
   }
   const bus = requestContext.container.resolve<CommandBus>('commandBus')
+  if (mode === 'propose') {
+    await ignoreConflict(() => bus.execute<unknown, { item: TransportDetail }>(
+      'logistics.transports.propose_load',
+      { input, ctx: commandContext },
+    ))
+    return
+  }
   await bus.execute<unknown, { item: TransportDetail }>(
     'logistics.transports.approve_agent_backload',
     { input, ctx: commandContext },
@@ -185,26 +213,27 @@ export async function POST(req: Request, ctx: Ctx) {
           return Response.json({
             run: toTransportRunView(publishListingForRun(id, { title: a.title, body: a.body })),
           })
-        case 'propose-carrier':
-          return Response.json({
-            run: toTransportRunView(
-              proposeCarrier(id, {
-                source: a.source,
-                vehicleId: a.vehicleId,
-                offerId: a.offerId,
-                summary: a.summary,
-                priceEur: a.priceEur,
-                rationale: a.rationale,
-              }),
-            ),
-            humanGate: 'carrier_proposal_pending — human2 must approve',
+        case 'propose-carrier': {
+          const proposed = proposeCarrier(id, {
+            source: a.source,
+            vehicleId: a.vehicleId,
+            offerId: a.offerId,
+            summary: a.summary,
+            priceEur: a.priceEur,
+            rationale: a.rationale,
           })
+          await mapCarrierToOrder2(req, requestContext, proposed, 'propose')
+          return Response.json({
+            run: toTransportRunView(proposed),
+            humanGate: 'carrier_proposal_pending — dispatcher approves on AI Routes',
+          })
+        }
         case 'approve-carrier':
           if (currentRun.approvedCarrier) {
-            await mapApprovedCarrierToOrder2(req, requestContext, currentRun)
+            await mapCarrierToOrder2(req, requestContext, currentRun, 'approve')
             return Response.json({ run: toTransportRunView(currentRun) })
           }
-          await mapApprovedCarrierToOrder2(req, requestContext, currentRun)
+          await mapCarrierToOrder2(req, requestContext, currentRun, 'approve')
           return Response.json({
             run: toTransportRunView(approveCarrierProposal(id, a.approvedBy ?? 'human2')),
           })
@@ -234,17 +263,20 @@ export async function POST(req: Request, ctx: Ctx) {
           })
         case 'reset-backload-scan':
           return Response.json({ run: toTransportRunView(emptyBackloadScanForReset(id)) })
-        case 'propose-backload':
+        case 'propose-backload': {
+          const proposed = proposeBackload(id, a.candidateId, a.evaluation)
+          await mapBackloadToAdditionalOrder(req, requestContext, proposed, 'propose')
           return Response.json({
-            run: toTransportRunView(proposeBackload(id, a.candidateId, a.evaluation)),
-            humanGate: 'backload_proposal_pending — human2 must approve',
+            run: toTransportRunView(proposed),
+            humanGate: 'backload_proposal_pending — dispatcher approves on AI Routes',
           })
+        }
         case 'approve-backload':
           if (!currentRun.backloadProposal && currentRun.acceptedBackloads.length) {
-            await mapApprovedBackloadToAdditionalOrder(req, requestContext, currentRun)
+            await mapBackloadToAdditionalOrder(req, requestContext, currentRun, 'approve')
             return Response.json({ run: toTransportRunView(currentRun) })
           }
-          await mapApprovedBackloadToAdditionalOrder(req, requestContext, currentRun)
+          await mapBackloadToAdditionalOrder(req, requestContext, currentRun, 'approve')
           return Response.json({
             run: toTransportRunView(approveBackloadProposal(id, a.approvedBy ?? 'human2')),
           })

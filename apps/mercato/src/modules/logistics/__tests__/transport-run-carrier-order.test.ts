@@ -6,6 +6,7 @@ import {
   approveBackloadProposal,
   approveCarrierProposal,
   getTransportRun,
+  proposeCarrier,
   toTransportRunView,
 } from '../lib/transport-run'
 import { seedAgreedOffer } from '../lib/agreed-offer'
@@ -393,4 +394,76 @@ test('repeating backload approval repairs the latest accepted load without advan
   expect(response.status).toBe(200)
   expect(execute).toHaveBeenCalledWith('logistics.transports.approve_agent_backload', expect.anything())
   expect(approveBackloadProposal).not.toHaveBeenCalled()
+})
+
+test('proposing a carrier persists a pending Order 2 so the dispatcher can decide on the AI Routes board', async () => {
+  const run = pendingRun('20adbea5-0e64-4124-bf77-09630b8eda6f')
+  const execute = jest.fn(async () => ({ result: { item: {} } }))
+  jest.mocked(resolveLogisticsRequestContext).mockResolvedValue({
+    container: { resolve: jest.fn(() => ({ execute })) } as never,
+    em: {} as never,
+    auth: { tenantId: 'tenant-1', sub: 'user-1' } as never,
+    organizationScope: {
+      selectedId: 'organization-1',
+      filterIds: ['organization-1'],
+      allowedIds: ['organization-1'],
+      tenantId: 'tenant-1',
+    },
+    scope: { tenantId: 'tenant-1', organizationId: 'organization-1' },
+  })
+  jest.mocked(getTransportRun).mockReturnValue({ ...run, status: 'awaiting_carrier_search', carrierProposal: null })
+  jest.mocked(proposeCarrier).mockImplementation(() => run)
+
+  const response = await POST(
+    new Request('http://localhost/api/logistics/transport-runs/run-1', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'propose-carrier', source: 'active_vehicle_search', vehicleId: 'veh-lodz-1', summary: 'Trans-Łódź', priceEur: 960, rationale: 'closest free vehicle' }),
+    }),
+    { params: Promise.resolve({ id: 'run-1' }) },
+  )
+
+  expect(response.status).toBe(200)
+  expect(execute).toHaveBeenCalledWith(
+    'logistics.transports.propose_carrier',
+    expect.objectContaining({
+      input: expect.objectContaining({
+        id: '20adbea5-0e64-4124-bf77-09630b8eda6f',
+        carrierName: 'Trans-Łódź Sp. z o.o.',
+        exchangeRef: 'veh-lodz-1',
+      }),
+    }),
+  )
+  expect(execute).not.toHaveBeenCalledWith('logistics.transports.approve_agent_carrier', expect.anything())
+})
+
+test('proposing a carrier for a manual demo run stays in memory only', async () => {
+  const run = pendingRun(null)
+  const execute = jest.fn()
+  jest.mocked(resolveLogisticsRequestContext).mockResolvedValue({
+    container: { resolve: jest.fn(() => ({ execute })) } as never,
+    em: {} as never,
+    auth: { tenantId: 'tenant-1', sub: 'user-1' } as never,
+    organizationScope: {
+      selectedId: 'organization-1',
+      filterIds: ['organization-1'],
+      allowedIds: ['organization-1'],
+      tenantId: 'tenant-1',
+    },
+    scope: { tenantId: 'tenant-1', organizationId: 'organization-1' },
+  })
+  jest.mocked(getTransportRun).mockReturnValue({ ...run, status: 'awaiting_carrier_search', carrierProposal: null })
+  jest.mocked(proposeCarrier).mockImplementation(() => run)
+
+  const response = await POST(
+    new Request('http://localhost/api/logistics/transport-runs/run-1', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'propose-carrier', source: 'active_vehicle_search', vehicleId: 'veh-lodz-1', summary: 'Trans-Łódź', priceEur: 960, rationale: 'closest free vehicle' }),
+    }),
+    { params: Promise.resolve({ id: 'run-1' }) },
+  )
+
+  expect(response.status).toBe(200)
+  expect(execute).not.toHaveBeenCalled()
 })

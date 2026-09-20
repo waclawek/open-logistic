@@ -189,3 +189,64 @@ test('agent backload approval is idempotent for an already-approved exchange can
 
   expect(createOrder).not.toHaveBeenCalled()
 })
+
+test('agent carrier approval promotes a pending Order 2 proposed earlier for the same candidate', async () => {
+  const ctx = { container: {}, request: new Request('http://localhost') } as CommandRuntimeContext
+  const em = { clear: jest.fn() }
+  const withPendingCarrier = detail()
+  withPendingCarrier.order2 = { ...withPendingCarrier.order2!, status: 'pending_approval', fields: { ...withPendingCarrier.order2!.fields, exchange_ref: 'veh-lodz-1' } }
+  jest.mocked(withSalesTransaction).mockImplementation(async (_ctx, run) => run({ em: em as never, ctx, afterCommit: [] }))
+  jest.mocked(findOneWithDecryption).mockResolvedValue({ id, updatedAt: new Date(updatedAt), currencyCode: 'EUR', channelId: null } as never)
+  jest.mocked(enforceCommandOptimisticLockWithGuards).mockResolvedValue(undefined)
+  jest.mocked(loadTransportDetail).mockResolvedValue(withPendingCarrier)
+
+  await salesTransportCommands
+    .find((entry) => entry.id === 'logistics.transports.approve_agent_carrier')!
+    .execute({
+      id,
+      carrierName: 'Trans-Łódź Sp. z o.o.',
+      carrierCost: 920,
+      vehicleType: 'SEMI_TRAILER',
+      vehicleCapacityPallets: 33,
+      vehicleCapacityKg: 24_000,
+      exchangeSource: 'trans',
+      exchangeRef: 'veh-lodz-1',
+    }, ctx)
+
+  expect(createOrder).not.toHaveBeenCalled()
+  expect(jest.mocked(executeSales).mock.calls.map((call) => [call[1], call[2].id])).toContainEqual(['update', carrierId])
+})
+
+test('agent backload approval promotes a pending additional load proposed earlier for the same candidate', async () => {
+  const ctx = { container: {}, request: new Request('http://localhost') } as CommandRuntimeContext
+  const em = { clear: jest.fn() }
+  const pendingLoadId = '00000000-0000-4000-8000-000000000005'
+  const withPendingLoad = detail()
+  withPendingLoad.additionalLoads = [{
+    ...withPendingLoad.order1,
+    id: pendingLoadId,
+    status: 'pending_approval',
+    fields: { transport_role: 'additional_load', transport_order_number: 3, exchange_ref: 'bl-1-0-55', cargo_pallets: 0, cargo_weight_kg: 800 },
+  }]
+  jest.mocked(withSalesTransaction).mockImplementation(async (_ctx, run) => run({ em: em as never, ctx, afterCommit: [] }))
+  jest.mocked(findOneWithDecryption).mockResolvedValue({ id, updatedAt: new Date(updatedAt), currencyCode: 'EUR', channelId: null } as never)
+  jest.mocked(enforceCommandOptimisticLockWithGuards).mockResolvedValue(undefined)
+  jest.mocked(loadTransportDetail).mockResolvedValue(withPendingLoad)
+
+  await salesTransportCommands
+    .find((entry) => entry.id === 'logistics.transports.approve_agent_backload')!
+    .execute({
+      id,
+      customerName: 'TIMOCOM · bl-1-0-55',
+      pickupAddress: 'Doładunek@55km',
+      deliveryAddress: 'Szczecin',
+      cargoPallets: 0,
+      cargoWeightKg: 800,
+      clientPrice: 480,
+      exchangeSource: 'timocom',
+      exchangeRef: 'bl-1-0-55',
+    }, ctx)
+
+  expect(createOrder).not.toHaveBeenCalled()
+  expect(jest.mocked(executeSales).mock.calls.map((call) => [call[1], call[2].id])).toContainEqual(['update', pendingLoadId])
+})
