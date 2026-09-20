@@ -30,9 +30,13 @@ scoped, which makes directly connecting the event unsafe.
 - Add an idempotent `startTransportRunForTransport` service keyed by tenant, organization, and
   source transport ID.
 - Add ephemeral subscribers for `logistics.transport.created` and `sales.order.created`. The
-  second path covers Inbox quote conversion, where the Sales order event is the reliable contract;
-  source events remain persistent while projection subscribers run inline so the existing
-  process-local Inbox can see the run.
+  second path covers Sales orders created through standard CRUD flows; source events remain
+  persistent while projection subscribers run inline so the existing process-local Inbox can see
+  the run.
+- Add a Logistics command interceptor after `sales.quotes.convert_to_order`. The core conversion
+  command persists an order without emitting `sales.order.created`, so the interceptor invokes the
+  same scoped, idempotent run-start handler after a successful conversion. Generic Sales quotes
+  are ignored because they do not load as Logistics client transports.
 - Emit the additive `logistics.transport_run.started` lifecycle event after a run is created and
   refresh Agent Inbox through `useAppEvent`, not a new polling loop.
 - Keep the existing button as a demo/manual fallback, but scope its run to the current request.
@@ -86,7 +90,8 @@ continues, now with request scope. No migration or backfill is required.
 
 ### Phase 2: Automatic Inbox refresh
 
-1. Subscribe inline to `logistics.transport.created` and `sales.order.created` using trusted scope.
+1. Subscribe inline to `logistics.transport.created` and `sales.order.created` using trusted scope,
+   and cover the quote-conversion command's missing CRUD event through its public interceptor hook.
 2. Emit and browser-broadcast `logistics.transport_run.started` only after run creation succeeds.
 3. Refresh the Agent Inbox when the event arrives.
 4. Mirror app-module changes into the create-app template.
@@ -100,6 +105,8 @@ continues, now with request scope. No migration or backfill is required.
 ## Integration Test Coverage
 
 - A scoped transport-created event starts exactly one run for the source transport.
+- Converting an Inbox-created transport quote starts the same run even though the core conversion
+  command does not emit `sales.order.created`.
 - Replaying the event returns the same run rather than duplicating it.
 - A transport in another tenant or organization is not readable from the current scope.
 - Real customer, reference, price, cargo, and known-city lane values override the random seed.
@@ -187,8 +194,8 @@ deferred and is not represented as complete.
 - `yarn generate` — passed; subscriber registries include both new handlers. OpenAPI generation
   used its documented fallback after a Windows `spawn EPERM`.
 - `yarn tsc --noEmit --incremental false -p apps/mercato/tsconfig.json` — passed.
-- Focused Logistics Jest suite (mapping, scope/idempotency, both source events) — 3 suites and 7
-  tests passed.
+- Focused Logistics Jest suite (mapping, scope/idempotency, both source events, and quote
+  conversion interceptor) — 4 suites and 12 tests passed.
 - `yarn template:sync` — passed after mirroring the app module.
 - Targeted create-app `template-modules-parity.test.ts` — 3 tests passed (the sandboxed
   invocation hit Windows `spawn EPERM`; the approved retry passed).
@@ -203,3 +210,5 @@ deferred and is not represented as complete.
 - Initial specification approved by the user's autonomous overnight implementation request.
 - Implemented scoped, idempotent creation from both Logistics and Sales order events, plus Inbox
   refresh and create-app template parity.
+- Corrected the Inbox proposal → quote → order path by adding a post-conversion command interceptor
+  because the core conversion command does not emit the normal Sales order-created event.

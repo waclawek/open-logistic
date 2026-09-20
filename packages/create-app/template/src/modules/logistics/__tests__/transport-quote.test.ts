@@ -6,9 +6,11 @@ import { inboxActions as salesInboxActions } from '@open-mercato/core/modules/sa
 import { inboxActions as logisticsInboxActions } from '../inbox-actions'
 import { interceptors } from '../commands/interceptors'
 import { logisticsQuotePayloadSchema } from '../lib/transport-quote'
+import handleTransportCreated from '../subscribers/transport-created-agent-run'
 
 jest.mock('@open-mercato/shared/lib/encryption/find', () => ({ findOneWithDecryption: jest.fn() }))
 jest.mock('@open-mercato/core/modules/inbox_ops/data/entities', () => ({ InboxProposalAction: class {} }))
+jest.mock('../subscribers/transport-created-agent-run', () => ({ __esModule: true, default: jest.fn() }))
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -171,4 +173,25 @@ test('quote interceptor blocks invalid transport data and leaves generic quotes 
     status: 422,
   })
   await expect(interceptor.beforeExecute!(input, interceptorContext(em))).resolves.toBeUndefined()
+})
+
+test('quote conversion interceptor starts the transport run with trusted command scope', async () => {
+  const em = {} as EntityManager
+  const interceptor = interceptors.find((entry) => entry.id === 'logistics.start-converted-transport-run')
+  expect(interceptor).toBeDefined()
+
+  await interceptor!.afterExecute!(
+    {},
+    { orderId: '66666666-6666-4666-8666-666666666666' },
+    {
+      ...interceptorContext(em),
+      commandId: 'sales.quotes.convert_to_order',
+      auth: { sub: 'user-1', tenantId, orgId: organizationId } as never,
+    },
+  )
+
+  expect(handleTransportCreated).toHaveBeenCalledWith(
+    { id: '66666666-6666-4666-8666-666666666666' },
+    expect.objectContaining({ tenantId, organizationId }),
+  )
 })

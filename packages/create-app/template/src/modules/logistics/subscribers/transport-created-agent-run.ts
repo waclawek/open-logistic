@@ -40,6 +40,10 @@ export default async function handle(payload: Payload, context: Context): Promis
     return
   }
   const run = await startTransportRunForTransport(detail, scope)
+  logger.info('Started Agent Inbox run for transport', {
+    transportId,
+    runId: run.id,
+  })
   await eventsConfig.emit(
     'logistics.transport_run.started',
     { id: run.id, sourceTransportId: transportId },

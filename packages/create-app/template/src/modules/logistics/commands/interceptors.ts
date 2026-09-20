@@ -1,9 +1,14 @@
 import type { EntityManager } from '@mikro-orm/postgresql'
 import type { CommandInterceptor, CommandInterceptorBeforeResult } from '@open-mercato/shared/lib/commands/command-interceptor'
 import { findOneWithDecryption } from '@open-mercato/shared/lib/encryption/find'
+import { createLogger } from '@open-mercato/shared/lib/logger'
+import { getTelemetryRuntime } from '@open-mercato/shared/lib/telemetry/runtime'
 import { InboxProposalAction } from '@open-mercato/core/modules/inbox_ops/data/entities'
 import { LOGISTICS_CLIENT_TRANSPORT_KIND, LOGISTICS_METADATA_VERSION } from '../lib/transport-metadata'
 import { logisticsQuoteTransportSchema } from '../lib/transport-quote'
+import handleTransportCreated from '../subscribers/transport-created-agent-run'
+
+const logger = createLogger('logistics').child({ component: 'command-interceptors' })
 
 function record(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -76,4 +81,37 @@ const createLogisticsQuoteInterceptor: CommandInterceptor = {
   },
 }
 
-export const interceptors: CommandInterceptor[] = [createLogisticsQuoteInterceptor]
+const startConvertedTransportRunInterceptor: CommandInterceptor = {
+  id: 'logistics.start-converted-transport-run',
+  targetCommand: 'sales.quotes.convert_to_order',
+  priority: 60,
+  async afterExecute(_input, result, context) {
+    const orderId = record(result)?.orderId
+    const tenantId = context.auth?.tenantId ?? null
+    const organizationId = context.selectedOrganizationId ?? context.auth?.orgId ?? null
+    if (typeof orderId !== 'string' || !tenantId || !organizationId) return
+
+    try {
+      await handleTransportCreated(
+        { id: orderId },
+        {
+          tenantId,
+          organizationId,
+          resolve: <T = unknown>(name: string) => context.container.resolve<T>(name),
+        },
+      )
+    } catch (error) {
+      logger.error('Failed to start Agent Inbox run after quote conversion', { error, orderId })
+      getTelemetryRuntime()?.reportError(error, {
+        module: 'logistics',
+        code: 'logistics.converted_transport_run_failed',
+        attributes: { orderId },
+      })
+    }
+  },
+}
+
+export const interceptors: CommandInterceptor[] = [
+  createLogisticsQuoteInterceptor,
+  startConvertedTransportRunInterceptor,
+]
