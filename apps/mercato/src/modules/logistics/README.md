@@ -139,6 +139,55 @@ See [the simulator playbook](../../../../../.ai/docs/exchange-simulators-agent-p
 and [the agent evaluation inputs](../../../../../.ai/docs/logistics-agent-evaluation-inputs.md)
 for the endpoint map, scenarios, model configuration and known production gaps.
 
+## Email to priced quote
+
+An inbound freight enquiry becomes a draft sales quote in four steps. Nothing is
+automatic past step two: a person accepts the proposed action and that is what
+creates the document.
+
+1. `offers-send-email` signs a JSON payload and POSTs it to core's inbound
+   webhook at `/api/inbox_ops/webhook/inbound`. Core parses it, deduplicates it,
+   writes the `inbox_emails` row and emits `inbox_ops.email.received`.
+2. The subscriber `logistics:offer-freight-extraction` claims the email, calls
+   the configured model with a schema that has no money field anywhere, and
+   writes one proposal carrying one pending `draft_offer` action.
+3. A human accepts that action at `/backend/inbox-ops/proposals/:id`. The action
+   requires `logistics.offers.draft`.
+4. Acceptance prices every line from `catalog_product_variant_prices`, in code,
+   and creates a draft quote through `sales.quotes.create`.
+
+Four rules hold the flow together, each pinned by a unit test under
+`__tests__/offer-*.test.ts`:
+
+| Rule | Where it lives |
+|---|---|
+| No price field ever reaches the model | `lib/offer-automation/freightExtraction.ts` |
+| Prices come from the catalogue, after a human accepts | `lib/offer-automation/catalogPricing.ts`, `lib/offer-automation/draftOffer.ts` |
+| One unpriceable line fails the whole action, writing nothing | `lib/offer-automation/catalogPricing.ts` |
+| Every write carries a resolved tenant, organization and user | `lib/offer-automation/draftOffer.ts` |
+
+Core's own extraction worker is disabled for this app in
+`apps/mercato/src/modules.ts`. It cannot propose a `draft_offer` (its output
+schema pins the action type to nine built-ins) and it races this subscriber for
+the same email, so leaving both on makes the outcome a coin toss.
+
+### Running it
+
+```sh
+# once per machine: INBOX_OPS_WEBHOOK_SECRET=<long random string> in apps/mercato/.env
+yarn mercato logistics offers-prepare --tenant <tenantId> --org <organizationId>
+yarn mercato auth sync-role-acls --tenant <tenantId>
+yarn mercato logistics offers-check-ai
+yarn dev
+yarn mercato logistics offers-send-email --tenant <tenantId> --org <organizationId>
+```
+
+`offers-prepare` is idempotent. It seeds four freight services
+(`FRT-FTL-SHIPMENT`, `FRT-LTL-PALLET`, `FRT-ROAD-KM`, `FRT-ACC-TAILLIFT`) with
+EUR list prices, writes the inbox address `quotes@logistics.example`, and creates
+the scoped automation account `offer-automation@logistics.example` holding one
+ACL feature. Anything else it finds missing is reported, not created.
+
 ## Verification
 
 ```sh

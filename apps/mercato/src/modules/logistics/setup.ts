@@ -5,7 +5,16 @@ import { seedLogisticsExamples } from './lib/seed-examples'
 import { DISPATCHER_FEATURES } from './lib/constants'
 
 export const setup: ModuleSetupConfig = {
-  defaultRoleFeatures: { admin: ['logistics.view', 'logistics.manage'], dyspozytor: [...DISPATCHER_FEATURES] },
+  // `logistics.offers.draft` is the feature the inbox_ops execution engine checks
+  // before it will run an accepted `draft_offer` action. Granted to the same
+  // roles that already review inbox proposals, so an operator who can open the
+  // proposal page can also accept the action without hand-editing a role.
+  defaultRoleFeatures: {
+    superadmin: ['logistics.*'],
+    admin: ['logistics.view', 'logistics.manage', 'logistics.offers.draft'],
+    employee: ['logistics.offers.draft'],
+    dyspozytor: [...DISPATCHER_FEATURES],
+  },
   async onTenantCreated({ em, tenantId }) {
     await installCustomEntitiesFromModules(em, null, { entityIds: [...LOGISTICS_ENTITY_IDS], tenantIds: [tenantId], includeGlobal: false })
   },

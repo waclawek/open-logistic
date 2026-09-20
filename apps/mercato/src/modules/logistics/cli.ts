@@ -5,6 +5,7 @@ import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
 import type { EntityManager } from '@mikro-orm/postgresql'
 import { migrateLegacyTransports, systemCommandContext } from './lib/migrate-legacy'
 import { seedLogisticsExamples } from './lib/seed-examples'
+import { offerAutomationCli } from './lib/offer-automation/cli'
 
 function parseArgs(rest: string[]) {
   const args: Record<string, string | boolean> = {}
@@ -42,5 +43,5 @@ const seed: ModuleCli = {
     finally { await container.dispose() }
   },
 }
-const commands = [migrate, seed]
+const commands = [migrate, seed, ...offerAutomationCli]
 export default commands
