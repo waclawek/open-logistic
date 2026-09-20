@@ -74,6 +74,10 @@ function signWebhookRequest(payload, secret, now = new Date()) {
 const ASSETS = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
+  ['/open-mercato.svg', ['open-mercato.svg', 'image/svg+xml']],
+  ['/logo-openlogistic.jpg', ['logo-openlogistic.jpg', 'image/jpeg']],
+  ['/dominik.jpeg', ['dominik.jpeg', 'image/jpeg']],
+  ['/truck-open-mercato.webp', ['truck-open-mercato.webp', 'image/webp']],
   ['/logo-airside.webp', ['logo-airside.webp', 'image/webp']],
   ['/fonts/archivo-latin.woff2', ['fonts/archivo-latin.woff2', 'font/woff2']],
   ['/fonts/archivo-latin-ext.woff2', ['fonts/archivo-latin-ext.woff2', 'font/woff2']],

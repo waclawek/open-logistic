@@ -149,6 +149,11 @@ a:hover { color: var(--primary); }
   padding-block: 1.15rem;
 }
 .masthead img { display: block; width: 186px; height: auto; }
+.brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--ink); }
+.brand__plate { background: var(--plate); padding: 0.4rem 0.65rem; display: block; }
+.brand__logo { display: block; width: 190px; height: auto; }
+.brand__name { font-weight: 700; font-size: 1.1875rem; letter-spacing: -0.02em; white-space: nowrap; }
+.brand__by { display: block; font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; color: var(--ink-3); text-transform: uppercase; }
 .masthead__right { display: flex; align-items: center; gap: 1.25rem; }
 .masthead__note {
   color: var(--ink-2);
@@ -216,6 +221,33 @@ a:hover { color: var(--primary); }
   color: var(--ink-3);
 }
 .hero__terms span { font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.02em; }
+
+/* Fleet strip --------------------------------------------------- */
+.fleet { border-block: 3px solid var(--ink); background: var(--ink); }
+.fleet img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: contain; background: var(--ink); }
+
+/* Founder plate ------------------------------------------------- */
+.hero__aside { display: grid; gap: 1.6rem; align-content: start; }
+.founder {
+  background: var(--ink);
+  color: var(--paper);
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 1.1rem;
+  padding: 1.25rem;
+  align-items: center;
+}
+.founder__photo {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  object-position: top center;
+  background: var(--paper);
+  display: block;
+}
+.founder__quote { margin: 0 0 0.6rem; font-size: 0.9375rem; line-height: 1.5; }
+.founder__name { font-weight: 700; font-size: 0.875rem; letter-spacing: -0.01em; }
+.founder__role { color: var(--tint-on-ink); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 
 /* Docket plate -------------------------------------------------- */
 .docket { background: var(--plate); box-shadow: 0 22px 50px -26px rgba(12, 13, 14, 0.55); }
@@ -454,7 +486,7 @@ form[data-hidden] { display: none; }
 /* Footer -------------------------------------------------------- */
 .footer { background: var(--ink); color: var(--tint-on-ink); padding-block: 2.5rem; }
 .footer__inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem; }
-.footer__plate { background: var(--paper); padding: 0.7rem 0.9rem; }
+.footer__plate { background: var(--plate); padding: 0.7rem 0.9rem; display: inline-grid; gap: 0.35rem; justify-items: start; }
 .footer__plate img { display: block; width: 160px; height: auto; }
 .footer p { font-size: 0.875rem; max-width: 46ch; }
 
@@ -472,6 +504,8 @@ form[data-hidden] { display: none; }
   body { font-size: 1rem; }
   .masthead { padding-block: 1rem; }
   .masthead img { width: 148px; }
+  .masthead .brand__logo { width: 152px; }
+  .brand__name { font-size: 1rem; }
   .masthead__note { display: none; }
   .hero h1 { max-width: 20ch; letter-spacing: -0.03em; }
   .hero__actions .btn { width: 100%; justify-content: center; }
@@ -581,7 +615,9 @@ form[data-hidden] { display: none; }
 <a class="skip" href="#contact" style="position:absolute;left:-9999px;top:0;background:#0C0D0E;color:#fff;padding:.75rem 1rem;z-index:9;" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Skip to the request form</a>
 
 <header class="shell masthead">
-  <img src="logo-airside.webp" width="880" height="178" alt="Airside">
+  <span class="brand">
+    <span class="brand__plate"><img class="brand__logo" src="logo-openlogistic.jpg" width="900" height="169" alt="OpenLogistic"></span>
+  </span>
   <div class="masthead__right">
     <span class="masthead__note">Ad-hoc freight orders</span>
     <a class="btn" href="#contact">
@@ -617,6 +653,7 @@ form[data-hidden] { display: none; }
       </div>
     </div>
 
+    <div class="hero__aside">
     <div class="docket" data-rise style="--i:2">
       <div class="docket__head">
         <span class="label">Ad-hoc order</span>
@@ -640,7 +677,21 @@ form[data-hidden] { display: none; }
         <span class="pill"><span class="pill__dot" aria-hidden="true"></span>Quote requested</span>
       </div>
     </div>
+
+    <figure class="founder" data-rise style="--i:3;margin:0">
+      <img class="founder__photo" src="dominik.jpeg" width="800" height="800" alt="Dominik, founder of OpenLogistic">
+      <figcaption>
+        <p class="founder__quote">“One urgent load should not cost you an afternoon on the phone. Send it here and read the answer.”</p>
+        <div class="founder__name">Dominik</div>
+        <div class="founder__role">Founder, OpenLogistic</div>
+      </figcaption>
+    </figure>
+    </div>
   </section>
+
+  <div class="fleet" data-rise style="--i:0">
+    <img src="truck-open-mercato.webp" width="1600" height="900" alt="OpenLogistic curtainside truck, powered by Open Mercato, at a logistics yard" loading="lazy" decoding="async">
+  </div>
 
   <!-- 2. How an order runs ---------------------------------------- -->
   <section class="band band--paper2" id="how">
@@ -811,7 +862,10 @@ form[data-hidden] { display: none; }
 
 <footer class="footer">
   <div class="shell footer__inner">
-    <span class="footer__plate"><img src="logo-airside.webp" width="880" height="178" alt="Airside"></span>
+    <span class="footer__plate">
+      <img class="brand__logo" src="logo-openlogistic.jpg" width="900" height="169" alt="OpenLogistic">
+      <span class="brand__by">Powered by Open Mercato</span>
+    </span>
     <p>OpenLogistic books ad-hoc freight orders. Pickup, drop, vehicle class, time window, then a carrier who runs that route and holds that class.</p>
   </div>
 </footer>
