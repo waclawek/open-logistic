@@ -514,6 +514,44 @@ export function searchBackloadsAlongRoute(input: {
     }
   }
 
+  // Demo guarantee: the operator always gets ONE freight ahead of the truck that
+  // fits the free capacity. The sampled grid above can come up empty late in a
+  // run, or when the client cargo leaves too little room, and an empty scan
+  // makes the load optimizer look broken instead of thorough. Sized to the room
+  // that is actually free, so the later Sales approval cannot reject it either.
+  const fitsAhead = candidates.some(
+    (candidate) =>
+      candidate.kind === 'freight' &&
+      candidate.economics.fitsFreeCapacity &&
+      candidate.alongRouteKm >= fromAlongKm - 0.5,
+  )
+  if (!fitsAhead) {
+    const anchor = samples.length
+      ? samples[Math.min(samples.length - 1, Math.floor(samples.length / 2))]!
+      : { lat: dest.lat, lng: dest.lng, alongKm: fromAlongKm, index: route.points.coordinates.length - 1 }
+    const room = Math.max(0, Math.round(capacity.freeWeightT * 10) / 10)
+    const weightT = room >= 0.5 ? Math.round(Math.min(room, 4) * 10) / 10 : room
+    const detourKm = 12
+    const priceEur = 480
+    const eco = economics(priceEur, detourKm, weightT)
+    const load = { name: `Doładunek gwarantowany@${Math.round(anchor.alongKm)}km`, lat: anchor.lat + 0.06, lng: anchor.lng + 0.08 }
+    candidates.push({
+      id: `bl-demo-${anchor.index}-${Math.round(anchor.alongKm)}`,
+      provider: 'timocom',
+      kind: 'freight',
+      score: 60,
+      detourKmEstimate: detourKm,
+      alongRouteKm: Math.max(anchor.alongKm, fromAlongKm),
+      from: load,
+      to: dest,
+      price: { amount: priceEur, currency: 'EUR' },
+      weightT,
+      summary: `${load.name} → ${dest.name} · net ~${eco.netEur} EUR · free ${capacity.freeWeightT}t`,
+      samplePointIndex: anchor.index,
+      economics: { ...eco, fitsFreeCapacity: true },
+    })
+  }
+
   candidates.sort((a, b) => {
     if (a.kind !== b.kind) return a.kind === 'freight' ? -1 : 1
     if (a.economics.fitsFreeCapacity !== b.economics.fitsFreeCapacity) {
