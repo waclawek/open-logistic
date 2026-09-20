@@ -214,6 +214,8 @@
   "logistics.inbox.loading": "Loading agent inbox…",
   "logistics.inbox.startDemo": "Start agreed-offer job (demo)",
   "logistics.inbox.hint": "Suche nach Spediteuren und Zuladungen — Entscheidungen landen hier.",
+  "logistics.inbox.sourceOrder": "Auftrag",
+  "logistics.inbox.sourceDemo": "Demo-Auftrag",
   "logistics.inbox.agentsOn": "Agents: on",
   "logistics.inbox.agentsOff": "Agents: paused",
   "logistics.inbox.empty": "Inbox empty",

@@ -214,6 +214,8 @@
   "logistics.inbox.loading": "Loading agent inbox…",
   "logistics.inbox.startDemo": "Start agreed-offer job",
   "logistics.inbox.hint": "Carrier and backload search — decisions land here.",
+  "logistics.inbox.sourceOrder": "Order",
+  "logistics.inbox.sourceDemo": "Demo job",
   "logistics.inbox.agentsOn": "Agents: on",
   "logistics.inbox.agentsOff": "Agents: paused",
   "logistics.inbox.empty": "Inbox empty",

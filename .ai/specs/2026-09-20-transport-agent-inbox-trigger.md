@@ -71,8 +71,10 @@ the manual demo fallback and creates a scoped run.
 ## UI / Frontend Architecture Contract
 
 `LogisticsAgentInbox` remains the existing client island. It adds one `useAppEvent` listener for
-`logistics.transport_run.started` and calls the existing `load` callback. No new component, provider,
-polling loop, styling, labels, or bundle-heavy dependency is added.
+`logistics.transport_run.started` and calls the existing `load` callback. A run created from a real
+Sales transport is visibly labeled with its order number, while manual seed runs are labeled as
+demo jobs. A newly broadcast run is selected and shown across filters. No new component, provider,
+polling loop, or bundle-heavy dependency is added.
 
 ## Migration & Backward Compatibility
 
@@ -112,6 +114,8 @@ continues, now with request scope. No migration or backfill is required.
 - Real customer, reference, price, cargo, and known-city lane values override the random seed.
 - Manual demo start still works and is scoped.
 - Agent Inbox refreshes after the browser receives `logistics.transport_run.started`.
+- Converted Sales transports show their source order number and are distinguishable from random
+  demo jobs and random carrier candidates.
 
 ## Risks & Impact Review
 
@@ -194,8 +198,8 @@ deferred and is not represented as complete.
 - `yarn generate` — passed; subscriber registries include both new handlers. OpenAPI generation
   used its documented fallback after a Windows `spawn EPERM`.
 - `yarn tsc --noEmit --incremental false -p apps/mercato/tsconfig.json` — passed.
-- Focused Logistics Jest suite (mapping, scope/idempotency, both source events, and quote
-  conversion interceptor) — 4 suites and 12 tests passed.
+- Focused Logistics Jest suite (mapping, scope/idempotency, both source events, quote conversion
+  interceptor, and visible source-order identity) — 5 suites and 13 tests passed.
 - `yarn template:sync` — passed after mirroring the app module.
 - Targeted create-app `template-modules-parity.test.ts` — 3 tests passed (the sandboxed
   invocation hit Windows `spawn EPERM`; the approved retry passed).
@@ -212,3 +216,5 @@ deferred and is not represented as complete.
   refresh and create-app template parity.
 - Corrected the Inbox proposal → quote → order path by adding a post-conversion command interceptor
   because the core conversion command does not emit the normal Sales order-created event.
+- Labeled converted runs with their Sales order number and auto-selected newly broadcast runs so
+  operators do not confuse the source order with intentionally random carrier proposals.

@@ -214,6 +214,8 @@
   "logistics.inbox.loading": "Loading agent inbox…",
   "logistics.inbox.startDemo": "Start agreed-offer job (demo)",
   "logistics.inbox.hint": "Búsqueda de transportista y cargas — las decisiones llegan aquí.",
+  "logistics.inbox.sourceOrder": "Pedido",
+  "logistics.inbox.sourceDemo": "Trabajo de demostración",
   "logistics.inbox.agentsOn": "Agents: on",
   "logistics.inbox.agentsOff": "Agents: paused",
   "logistics.inbox.empty": "Inbox empty",

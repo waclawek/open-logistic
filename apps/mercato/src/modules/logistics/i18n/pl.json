@@ -214,6 +214,8 @@
   "logistics.inbox.loading": "Ładowanie inboxa agentów…",
   "logistics.inbox.startDemo": "Start zlecenia z uzgodnionej oferty",
   "logistics.inbox.hint": "Szukanie przewoźnika i doładunków — decyzje trafiają tutaj.",
+  "logistics.inbox.sourceOrder": "Zamówienie",
+  "logistics.inbox.sourceDemo": "Zlecenie demo",
   "logistics.inbox.agentsOn": "Agenci: włączeni",
   "logistics.inbox.agentsOff": "Agenci: pauza",
   "logistics.inbox.empty": "Inbox pusty",

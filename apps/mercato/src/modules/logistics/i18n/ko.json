@@ -214,6 +214,8 @@
   "logistics.inbox.loading": "Loading agent inbox…",
   "logistics.inbox.startDemo": "Start agreed-offer job (demo)",
   "logistics.inbox.hint": "운송사·추가 화물 검색 — 결정은 여기에 표시됩니다.",
+  "logistics.inbox.sourceOrder": "주문",
+  "logistics.inbox.sourceDemo": "데모 작업",
   "logistics.inbox.agentsOn": "Agents: on",
   "logistics.inbox.agentsOff": "Agents: paused",
   "logistics.inbox.empty": "Inbox empty",

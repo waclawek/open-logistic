@@ -281,13 +281,17 @@ export function LogisticsAgentInbox() {
     })
   }, [])
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (preferredRunId?: string) => {
     setLoading(true)
     setError(null)
     try {
       const data = await readApiResultOrThrow<RunsResponse>('/api/logistics/transport-runs')
       setRuns(data.items)
-      setSelectedId((prev) => prev ?? data.items[0]?.id ?? null)
+      const preferredRun = preferredRunId
+        ? data.items.find((item) => item.id === preferredRunId)
+        : null
+      setSelectedId((prev) => preferredRun?.id ?? prev ?? data.items[0]?.id ?? null)
+      if (preferredRun) setFilter('all')
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -299,7 +303,14 @@ export function LogisticsAgentInbox() {
     void load()
   }, [load])
 
-  useAppEvent('logistics.transport_run.started', () => void load(), [load])
+  useAppEvent(
+    'logistics.transport_run.started',
+    (event) => {
+      const runId = typeof event.payload?.id === 'string' ? event.payload.id : undefined
+      void load(runId)
+    },
+    [load],
+  )
 
   const setBusy = useCallback((runId: string, busy: boolean) => {
     setBusyIds((prev) => {
@@ -586,6 +597,12 @@ export function LogisticsAgentInbox() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <div className="truncate text-sm font-medium">{run.agreedOffer.customerName}</div>
+                        <div className="truncate text-xs font-medium text-foreground">
+                          {run.sourceTransportId
+                            ? t('logistics.inbox.sourceOrder')
+                            : t('logistics.inbox.sourceDemo')}{' '}
+                          · {run.agreedOffer.customerReference ?? run.agreedOffer.offerId}
+                        </div>
                         <div className="truncate text-xs text-muted-foreground">
                           {run.agreedOffer.lane.from.locality} → {run.agreedOffer.lane.to.locality}
                           {agent
@@ -614,6 +631,14 @@ export function LogisticsAgentInbox() {
             <div className="space-y-4 rounded-lg border border-border p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-lg font-semibold">{selectedRow.run.agreedOffer.customerName}</h3>
+                <span className="rounded-md bg-muted px-2 py-1 text-xs font-medium">
+                  {selectedRow.run.sourceTransportId
+                    ? t('logistics.inbox.sourceOrder')
+                    : t('logistics.inbox.sourceDemo')}{' '}
+                  ·{' '}
+                  {selectedRow.run.agreedOffer.customerReference ??
+                    selectedRow.run.agreedOffer.offerId}
+                </span>
                 <StatusBadge variant={phaseBadge(selectedRow.phase).variant} appearance="light" dot>
                   {t(phaseBadge(selectedRow.phase).key)}
                 </StatusBadge>
@@ -781,9 +806,15 @@ export function LogisticsAgentInbox() {
 
               <dl className="grid gap-2 text-sm sm:grid-cols-2">
                 <div>
-                  <dt className="text-muted-foreground">{t('logistics.orchestration.offer')}</dt>
+                  <dt className="text-muted-foreground">
+                    {selectedRow.run.sourceTransportId
+                      ? t('logistics.inbox.sourceOrder')
+                      : t('logistics.orchestration.offer')}
+                  </dt>
                   <dd>
-                    {selectedRow.run.agreedOffer.offerId} · {selectedRow.run.agreedOffer.quoteNetEur}{' '}
+                    {selectedRow.run.agreedOffer.customerReference ??
+                      selectedRow.run.agreedOffer.offerId}{' '}
+                    · {selectedRow.run.agreedOffer.quoteNetEur}{' '}
                     {selectedRow.run.agreedOffer.currencyCode}
                   </dd>
                 </div>
