@@ -86,6 +86,7 @@ export const enabledModules: ModuleEntry[] = [
         pages: {
           '/backend/inbox-ops': {
             metadata: {
+              navHidden: true,
               pageGroup: 'Logistics',
               pageGroupKey: 'logistics.nav.group',
               pageOrder: 10,

@@ -30,7 +30,8 @@ import proposalsDisruptionsPage from '../backend/logistics/proposals-disruptions
 import { metadata as proposalsDisruptionsMetadata } from '../backend/logistics/proposals-disruptions/page.meta'
 
 jest.mock('next/navigation', () => ({ redirect: jest.fn() }))
-jest.mock('../components/TransportsTable', () => ({ TransportsTable: () => <div data-testid="transports-table" /> }))
+jest.mock('../components/routes/RoutesBoard', () => ({ RoutesBoard: () => <div data-testid="routes-board" /> }))
+jest.mock('../components/inbox/AiInboxBoard', () => ({ AiInboxBoard: () => <div data-testid="ai-inbox-board" /> }))
 jest.mock('../components/TransportOrderRouteMap', () => ({
   TransportOrderRouteMap: () => <div data-testid="transport-order-route-map" />,
 }))
@@ -68,29 +69,34 @@ describe('Logistics navigation foundation', () => {
     expect(setup.defaultRoleFeatures?.admin).toContain('logistics.view')
   })
 
-  test('shows the two logistics-owned operational routes in the sidebar', () => {
+  test('shows only AI inbox and AI routes in the sidebar', () => {
     const visiblePages = pages.filter(({ metadata }) => !('navHidden' in metadata && metadata.navHidden))
     expect(visiblePages.map(({ path }) => path)).toEqual([
+      '/backend/logistics/ai-inbox',
       '/backend/logistics/transports',
-      '/backend/logistics/proposals-disruptions',
     ])
-    expect(visiblePages.map(({ metadata }) => metadata.pageOrder)).toEqual([20, 40])
+    expect(visiblePages.map(({ metadata }) => metadata.pageOrder)).toEqual([10, 20])
     expect(visiblePages.map(({ metadata }) => metadata.pageTitleKey)).toEqual([
+      'logistics.dispatcher.inbox',
       'logistics.dispatcher.transports',
-      'logistics.proposalsDisruptions.title',
     ])
   })
 
-  test('redirects AI inbox to the existing inbox module and protects destination access', () => {
+  test('redirects the module root to AI inbox and protects inbox access', () => {
     DashboardPage()
-    InboxPage()
-    expect(redirect).toHaveBeenCalledWith('/backend/inbox-ops')
+    expect(redirect).toHaveBeenCalledWith('/backend/logistics/ai-inbox')
     expect(dashboardMetadata.requireFeatures).toContain('inbox_ops.proposals.view')
+    expect(inboxMetadata.requireFeatures).toContain('inbox_ops.proposals.view')
   })
 
-  test('opens the Sales transport table at its dedicated route', () => {
+  test('opens the AI inbox board at its dedicated route', () => {
+    render(<InboxPage />)
+    expect(screen.getByTestId('ai-inbox-board')).toBeInTheDocument()
+  })
+
+  test('opens the AI routes board at its dedicated route', () => {
     render(<TransportsPage />)
-    expect(screen.getByTestId('transports-table')).toBeInTheDocument()
+    expect(screen.getByTestId('routes-board')).toBeInTheDocument()
   })
 
   describe.each(['en', 'pl', 'de', 'es', 'ko'] as const)('%s locale', (locale) => {
