@@ -28,7 +28,6 @@ import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
 
 import { cn } from '@open-mercato/shared/lib/utils'
 
-import { TransportDecisions } from './TransportDecisions'
 
 import type { TransportDetail, TransportOrder } from '../types'
 
@@ -520,7 +519,6 @@ export function TransportDetailView({ transportId }: { transportId: string | nul
 
 
 
-      <TransportDecisions key={identity} transport={data} onChanged={setData} onReload={() => setReloadToken((value) => value + 1)} />
 
 
 

@@ -260,7 +260,7 @@ export function ActionCard({
             <span className="text-xs text-status-success-text">
               {t('inbox_ops.action.created_entity', 'Created {type}').replace('{type}', action.createdEntityType || '')} · {action.executedAt && new Date(action.executedAt).toLocaleString()}
             </span>
-            {action.actionType === 'create_quote' && (
+            {(action.actionType === 'create_quote' || action.createdEntityType === 'sales_quote') && (
               <div>
                 <Button asChild type="button" variant="outline" size="sm" className="h-11 md:h-9">
                   <Link href={`/backend/sales/quotes/${encodeURIComponent(action.createdEntityId)}`}>
